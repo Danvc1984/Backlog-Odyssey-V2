@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "witcher-3",
+      "description": "The Witcher 3: Wild Hunt cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1745383586468-13f3a24ffe8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYW50YXN5JTIwd2FycmlvcnxlbnwwfHx8fDE3NTkyMzY3MTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy warrior"
+    },
+    {
+      "id": "cyberpunk-2077",
+      "description": "Cyberpunk 2077 cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1707999464758-0ad86b14290f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjeWJlcnB1bmslMjBjaXR5fGVufDB8fHx8MTc1OTE4OTAyMnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cyberpunk city"
+    },
+    {
+      "id": "stardew-valley",
+      "description": "Stardew Valley cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1685045760522-ecf11c1ac862?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwaXhlbCUyMGZhcm18ZW58MHx8fHwxNzU5MjU0MzUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "pixel farm"
+    },
+    {
+      "id": "hades",
+      "description": "Hades cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1586794349794-be2c93c00993?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHx1bmRlcndvcmxkJTIwbXl0aG9sb2d5fGVufDB8fHx8MTc1OTE0MDc5NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "underworld mythology"
+    },
+    {
+      "id": "zelda-botw",
+      "description": "The Legend of Zelda: Breath of the Wild cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1550100136-e092101726f4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYW50YXN5JTIwbGFuZHNjYXBlfGVufDB8fHx8MTc1OTE5OTAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "fantasy landscape"
+    },
+    {
+      "id": "elden-ring",
+      "description": "Elden Ring cover art",
+      "imageUrl": "https://images.unsplash.com/photo-1505635552518-3448ff116af3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxkYXJrJTIwZmFudGFzeXxlbnwwfHx8fDE3NTkxODk1MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dark fantasy"
+    }
+  ]
 }
