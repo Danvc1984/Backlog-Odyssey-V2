@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { PlusCircle, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc } from 'firebase/firestore';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
 import { GENRES, PLATFORMS } from '@/lib/constants';
@@ -58,9 +58,8 @@ export default function Home() {
     if (user) {
       const fetchGames = async () => {
         setDataLoading(true);
-        const gamesCollection = collection(db, 'games');
-        const q = query(gamesCollection, where('userId', '==', user.uid));
-        const gamesSnapshot = await getDocs(q);
+        const gamesCollection = collection(db, 'users', user.uid, 'games');
+        const gamesSnapshot = await getDocs(gamesCollection);
         const userGames = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
         setGames(userGames);
         setDataLoading(false);
@@ -68,14 +67,16 @@ export default function Home() {
       fetchGames();
     } else if (!authLoading) {
       // Not logged in and auth check is complete
+      setGames([]);
       setDataLoading(false);
     }
   }, [user, authLoading]);
 
-  const handleAddGame = async (newGame: Omit<Game, 'id'>) => {
+  const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user) {
       const gameWithUser = { ...newGame, userId: user.uid };
-      const docRef = await addDoc(collection(db, 'games'), gameWithUser);
+      const userGamesCollection = collection(db, 'users', user.uid, 'games');
+      const docRef = await addDoc(userGamesCollection, gameWithUser);
       setGames(prev => [{ ...gameWithUser, id: docRef.id }, ...prev]);
       setIsFormOpen(false);
     }
