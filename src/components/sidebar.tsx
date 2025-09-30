@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -12,11 +11,9 @@ import {
   SidebarContent,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
-import { useSidebar } from '@/components/ui/sidebar';
 
 const AppSidebar = () => {
   const pathname = usePathname();
-  const { isMobile } = useSidebar();
 
   const menuItems = [
     {
@@ -34,7 +31,7 @@ const AppSidebar = () => {
   return (
     <>
       <SidebarHeader>
-        {isMobile && <SidebarTrigger />}
+        <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>

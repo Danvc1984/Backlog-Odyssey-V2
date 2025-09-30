@@ -48,7 +48,7 @@ export default function AppLayout({
     }
   }, [user, authLoading]);
 
-  if (authLoading) {
+  if (authLoading && !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
@@ -58,7 +58,7 @@ export default function AppLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="offcanvas">
         <AppSidebar />
       </Sidebar>
       <SidebarInset>

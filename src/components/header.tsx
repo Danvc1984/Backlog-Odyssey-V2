@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import Recommendations from './recommendations';
 import type { Game } from '@/lib/types';
+import { SidebarTrigger } from './ui/sidebar';
 
 type AppHeaderProps = {
   allGames?: Game[];
@@ -32,6 +33,7 @@ const AppHeader = ({ allGames = []}: AppHeaderProps) => {
   return (
     <header className="flex items-center justify-between gap-3 text-primary">
       <div className="flex items-center gap-3">
+        <SidebarTrigger />
         <Swords className="h-8 w-8" />
         <h1 className="text-3xl font-bold tracking-tight text-white">
           Backlog <span className="text-primary">Odyssey V2</span>
