@@ -91,7 +91,7 @@ export default function Home() {
     return filteredGames.filter(game => game.list === list);
   };
   
-  if (loading || !user || dataLoading) {
+  if (loading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
 
@@ -166,34 +166,44 @@ export default function Home() {
             </TabsList>
             {gameLists.map(list => (
               <TabsContent key={list} value={list}>
-                <motion.div 
-                  layout
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
-                  <AnimatePresence>
-                    {gamesByList(list).length > 0 ? (
-                      gamesByList(list).map((game, index) => (
-                        <motion.div
-                          key={game.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                 {dataLoading ? (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-muted-foreground col-span-full text-center py-10"
+                  >
+                    Loading games...
+                  </motion.p>
+                 ) : (
+                  <motion.div 
+                    layout
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+                    <AnimatePresence>
+                      {gamesByList(list).length > 0 ? (
+                        gamesByList(list).map((game, index) => (
+                          <motion.div
+                            key={game.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.3, delay: index * 0.05 }}
+                          >
+                            <GameCard game={game} />
+                          </motion.div>
+                        ))
+                      ) : (
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-muted-foreground col-span-full text-center py-10"
                         >
-                          <GameCard game={game} />
-                        </motion.div>
-                      ))
-                    ) : (
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-muted-foreground col-span-full text-center py-10"
-                      >
-                        No games in this list.
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                          No games in this list.
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                 )}
               </TabsContent>
             ))}
           </Tabs>
