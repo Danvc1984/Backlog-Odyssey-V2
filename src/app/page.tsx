@@ -39,7 +39,7 @@ import Recommendations from '@/components/recommendations';
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,10 +49,10 @@ export default function Home() {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     if (user) {
@@ -66,6 +66,9 @@ export default function Home() {
         setDataLoading(false);
       };
       fetchGames();
+    } else {
+      // Not logged in, so no data to load
+      setDataLoading(false);
     }
   }, [user]);
 
@@ -91,7 +94,7 @@ export default function Home() {
     return filteredGames.filter(game => game.list === list);
   };
   
-  if (loading || !user) {
+  if (authLoading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
   }
 
