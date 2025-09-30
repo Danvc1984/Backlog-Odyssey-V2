@@ -35,7 +35,7 @@ const gameSchema = z.object({
 type GameFormValues = z.infer<typeof gameSchema>;
 
 type GameFormProps = {
-  onAddGame: (game: Omit<Game, 'id' | 'imageUrl' | 'imageHint'>) => void;
+  onAddGame: (game: Omit<Game, 'id' | 'imageUrl' | 'imageHint' | 'userId'>) => void;
 };
 
 const GameForm: React.FC<GameFormProps> = ({ onAddGame }) => {

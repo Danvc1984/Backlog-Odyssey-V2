@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
   title: 'Backlog Odyssey V2',
@@ -21,7 +22,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("font-body bg-background text-foreground antialiased min-h-screen")}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

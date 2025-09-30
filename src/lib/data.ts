@@ -6,6 +6,7 @@ const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id);
 export const initialGames: Game[] = [
   {
     id: '1',
+    userId: 'anonymous',
     title: 'The Witcher 3: Wild Hunt',
     platform: 'PC',
     genre: 'RPG',
@@ -15,6 +16,7 @@ export const initialGames: Game[] = [
   },
   {
     id: '2',
+    userId: 'anonymous',
     title: 'Cyberpunk 2077',
     platform: 'PlayStation',
     genre: 'RPG',
@@ -24,6 +26,7 @@ export const initialGames: Game[] = [
   },
   {
     id: '3',
+    userId: 'anonymous',
     title: 'Stardew Valley',
     platform: 'PC',
     genre: 'Indie',
@@ -33,6 +36,7 @@ export const initialGames: Game[] = [
   },
   {
     id: '4',
+    userId: 'anonymous',
     title: 'Hades',
     platform: 'Nintendo Switch',
     genre: 'Action',
@@ -42,6 +46,7 @@ export const initialGames: Game[] = [
   },
   {
     id: '5',
+    userId: 'anonymous',
     title: 'The Legend of Zelda: Breath of the Wild',
     platform: 'Nintendo Switch',
     genre: 'Adventure',
@@ -51,6 +56,7 @@ export const initialGames: Game[] = [
   },
   {
     id: '6',
+    userId: 'anonymous',
     title: 'Elden Ring',
     platform: 'Xbox',
     genre: 'RPG',

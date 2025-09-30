@@ -6,6 +6,7 @@ export type Genre = "Action" | "Adventure" | "Indie" | "MMO" | "Puzzle" | "RPG" 
 
 export interface Game {
   id: string;
+  userId: string;
   title: string;
   platform: Platform;
   genre: Genre;

@@ -1,13 +1,16 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { PlusCircle, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
-import { initialGames } from '@/lib/data';
 import { GENRES, PLATFORMS } from '@/lib/constants';
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,16 +39,43 @@ import Recommendations from '@/components/recommendations';
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
 export default function Home() {
-  const [games, setGames] = useState<Game[]>(initialGames);
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  const handleAddGame = (newGame: Omit<Game, 'id'>) => {
-    const gameWithId = { ...newGame, id: Date.now().toString() };
-    setGames(prev => [gameWithId, ...prev]);
-    setIsFormOpen(false);
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchGames = async () => {
+        setDataLoading(true);
+        const gamesCollection = collection(db, 'games');
+        const q = query(gamesCollection, where('userId', '==', user.uid));
+        const gamesSnapshot = await getDocs(q);
+        const userGames = gamesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Game));
+        setGames(userGames);
+        setDataLoading(false);
+      };
+      fetchGames();
+    }
+  }, [user]);
+
+  const handleAddGame = async (newGame: Omit<Game, 'id'>) => {
+    if (user) {
+      const gameWithUser = { ...newGame, userId: user.uid };
+      const docRef = await addDoc(collection(db, 'games'), gameWithUser);
+      setGames(prev => [{ ...gameWithUser, id: docRef.id }, ...prev]);
+      setIsFormOpen(false);
+    }
   };
 
   const filteredGames = useMemo(() => {
@@ -60,6 +90,10 @@ export default function Home() {
   const gamesByList = (list: GameList) => {
     return filteredGames.filter(game => game.list === list);
   };
+  
+  if (loading || !user || dataLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-4 sm:p-6 lg:p-8">
