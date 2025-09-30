@@ -1,13 +1,15 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut, User } from 'firebase/auth';
-import { auth, googleProvider } from '@/lib/firebase';
+import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import type { AuthFormValues } from '@/lib/types';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithEmail: (values: AuthFormValues) => Promise<any>;
+  signUpWithEmail: (values: AuthFormValues) => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -25,12 +27,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
+  const signInWithEmail = async ({ email, password }: AuthFormValues) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signUpWithEmail = async ({ email, password }: AuthFormValues) => {
+    return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const signOut = async () => {
@@ -42,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithEmail, signUpWithEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );

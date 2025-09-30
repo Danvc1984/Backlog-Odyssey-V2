@@ -1,14 +1,17 @@
 'use client';
 
 import { Swords } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import LoginForm from '@/components/login-form';
+import SignUpForm from '@/components/signup-form';
 
 export default function LoginPage() {
-  const { user, signInWithGoogle, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const [showLogin, setShowLogin] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -28,14 +31,36 @@ export default function LoginPage() {
           Backlog <span className="text-primary">Odyssey V2</span>
         </h1>
       </div>
-      <div className="w-full max-w-sm p-8 space-y-8 bg-card rounded-lg shadow-lg">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-card-foreground">Welcome Back</h2>
-          <p className="text-muted-foreground">Sign in to continue to your backlog</p>
-        </div>
-        <Button onClick={signInWithGoogle} className="w-full" variant="outline">
-          Sign in with Google
-        </Button>
+      <div className="w-full max-w-sm p-8 space-y-6 bg-card rounded-lg shadow-lg">
+        {showLogin ? (
+          <>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-card-foreground">Welcome Back</h2>
+              <p className="text-muted-foreground">Sign in to continue to your backlog</p>
+            </div>
+            <LoginForm />
+            <p className="text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Button variant="link" className="p-0 h-auto" onClick={() => setShowLogin(false)}>
+                Sign Up
+              </Button>
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-card-foreground">Create an Account</h2>
+              <p className="text-muted-foreground">Get started with your game backlog</p>
+            </div>
+            <SignUpForm onSignUp={() => setShowLogin(true)} />
+             <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Button variant="link" className="p-0 h-auto" onClick={() => setShowLogin(true)}>
+                Sign In
+              </Button>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

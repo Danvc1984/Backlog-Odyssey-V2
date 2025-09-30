@@ -21,3 +21,8 @@ export type Recommendation = {
   genre: string;
   reason: string;
 };
+
+export type AuthFormValues = {
+  email: string;
+  password: string
+}
