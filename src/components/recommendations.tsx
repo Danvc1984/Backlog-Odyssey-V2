@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/sheet';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { generateGameRecommendations } from '@/ai/flows/generate-game-recommendations';
 import type { Game, Recommendation } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +41,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ allGames }) => {
     setIsLoading(true);
     setRecommendations([]);
     try {
+      const { generateGameRecommendations } = await import('@/ai/flows/generate-game-recommendations');
       const result = await generateGameRecommendations({
         gameLibrary: allGames,
         gamingHabits,
