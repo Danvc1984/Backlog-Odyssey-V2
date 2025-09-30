@@ -13,8 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
+import Recommendations from './recommendations';
+import type { Game } from '@/lib/types';
 
-const AppHeader = () => {
+type AppHeaderProps = {
+  allGames?: Game[];
+}
+
+const AppHeader = ({ allGames = []}: AppHeaderProps) => {
   const { user, signOut, loading } = useAuth();
   const router = useRouter();
 
@@ -32,7 +38,8 @@ const AppHeader = () => {
         </h1>
       </div>
 
-      <div>
+      <div className='flex items-center gap-4'>
+        <Recommendations allGames={allGames} />
         {loading ? (
           <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
         ) : user ? (
