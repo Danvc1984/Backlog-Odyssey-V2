@@ -66,11 +66,11 @@ export default function Home() {
         setDataLoading(false);
       };
       fetchGames();
-    } else {
-      // Not logged in, so no data to load
+    } else if (!authLoading) {
+      // Not logged in and auth check is complete
       setDataLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleAddGame = async (newGame: Omit<Game, 'id'>) => {
     if (user) {
@@ -94,8 +94,15 @@ export default function Home() {
     return filteredGames.filter(game => game.list === list);
   };
   
-  if (authLoading || !user) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+  if (authLoading) {
+    return (
+      <div className="flex flex-col min-h-screen p-4 sm:p-6 lg:p-8">
+        <AppHeader />
+        <main className="flex-grow mt-8">
+          <div className="flex items-center justify-center py-10">Loading...</div>
+        </main>
+      </div>
+    );
   }
 
   return (
