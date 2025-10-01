@@ -23,14 +23,14 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   const PlatformIcon = platformIcons[game.platform];
 
   return (
-    <Card className="h-full group/card flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent">
+    <Card className="h-full group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
       <CardHeader className="p-0 relative aspect-[3/4]">
         {game.imageUrl ? (
           <Image
             src={game.imageUrl}
             alt={game.title}
             fill
-            className="object-cover group-hover/card:scale-105 transition-transform duration-300"
+            className="object-cover transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full bg-card flex items-center justify-center">
@@ -57,7 +57,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
               </div>
             ) : null}
           </div>
-          <div className="flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" className="h-7 w-7 bg-primary/80 hover:bg-primary text-primary-foreground">
