@@ -25,32 +25,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   return (
     <Card className="h-full group/card flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent">
       <CardHeader className="p-0 relative aspect-[3/4]">
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-        <div className="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
-           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" className="h-8 w-8 bg-primary/80 hover:bg-primary text-primary-foreground">
-                <FolderKanban className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {gameLists.filter(l => l !== game.list).map(list => (
-                <DropdownMenuItem key={list} onClick={() => onMove(game, list)}>
-                  Move to {list}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500" onClick={() => onDelete(game)}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button size="icon" variant="destructive" className="h-8 w-8 bg-red-600/80 hover:bg-red-600" onClick={() => onEdit(game)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-        </div>
         {game.imageUrl ? (
           <Image
             src={game.imageUrl}
@@ -68,19 +42,46 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
         <CardTitle className="text-base font-medium leading-tight line-clamp-2">
           {game.title}
         </CardTitle>
-        <div className="text-xs text-muted-foreground space-y-1">
-          {game.releaseDate && (
-            <div className="flex items-center">
-              <Calendar className="h-3 w-3 mr-1.5" />
-              {format(new Date(game.releaseDate), 'MMM yyyy')}
-            </div>
-          )}
-          {game.estimatedPlaytime ? (
-            <div className="flex items-center">
-              <Clock className="h-3 w-3 mr-1.5" />
-              {game.estimatedPlaytime}h
-            </div>
-          ) : null}
+        <div className="flex justify-between items-center text-xs text-muted-foreground">
+          <div className="space-y-1">
+            {game.releaseDate && (
+              <div className="flex items-center">
+                <Calendar className="h-3 w-3 mr-1.5" />
+                {format(new Date(game.releaseDate), 'MMM yyyy')}
+              </div>
+            )}
+            {game.estimatedPlaytime ? (
+              <div className="flex items-center">
+                <Clock className="h-3 w-3 mr-1.5" />
+                {game.estimatedPlaytime}h
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-col gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="icon" className="h-7 w-7 bg-primary/80 hover:bg-primary text-primary-foreground">
+                  <FolderKanban className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {gameLists.filter(l => l !== game.list).map(list => (
+                  <DropdownMenuItem key={list} onClick={() => onMove(game, list)}>
+                    Move to {list}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-500" onClick={() => onDelete(game)}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button size="icon" variant="destructive" className="h-7 w-7 bg-red-600/80 hover:bg-red-600" onClick={() => onEdit(game)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
@@ -105,5 +106,3 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
 };
 
 export default GameCard;
-
-    
