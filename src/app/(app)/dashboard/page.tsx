@@ -1,21 +1,38 @@
 'use client';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import type { Game } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import GameCard from '@/components/game-card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-type DashboardPageProps = {
-  games?: Game[];
-  dataLoading?: boolean;
-};
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const [games, setGames] = useState<Game[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-export default function DashboardPage({
-  games = [],
-  dataLoading,
-}: DashboardPageProps) {
+  useEffect(() => {
+    if (user) {
+      setDataLoading(true);
+      const gamesCollection = collection(db, 'users', user.uid, 'games');
+      const unsubscribe = onSnapshot(gamesCollection, snapshot => {
+        const userGames = snapshot.docs.map(
+          doc => ({ id: doc.id, ...doc.data() } as Game)
+        );
+        setGames(userGames);
+        setDataLoading(false);
+      });
+      return () => unsubscribe();
+    } else {
+      setGames([]);
+      setDataLoading(false);
+    }
+  }, [user]);
+
   const recentlyPlayed = useMemo(
     () => games.filter(g => g.list === 'Recently Played').slice(0, 5),
     [games]

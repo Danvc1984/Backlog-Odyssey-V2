@@ -2,9 +2,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Game } from '@/lib/types';
 import AppHeader from '@/components/header';
 import AppSidebar from '@/components/sidebar';
 import {
@@ -15,6 +12,9 @@ import {
   SidebarRail,
   SidebarInset,
 } from '@/components/ui/sidebar';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Game } from '@/lib/types';
 
 export default function AppLayout({
   children,
@@ -23,8 +23,7 @@ export default function AppLayout({
 }) {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [games, setGames] = React.useState<Game[]>([]);
-  const [dataLoading, setDataLoading] = React.useState(true);
+  const [allGames, setAllGames] = React.useState<Game[]>([]);
 
   React.useEffect(() => {
     if (!authLoading && !user) {
@@ -34,20 +33,16 @@ export default function AppLayout({
 
   React.useEffect(() => {
     if (user) {
-      setDataLoading(true);
       const gamesCollection = collection(db, 'users', user.uid, 'games');
       const unsubscribe = onSnapshot(gamesCollection, snapshot => {
         const userGames = snapshot.docs.map(
           doc => ({ id: doc.id, ...doc.data() } as Game)
         );
-        setGames(userGames);
-        setDataLoading(false);
+        setAllGames(userGames);
       });
       return () => unsubscribe();
     } else if (!authLoading) {
-      // If no user and not loading, reset games and loading state
-      setGames([]);
-      setDataLoading(false);
+      setAllGames([]);
     }
   }, [user, authLoading]);
 
@@ -66,13 +61,9 @@ export default function AppLayout({
       </Sidebar>
       <SidebarInset>
         <div className="flex flex-col min-h-screen p-4 sm:p-6 lg:p-8">
-          <AppHeader allGames={games} />
+          <AppHeader allGames={allGames} />
           <main className="flex-grow mt-8">
-            {React.cloneElement(children as React.ReactElement, {
-              games,
-              dataLoading,
-              setGames,
-            })}
+            {children}
           </main>
         </div>
       </SidebarInset>

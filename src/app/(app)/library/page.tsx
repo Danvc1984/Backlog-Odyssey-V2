@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { PlusCircle, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot } from 'firebase/firestore';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
 import { GENRES, PLATFORMS } from '@/lib/constants';
@@ -33,25 +33,38 @@ import GameForm from '@/components/game-form';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
-type LibraryPageProps = {
-  games?: Game[];
-  dataLoading?: boolean;
-  setGames?: React.Dispatch<React.SetStateAction<Game[]>>;
-};
-
-export default function LibraryPage({ games = [], dataLoading, setGames }: LibraryPageProps) {
+export default function LibraryPage() {
   const { user } = useAuth();
+  const [games, setGames] = useState<Game[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  useEffect(() => {
+    if (user) {
+      setDataLoading(true);
+      const gamesCollection = collection(db, 'users', user.uid, 'games');
+      const unsubscribe = onSnapshot(gamesCollection, snapshot => {
+        const userGames = snapshot.docs.map(
+          doc => ({ id: doc.id, ...doc.data() } as Game)
+        );
+        setGames(userGames);
+        setDataLoading(false);
+      });
+      return () => unsubscribe();
+    } else {
+      setGames([]);
+      setDataLoading(false);
+    }
+  }, [user]);
+
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user && setGames) {
+    if (user) {
       const gameWithUser = { ...newGame, userId: user.uid };
       const userGamesCollection = collection(db, 'users', user.uid, 'games');
-      const docRef = await addDoc(userGamesCollection, gameWithUser);
-      setGames(prev => [{ ...gameWithUser, id: docRef.id }, ...prev]);
+      await addDoc(userGamesCollection, gameWithUser);
       setIsFormOpen(false);
     }
   };
