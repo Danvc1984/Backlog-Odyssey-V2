@@ -108,7 +108,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a genre" />
-                    </Trigger>
+                    </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
