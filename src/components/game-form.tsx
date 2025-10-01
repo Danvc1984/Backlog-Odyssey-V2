@@ -62,11 +62,12 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
     defaultValues: {
-      title: '',
-      list: defaultList,
-      releaseDate: '',
-      genres: [],
-      estimatedPlaytime: 0,
+      title: gameToEdit?.title || '',
+      platform: gameToEdit?.platform,
+      genres: gameToEdit?.genres || [],
+      list: gameToEdit?.list || defaultList,
+      releaseDate: gameToEdit?.releaseDate || '',
+      estimatedPlaytime: gameToEdit?.estimatedPlaytime || 0,
     },
   });
 
