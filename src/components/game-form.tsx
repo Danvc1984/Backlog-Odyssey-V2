@@ -4,6 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import { Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,8 +26,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Game, GameList } from '@/lib/types';
+import type { Game, GameList, Platform, Genre } from '@/lib/types';
 import { PLATFORMS, GENRES } from '@/lib/constants';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import Image from 'next/image';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -40,8 +45,14 @@ type GameFormProps = {
   defaultList?: GameList;
 };
 
+const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
+
 const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist' }) => {
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
+  
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
     defaultValues: {
@@ -49,34 +60,114 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       list: defaultList,
     },
   });
+  
+  useEffect(() => {
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList });
+  }, [defaultList, form]);
+
+  const searchGames = useCallback(async (query: string) => {
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const response = await axios.get('https://api.rawg.io/api/games', {
+        params: {
+          key: API_KEY,
+          search: query,
+          page_size: 5,
+        },
+      });
+      setSearchResults(response.data.results);
+    } catch (error) {
+      console.error('Error fetching from RAWG API:', error);
+      setSearchResults([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      searchGames(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, searchGames]);
+
+  const handleSelectGame = (game: any) => {
+    form.setValue('title', game.name);
+    const platform = game.platforms?.map((p: any) => p.platform.name).find((p: any) => PLATFORMS.includes(p as any)) as Platform | undefined;
+    if (platform) form.setValue('platform', platform);
+    const genre = game.genres?.map((g: any) => g.name).find((g: any) => GENRES.includes(g as any)) as Genre | undefined;
+    if (genre) form.setValue('genre', genre);
+    setSelectedGameImageUrl(game.background_image);
+    setSearchTerm('');
+    setSearchResults([]);
+  };
 
   function onSubmit(data: GameFormValues) {
-    const seed = uuidv4();
-    const newGame = { ...data, imageUrl: `https://picsum.photos/seed/${seed}/600/800`, imageHint: `${data.genre.toLowerCase()} game` };
+    const imageUrl = selectedGameImageUrl || `https://picsum.photos/seed/${uuidv4()}/600/800`;
+    const imageHint = selectedGameImageUrl ? `${data.title} game cover` : `${data.genre.toLowerCase()} game`;
+    const newGame = { ...data, imageUrl, imageHint };
     onAddGame(newGame);
     toast({
       title: 'Game Added!',
       description: `${data.title} has been added to your library.`,
     });
     form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList });
+    setSelectedGameImageUrl(null);
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="The Legend of Zelda..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Popover open={searchTerm.length > 0 && searchResults.length > 0}>
+          <PopoverTrigger asChild>
+            <div className="relative">
+               <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Search for a game..." 
+                        {...field} 
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setSearchTerm(e.target.value);
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Search className="absolute top-9 right-3 h-4 w-4 text-muted-foreground" />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+            <div className="flex flex-col gap-1">
+              {searchResults.map((game) => (
+                <Button
+                  key={game.id}
+                  variant="ghost"
+                  className="flex items-center justify-start gap-2 h-auto p-2"
+                  onClick={() => handleSelectGame(game)}
+                >
+                  <Image
+                    src={game.background_image}
+                    alt={game.name}
+                    width={40}
+                    height={53}
+                    className="object-cover rounded-sm aspect-[3/4]"
+                  />
+                  <span className="text-sm font-medium text-left">{game.name}</span>
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -84,7 +175,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Platform</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a platform" />
@@ -104,7 +195,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Genre</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a genre" />
