@@ -38,7 +38,6 @@ const gameSchema = z.object({
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
   estimatedPlaytime: z.coerce.number().optional(),
-  imageUrl: z.string().url().optional().or(z.literal('')),
 });
 
 type GameFormValues = z.infer<typeof gameSchema>;
@@ -63,12 +62,11 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       list: defaultList,
       releaseDate: '',
       estimatedPlaytime: 0,
-      imageUrl: '',
     },
   });
   
   useEffect(() => {
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0, imageUrl: '' });
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
     setSelectedGameImageUrl(null);
   }, [defaultList, form]);
 
@@ -110,14 +108,13 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
     if (game.background_image) {
       setSelectedGameImageUrl(game.background_image);
-      form.setValue('imageUrl', game.background_image);
     }
     setSearchTerm('');
     setSearchResults([]);
   };
 
   function onSubmit(data: GameFormValues) {
-    const finalImageUrl = data.imageUrl || selectedGameImageUrl || `https://picsum.photos/seed/${uuidv4()}/600/800`;
+    const finalImageUrl = selectedGameImageUrl || `https://picsum.photos/seed/${uuidv4()}/600/800`;
     
     const newGame = { 
       ...data,
@@ -129,7 +126,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       title: 'Game Added!',
       description: `${data.title} has been added to your library.`,
     });
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0, imageUrl: '' });
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
     setSelectedGameImageUrl(null);
   }
 
@@ -255,19 +252,6 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
             )}
           />
         </div>
-         <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image URL (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="https://example.com/image.jpg" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="list"
