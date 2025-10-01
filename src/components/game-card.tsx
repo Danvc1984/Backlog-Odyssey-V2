@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import type { Game } from '@/lib/types';
 import { platformIcons } from '@/components/icons';
-import { Calendar, ImageOff } from 'lucide-react';
+import { Calendar, ImageOff, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 type GameCardProps = {
@@ -30,16 +30,24 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-4 flex-grow">
-        <CardTitle className="text-base font-medium leading-tight line-clamp-2 mb-2">
+      <CardContent className="p-4 flex-grow space-y-2">
+        <CardTitle className="text-base font-medium leading-tight line-clamp-2">
           {game.title}
         </CardTitle>
-        {game.releaseDate && (
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3 mr-1.5" />
-            {format(new Date(game.releaseDate), 'MMM yyyy')}
-          </div>
-        )}
+        <div className="text-xs text-muted-foreground space-y-1">
+          {game.releaseDate && (
+            <div className="flex items-center">
+              <Calendar className="h-3 w-3 mr-1.5" />
+              {format(new Date(game.releaseDate), 'MMM yyyy')}
+            </div>
+          )}
+          {game.estimatedPlaytime && (
+            <div className="flex items-center">
+              <Clock className="h-3 w-3 mr-1.5" />
+              {game.estimatedPlaytime}h
+            </div>
+          )}
+        </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
         <Badge variant="secondary" className="flex items-center gap-1">
