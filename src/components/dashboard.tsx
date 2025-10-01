@@ -14,7 +14,9 @@ type DashboardProps = {
 const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   const genreData = useMemo(() => {
     const counts = games.reduce((acc, game) => {
-      acc[game.genre] = (acc[game.genre] || 0) + 1;
+      game.genres.forEach(genre => {
+        acc[genre] = (acc[genre] || 0) + 1;
+      });
       return acc;
     }, {} as Record<Genre, number>);
 

@@ -9,7 +9,7 @@ export interface Game {
   userId: string;
   title: string;
   platform: Platform;
-  genre: Genre;
+  genres: Genre[];
   list: GameList;
   imageUrl: string;
   releaseDate?: string;

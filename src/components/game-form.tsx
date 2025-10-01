@@ -29,11 +29,12 @@ import type { Game, GameList, Platform, Genre } from '@/lib/types';
 import { PLATFORMS, GENRES } from '@/lib/constants';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import Image from 'next/image';
+import { MultiSelect } from './ui/multi-select';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
   platform: z.enum(PLATFORMS),
-  genre: z.enum(GENRES),
+  genres: z.array(z.enum(GENRES)).min(1, 'Please select at least one genre.'),
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
   estimatedPlaytime: z.coerce.number().optional(),
@@ -60,12 +61,13 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       title: '',
       list: defaultList,
       releaseDate: '',
+      genres: [],
       estimatedPlaytime: 0,
     },
   });
   
   useEffect(() => {
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+    form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
     setSelectedGameImageUrl(null);
   }, [defaultList, form]);
 
@@ -101,8 +103,10 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     form.setValue('title', game.name);
     const platform = game.platforms?.map((p: any) => p.platform.name).find((p: any) => PLATFORMS.includes(p as any)) as Platform | undefined;
     if (platform) form.setValue('platform', platform);
-    const genre = game.genres?.map((g: any) => g.name).find((g: any) => GENRES.includes(g as any)) as Genre | undefined;
-    if (genre) form.setValue('genre', genre);
+    
+    const genres = game.genres?.map((g: any) => g.name).filter((g: any) => GENRES.includes(g as any)) as Genre[] | undefined;
+    if (genres) form.setValue('genres', genres);
+
     if (game.released) form.setValue('releaseDate', game.released);
     if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
     if (game.background_image) {
@@ -120,12 +124,12 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       imageUrl: selectedGameImageUrl || '',
     };
     
-    onAddGame(newGame);
+    onAddGame(newGame as Omit<Game, 'id' | 'userId'>);
     toast({
       title: 'Game Added!',
       description: `${data.title} has been added to your library.`,
     });
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+    form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
     setSelectedGameImageUrl(null);
   }
 
@@ -202,22 +206,18 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
               </FormItem>
             )}
           />
-          <FormField
+           <FormField
             control={form.control}
-            name="genre"
+            name="genres"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Genre</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a genre" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Genres</FormLabel>
+                <MultiSelect
+                  options={GENRES.map(g => ({ value: g, label: g }))}
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  placeholder="Select genres"
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -244,7 +244,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
               <FormItem>
                 <FormLabel>Est. Playtime (hrs)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="e.g. 40" {...field} />
+                  <Input type="number" placeholder="e.g. 40" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -9,59 +9,53 @@ export const initialGames: Game[] = [
     userId: 'anonymous',
     title: 'The Witcher 3: Wild Hunt',
     platform: 'PC',
-    genre: 'RPG',
+    genres: ['RPG', 'Action', 'Adventure'],
     list: 'Now Playing',
     imageUrl: getImage('witcher-3')?.imageUrl || '',
-    imageHint: getImage('witcher-3')?.imageHint || ''
   },
   {
     id: '2',
     userId: 'anonymous',
     title: 'Cyberpunk 2077',
     platform: 'PlayStation',
-    genre: 'RPG',
+    genres: ['RPG', 'Action'],
     list: 'Backlog',
     imageUrl: getImage('cyberpunk-2077')?.imageUrl || '',
-    imageHint: getImage('cyberpunk-2077')?.imageHint || ''
   },
   {
     id: '3',
     userId: 'anonymous',
     title: 'Stardew Valley',
     platform: 'PC',
-    genre: 'Indie',
+    genres: ['Indie', 'RPG'],
     list: 'Recently Played',
     imageUrl: getImage('stardew-valley')?.imageUrl || '',
-    imageHint: getImage('stardew-valley')?.imageHint || ''
   },
   {
     id: '4',
     userId: 'anonymous',
     title: 'Hades',
     platform: 'Nintendo Switch',
-    genre: 'Action',
+    genres: ['Action', 'Indie'],
     list: 'Now Playing',
     imageUrl: getImage('hades')?.imageUrl || '',
-    imageHint: getImage('hades')?.imageHint || ''
   },
   {
     id: '5',
     userId: 'anonymous',
     title: 'The Legend of Zelda: Breath of the Wild',
     platform: 'Nintendo Switch',
-    genre: 'Adventure',
+    genres: ['Adventure', 'Action'],
     list: 'Recently Played',
     imageUrl: getImage('zelda-botw')?.imageUrl || '',
-    imageHint: getImage('zelda-botw')?.imageHint || ''
   },
   {
     id: '6',
     userId: 'anonymous',
     title: 'Elden Ring',
     platform: 'Xbox',
-    genre: 'RPG',
+    genres: ['RPG', 'Action'],
     list: 'Wishlist',
     imageUrl: getImage('elden-ring')?.imageUrl || '',
-    imageHint: getImage('elden-ring')?.imageHint || ''
   },
 ];

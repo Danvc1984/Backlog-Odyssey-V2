@@ -12,7 +12,6 @@ type GameCardProps = {
 
 const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const PlatformIcon = platformIcons[game.platform];
-  const GenreIcon = genreIcons[game.genre];
 
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 border-transparent">
@@ -46,10 +45,15 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
           {game.platform}
         </Badge>
-        <Badge variant="secondary" className="flex items-center gap-1">
-          {GenreIcon && <GenreIcon className="h-3 w-3" />}
-          {game.genre}
-        </Badge>
+        {game.genres.map(genre => {
+          const GenreIcon = genreIcons[genre];
+          return (
+            <Badge variant="secondary" key={genre} className="flex items-center gap-1">
+              {GenreIcon && <GenreIcon className="h-3 w-3" />}
+              {genre}
+            </Badge>
+          );
+        })}
       </CardFooter>
     </Card>
   );

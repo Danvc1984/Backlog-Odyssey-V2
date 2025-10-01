@@ -74,7 +74,7 @@ export default function LibraryPage() {
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
-      const matchesGenre = genreFilter === 'all' || game.genre === genreFilter;
+      const matchesGenre = genreFilter === 'all' || game.genres.includes(genreFilter);
       return matchesSearch && matchesPlatform && matchesGenre;
     });
   }, [games, searchTerm, platformFilter, genreFilter]);

@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const GameSchema = z.object({
   title: z.string().describe('The title of the game.'),
   platform: z.string().describe('The platform the game is played on.'),
-  genre: z.string().describe('The genre of the game.'),
+  genres: z.array(z.string()).describe('The genres of the game.'),
   list: z.enum(['Wishlist', 'Backlog', 'Now Playing', 'Recently Played']).describe('The list the game is in.'),
 });
 
@@ -57,7 +57,7 @@ const prompt = ai.definePrompt({
 
 Game Library:
 {{#each gameLibrary}}
-- {{title}} ({{platform}}, {{genre}}, {{list}})
+- {{title}} ({{platform}}, {{#each genres}}{{.}}{{#unless @last}}, {{/unless}}{{/each}}, {{list}})
 {{/each}}
 
 Gaming Habits: {{gamingHabits}}
