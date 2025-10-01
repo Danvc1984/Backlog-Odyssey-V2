@@ -43,7 +43,7 @@ const AppSidebar = () => {
                   icon={<item.icon />}
                   tooltip={item.label}
                 >
-                  {item.label}
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
