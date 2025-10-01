@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         hostname: 'media.rawg.io',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cache-na.finalfantasy.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
