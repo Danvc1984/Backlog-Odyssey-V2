@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, PlusCircle, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,6 +27,7 @@ interface MultiSelectProps {
   options: MultiSelectOption[]
   value: string[]
   onValueChange: (value: string[]) => void
+  onCreate?: (value: string) => void
   placeholder?: string
   className?: string
 }
@@ -35,10 +36,12 @@ export function MultiSelect({
   options,
   value,
   onValueChange,
+  onCreate,
   placeholder = "Select...",
   className,
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false)
+  const [inputValue, setInputValue] = React.useState('');
 
   const handleSelect = (currentValue: string) => {
     onValueChange(
@@ -46,11 +49,24 @@ export function MultiSelect({
         ? value.filter(item => item !== currentValue)
         : [...value, currentValue]
     )
+    setInputValue('');
   }
   
   const handleRemove = (currentValue: string) => {
     onValueChange(value.filter(item => item !== currentValue));
   }
+
+  const handleCreate = () => {
+    if (onCreate && inputValue && !options.some(opt => opt.label.toLowerCase() === inputValue.toLowerCase())) {
+      onCreate(inputValue);
+      onValueChange([...value, inputValue]);
+    }
+    setInputValue('');
+  }
+  
+  const filteredOptions = options.filter(option => 
+    option.label.toLowerCase().includes(inputValue.toLowerCase())
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,7 +89,7 @@ export function MultiSelect({
                     handleRemove(val);
                   }}
                 >
-                  {options.find(option => option.value === val)?.label}
+                  {options.find(option => option.value === val)?.label || val}
                   <X className="ml-1 h-3 w-3" />
                 </Badge>
               ))
@@ -86,11 +102,32 @@ export function MultiSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-        <Command>
-          <CommandInput placeholder="Search..." />
-          <CommandEmpty>No results found.</CommandEmpty>
+        <Command cmdk-dialog-content-wrapper="">
+          <CommandInput 
+            placeholder="Search..."
+            value={inputValue}
+            onValueChange={setInputValue}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && inputValue) {
+                handleCreate();
+              }
+            }}
+          />
+          <CommandEmpty>
+            {onCreate && inputValue ? (
+               <CommandItem
+                onSelect={handleCreate}
+                className="flex items-center gap-2 cursor-pointer"
+               >
+                <PlusCircle className="h-4 w-4" />
+                Create &quot;{inputValue}&quot;
+               </CommandItem>
+            ) : (
+              "No results found."
+            )}
+          </CommandEmpty>
           <CommandGroup>
-            {options.map(option => (
+            {filteredOptions.map(option => (
               <CommandItem
                 key={option.value}
                 onSelect={() => handleSelect(option.value)}
