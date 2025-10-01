@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cache-na.finalfantasy.com',
+        hostname: '**.finalfantasy.com',
         port: '',
         pathname: '/**',
       }
