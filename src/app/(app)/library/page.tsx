@@ -41,6 +41,7 @@ export default function LibraryPage() {
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [activeList, setActiveList] = useState<GameList>('Now Playing');
 
   useEffect(() => {
     if (user) {
@@ -97,7 +98,7 @@ export default function LibraryPage() {
               <DialogHeader>
                 <DialogTitle>Add a New Game</DialogTitle>
               </DialogHeader>
-              <GameForm onAddGame={handleAddGame} />
+              <GameForm onAddGame={handleAddGame} defaultList={activeList} />
             </DialogContent>
           </Dialog>
         </div>
@@ -138,7 +139,7 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="Now Playing" className="w-full">
+      <Tabs value={activeList} onValueChange={(value) => setActiveList(value as GameList)} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
           {gameLists.map(list => (
             <TabsTrigger key={list} value={list}>{list}</TabsTrigger>

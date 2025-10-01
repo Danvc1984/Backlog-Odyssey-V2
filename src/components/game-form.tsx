@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -35,26 +36,29 @@ const gameSchema = z.object({
 type GameFormValues = z.infer<typeof gameSchema>;
 
 type GameFormProps = {
-  onAddGame: (game: Omit<Game, 'id' | 'imageUrl' | 'imageHint' | 'userId'>) => void;
+  onAddGame: (game: Omit<Game, 'id' | 'userId'>) => void;
+  defaultList?: GameList;
 };
 
-const GameForm: React.FC<GameFormProps> = ({ onAddGame }) => {
+const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist' }) => {
   const { toast } = useToast();
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
     defaultValues: {
       title: '',
-      list: 'Wishlist',
+      list: defaultList,
     },
   });
 
   function onSubmit(data: GameFormValues) {
-    onAddGame({ ...data, imageUrl: 'https://picsum.photos/seed/newgame/600/800', imageHint: 'new game' });
+    const seed = uuidv4();
+    const newGame = { ...data, imageUrl: `https://picsum.photos/seed/${seed}/600/800`, imageHint: `${data.genre.toLowerCase()} game` };
+    onAddGame(newGame);
     toast({
       title: 'Game Added!',
       description: `${data.title} has been added to your library.`,
     });
-    form.reset();
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList });
   }
 
   return (
@@ -104,7 +108,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame }) => {
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a genre" />
-                    </SelectTrigger>
+                    </Trigger>
                   </FormControl>
                   <SelectContent>
                     {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
