@@ -11,6 +11,7 @@ import {
   Trophy,
   Users,
   Lightbulb,
+  ImageOff,
   type LucideProps
 } from 'lucide-react';
 import type { Platform, Genre } from '@/lib/types';

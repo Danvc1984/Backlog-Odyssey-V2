@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import type { Game } from '@/lib/types';
 import { platformIcons, genreIcons } from '@/components/icons';
-import { Calendar } from 'lucide-react';
+import { Calendar, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 type GameCardProps = {
@@ -16,14 +16,19 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 
   return (
     <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 border-transparent">
-      <CardHeader className="p-0 relative">
-        <Image
-          src={game.imageUrl}
-          alt={game.title}
-          width={600}
-          height={800}
-          className="object-cover aspect-[3/4]"
-        />
+      <CardHeader className="p-0 relative aspect-[3/4]">
+        {game.imageUrl ? (
+          <Image
+            src={game.imageUrl}
+            alt={game.title}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-card flex items-center justify-center">
+            <ImageOff className="w-16 h-16 text-muted-foreground" />
+          </div>
+        )}
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <CardTitle className="text-base font-medium leading-tight line-clamp-2 mb-2">

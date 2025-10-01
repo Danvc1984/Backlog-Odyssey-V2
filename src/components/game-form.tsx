@@ -3,10 +3,9 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Search } from 'lucide-react';
+import { Search, Image as ImageIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -108,17 +107,17 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
     if (game.background_image) {
       setSelectedGameImageUrl(game.background_image);
+    } else {
+      setSelectedGameImageUrl(null);
     }
     setSearchTerm('');
     setSearchResults([]);
   };
 
   function onSubmit(data: GameFormValues) {
-    const finalImageUrl = selectedGameImageUrl || `https://picsum.photos/seed/${uuidv4()}/600/800`;
-    
     const newGame = { 
       ...data,
-      imageUrl: finalImageUrl,
+      imageUrl: selectedGameImageUrl || '',
     };
     
     onAddGame(newGame);
@@ -169,13 +168,13 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
                   className="flex items-center justify-start gap-2 h-auto p-2"
                   onClick={() => handleSelectGame(game)}
                 >
-                  {game.background_image && <Image
+                  {game.background_image ? <Image
                     src={game.background_image}
                     alt={game.name}
                     width={40}
                     height={53}
                     className="object-cover rounded-sm aspect-[3/4]"
-                  />}
+                  /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
                   <span className="text-sm font-medium text-left">{game.name}</span>
                 </Button>
               ))}
