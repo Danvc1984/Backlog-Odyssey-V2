@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,7 +46,7 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
           {game.platform}
         </Badge>
-        {game.genres.map(genre => {
+        {(game.genres || []).map(genre => {
           const GenreIcon = genreIcons[genre];
           return (
             <Badge variant="secondary" key={genre} className="flex items-center gap-1">
