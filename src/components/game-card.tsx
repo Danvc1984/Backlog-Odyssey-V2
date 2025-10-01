@@ -3,27 +3,60 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Game } from '@/lib/types';
+import type { Game, GameList } from '@/lib/types';
 import { platformIcons } from '@/components/icons';
-import { Calendar, ImageOff, Clock } from 'lucide-react';
+import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { Button } from './ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 
 type GameCardProps = {
   game: Game;
+  onEdit: (game: Game) => void;
+  onMove: (game: Game, newList: GameList) => void;
+  onDelete: (game: Game) => void;
 };
 
-const GameCard: React.FC<GameCardProps> = ({ game }) => {
+const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently Played"];
+
+const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) => {
   const PlatformIcon = platformIcons[game.platform];
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 border-transparent">
+    <Card className="h-full group/card flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent">
       <CardHeader className="p-0 relative aspect-[3/4]">
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
+           <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" className="h-8 w-8 bg-primary/80 hover:bg-primary text-primary-foreground">
+                <FolderKanban className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {gameLists.filter(l => l !== game.list).map(list => (
+                <DropdownMenuItem key={list} onClick={() => onMove(game, list)}>
+                  Move to {list}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500" onClick={() => onDelete(game)}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button size="icon" variant="destructive" className="h-8 w-8 bg-red-600/80 hover:bg-red-600" onClick={() => onEdit(game)}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </div>
         {game.imageUrl ? (
           <Image
             src={game.imageUrl}
             alt={game.title}
             fill
-            className="object-cover"
+            className="object-cover group-hover/card:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full bg-card flex items-center justify-center">
@@ -72,3 +105,5 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
 };
 
 export default GameCard;
+
+    

@@ -6,13 +6,14 @@ import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PlusCircle, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { collection, addDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
 import { PLATFORMS } from '@/lib/constants';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameCard from '@/components/game-card';
 import GameForm from '@/components/game-form';
@@ -38,6 +49,7 @@ const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently P
 
 export default function LibraryPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -46,11 +58,15 @@ export default function LibraryPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>(() => searchParams.get('platform') as Platform | 'all' || 'all');
-  const [genreFilter, setGenreFilter] = useState<Genre | 'all'>(() => searchParams.get('genre') as Genre | 'all' || 'all');
+  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
+  const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [activeList, setActiveList] = useState<GameList>(() => (searchParams.get('list') as GameList) || 'Now Playing');
+  const [isAddFormOpen, setAddFormOpen] = useState(false);
+  const [isEditFormOpen, setEditFormOpen] = useState(false);
+  const [editingGame, setEditingGame] = useState<Game | null>(null);
+  const [deletingGame, setDeletingGame] = useState<Game | null>(null);
+
+  const [activeList, setActiveList] = useState<GameList>('Now Playing');
   const [allGenres, setAllGenres] = useState<Genre[]>([]);
 
   useEffect(() => {
@@ -76,6 +92,18 @@ export default function LibraryPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const list = searchParams.get('list') as GameList | null;
+    const platform = searchParams.get('platform') as Platform | 'all' | null;
+    const genre = searchParams.get('genre') as Genre | 'all' | null;
+    
+    if (list && gameLists.includes(list)) {
+      setActiveList(list);
+    }
+    setPlatformFilter(platform || 'all');
+    setGenreFilter(genre || 'all');
+  }, [searchParams]);
+
   const updateQueryParam = (key: string, value: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     if (value === 'all' || !value) {
@@ -85,7 +113,7 @@ export default function LibraryPage() {
     }
     const search = current.toString();
     const query = search ? `?${search}` : "";
-    router.push(`${pathname}${query}`);
+    router.push(`${pathname}${query}`, { scroll: false });
   };
   
   const handlePlatformFilterChange = (value: Platform | 'all') => {
@@ -106,9 +134,53 @@ export default function LibraryPage() {
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user) {
       const gameWithUser = { ...newGame, userId: user.uid };
-      const userGamesCollection = collection(db, 'users', user.uid, 'games');
-      await addDoc(userGamesCollection, gameWithUser);
-      setIsFormOpen(false);
+      await addDoc(collection(db, 'users', user.uid, 'games'), gameWithUser);
+      setAddFormOpen(false);
+    }
+  };
+
+  const handleEditGame = (game: Game) => {
+    setEditingGame(game);
+    setEditFormOpen(true);
+  };
+
+  const handleUpdateGame = async (updatedGame: Omit<Game, 'id' | 'userId'>) => {
+    if (user && editingGame) {
+      const gameRef = doc(db, 'users', user.uid, 'games', editingGame.id);
+      await updateDoc(gameRef, updatedGame);
+      setEditFormOpen(false);
+      setEditingGame(null);
+      toast({
+        title: 'Game Updated!',
+        description: `${updatedGame.title} has been updated.`,
+      });
+    }
+  };
+
+  const handleMoveGame = async (game: Game, newList: GameList) => {
+    if (user) {
+      const gameRef = doc(db, 'users', user.uid, 'games', game.id);
+      await updateDoc(gameRef, { list: newList });
+      toast({
+        title: 'Game Moved!',
+        description: `${game.title} moved to ${newList}.`,
+      });
+    }
+  };
+
+  const confirmDeleteGame = (game: Game) => {
+    setDeletingGame(game);
+  };
+
+  const handleDeleteGame = async () => {
+    if (user && deletingGame) {
+      await deleteDoc(doc(db, 'users', user.uid, 'games', deletingGame.id));
+      toast({
+        title: 'Game Deleted',
+        description: `${deletingGame.title} has been removed from your library.`,
+        variant: 'destructive'
+      });
+      setDeletingGame(null);
     }
   };
 
@@ -119,28 +191,13 @@ export default function LibraryPage() {
   };
 
   const filteredGames = useMemo(() => {
-    const platform = searchParams.get('platform');
-    const genre = searchParams.get('genre');
-
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPlatform = !platform || game.platform === platform;
-      const matchesGenre = !genre || (game.genres && game.genres.includes(genre as Genre));
+      const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
+      const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter as Genre));
       return matchesSearch && matchesPlatform && matchesGenre;
     });
-  }, [games, searchTerm, searchParams]);
-
-  useEffect(() => {
-    const list = searchParams.get('list');
-    const platform = searchParams.get('platform');
-    const genre = searchParams.get('genre');
-
-    if (list && gameLists.includes(list as GameList)) {
-        setActiveList(list as GameList);
-    }
-    setPlatformFilter((platform as Platform | 'all') || 'all');
-    setGenreFilter((genre as Genre | 'all') || 'all');
-  }, [searchParams]);
+  }, [games, searchTerm, platformFilter, genreFilter]);
 
   const gamesByList = (list: GameList) => {
     return filteredGames.filter(game => game.list === list);
@@ -151,7 +208,7 @@ export default function LibraryPage() {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
         <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Game
@@ -161,7 +218,21 @@ export default function LibraryPage() {
               <DialogHeader>
                 <DialogTitle>Add a New Game</DialogTitle>
               </DialogHeader>
-              <GameForm onAddGame={handleAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
+              <GameForm onSave={handleAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Edit Game</DialogTitle>
+              </DialogHeader>
+              <GameForm 
+                onSave={handleUpdateGame} 
+                allGenres={allGenres} 
+                onAddGenre={handleAddGenre}
+                gameToEdit={editingGame} 
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -233,7 +304,12 @@ export default function LibraryPage() {
                         exit={{ opacity: 0, scale: 0.8 }}
                         transition={{ duration: 0.3, delay: index * 0.05 }}
                       >
-                        <GameCard game={game} />
+                        <GameCard 
+                          game={game} 
+                          onEdit={handleEditGame} 
+                          onMove={handleMoveGame} 
+                          onDelete={confirmDeleteGame} 
+                        />
                       </motion.div>
                     ))
                   ) : (
@@ -251,6 +327,22 @@ export default function LibraryPage() {
           </TabsContent>
         ))}
       </Tabs>
+      <AlertDialog open={!!deletingGame} onOpenChange={() => setDeletingGame(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete "{deletingGame?.title}" from your library.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteGame}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
+    

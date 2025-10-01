@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -43,15 +44,16 @@ const gameSchema = z.object({
 type GameFormValues = z.infer<typeof gameSchema>;
 
 type GameFormProps = {
-  onAddGame: (game: Omit<Game, 'id' | 'userId'>) => void;
+  onSave: (game: Omit<Game, 'id' | 'userId'>) => void;
   defaultList?: GameList;
   allGenres: Genre[];
   onAddGenre: (genre: Genre) => void;
+  gameToEdit?: Game | null;
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
-const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist', allGenres, onAddGenre }) => {
+const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', allGenres, onAddGenre, gameToEdit }) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -67,11 +69,23 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       estimatedPlaytime: 0,
     },
   });
-  
+
   useEffect(() => {
-    form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
-    setSelectedGameImageUrl(null);
-  }, [defaultList, form]);
+    if (gameToEdit) {
+      form.reset({
+        title: gameToEdit.title,
+        platform: gameToEdit.platform,
+        genres: gameToEdit.genres,
+        list: gameToEdit.list,
+        releaseDate: gameToEdit.releaseDate,
+        estimatedPlaytime: gameToEdit.estimatedPlaytime,
+      });
+      setSelectedGameImageUrl(gameToEdit.imageUrl);
+    } else {
+      form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+      setSelectedGameImageUrl(null);
+    }
+  }, [gameToEdit, defaultList, form]);
 
   const searchGames = useCallback(async (query: string) => {
     if (query.length < 3) {
@@ -129,13 +143,15 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       imageUrl: selectedGameImageUrl || '',
     };
     
-    onAddGame(newGame as Omit<Game, 'id' | 'userId'>);
-    toast({
-      title: 'Game Added!',
-      description: `${data.title} has been added to your library.`,
-    });
-    form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
-    setSelectedGameImageUrl(null);
+    onSave(newGame as Omit<Game, 'id' | 'userId'>);
+    if(!gameToEdit) {
+      toast({
+        title: 'Game Added!',
+        description: `${data.title} has been added to your library.`,
+      });
+      form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+      setSelectedGameImageUrl(null);
+    }
   }
 
   return (
@@ -236,7 +252,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
               <FormItem>
                 <FormLabel>Release Date</FormLabel>
                 <FormControl>
-                  <Input type="date" placeholder="YYYY-MM-DD" {...field} />
+                  <Input type="date" placeholder="YYYY-MM-DD" {...field} value={field.value || ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -262,7 +278,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
           render={({ field }) => (
             <FormItem>
               <FormLabel>List</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Add to a list" />
@@ -278,10 +294,12 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full bg-accent hover:bg-accent/90">Add Game</Button>
+        <Button type="submit" className="w-full bg-accent hover:bg-accent/90">{gameToEdit ? 'Save Changes' : 'Add Game'}</Button>
       </form>
     </Form>
   );
 };
 
 export default GameForm;
+
+    
