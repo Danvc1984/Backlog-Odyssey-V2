@@ -1,5 +1,6 @@
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game } from '@/lib/types';
@@ -41,24 +42,28 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
               {format(new Date(game.releaseDate), 'MMM yyyy')}
             </div>
           )}
-          {game.estimatedPlaytime && (
+          {game.estimatedPlaytime ? (
             <div className="flex items-center">
               <Clock className="h-3 w-3 mr-1.5" />
               {game.estimatedPlaytime}h
             </div>
-          )}
+          ) : null}
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
-        <Badge variant="secondary" className="flex items-center gap-1">
-          {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
-          {game.platform}
-        </Badge>
+        <Link href={`/library?platform=${game.platform}`}>
+          <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
+            {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
+            {game.platform}
+          </Badge>
+        </Link>
         {(game.genres || []).map(genre => {
           return (
-            <Badge variant="secondary" key={genre}>
-              {genre}
-            </Badge>
+             <Link href={`/library?genre=${genre}`} key={genre}>
+                <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">
+                    {genre}
+                </Badge>
+             </Link>
           );
         })}
       </CardFooter>

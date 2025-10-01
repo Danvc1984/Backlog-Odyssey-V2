@@ -2,9 +2,11 @@
 
 import * as React from 'react';
 import { useMemo, useState, useEffect } from 'react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PlusCircle, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot } from 'firebase/firestore';
+import Link from 'next/link';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
 import { PLATFORMS } from '@/lib/constants';
@@ -35,11 +37,17 @@ const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently P
 
 export default function LibraryPage() {
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [games, setGames] = useState<Game[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
-  const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
+  
+  const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>(() => searchParams.get('platform') as Platform | 'all' || 'all');
+  const [genreFilter, setGenreFilter] = useState<Genre | 'all'>(() => searchParams.get('genre') as Genre | 'all' || 'all');
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
   const [allGenres, setAllGenres] = useState<Genre[]>([]);
@@ -55,7 +63,7 @@ export default function LibraryPage() {
         setGames(userGames);
         
         const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []));
-        setAllGenres(Array.from(uniqueGenres));
+        setAllGenres(Array.from(uniqueGenres).sort());
         
         setDataLoading(false);
       });
@@ -66,6 +74,28 @@ export default function LibraryPage() {
       setDataLoading(false);
     }
   }, [user]);
+
+  const updateQueryParam = (key: string, value: string) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    if (value === 'all') {
+      current.delete(key);
+    } else {
+      current.set(key, value);
+    }
+    const search = current.toString();
+    const query = search ? `?${search}` : "";
+    router.push(`${pathname}${query}`);
+  };
+  
+  const handlePlatformFilterChange = (value: Platform | 'all') => {
+    setPlatformFilter(value);
+    updateQueryParam('platform', value);
+  };
+  
+  const handleGenreFilterChange = (value: Genre | 'all') => {
+    setGenreFilter(value);
+    updateQueryParam('genre', value);
+  };
 
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user) {
@@ -78,18 +108,26 @@ export default function LibraryPage() {
 
   const handleAddGenre = (newGenre: Genre) => {
     if (!allGenres.includes(newGenre)) {
-      setAllGenres(prev => [...prev, newGenre]);
+      setAllGenres(prev => [...prev, newGenre].sort());
     }
   };
 
   const filteredGames = useMemo(() => {
+    const platform = searchParams.get('platform');
+    const genre = searchParams.get('genre');
+
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
-      const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
+      const matchesPlatform = !platform || game.platform === platform;
+      const matchesGenre = !genre || (game.genres && game.genres.includes(genre as Genre));
       return matchesSearch && matchesPlatform && matchesGenre;
     });
-  }, [games, searchTerm, platformFilter, genreFilter]);
+  }, [games, searchTerm, searchParams]);
+
+  useEffect(() => {
+    setPlatformFilter(searchParams.get('platform') as Platform | 'all' || 'all');
+    setGenreFilter(searchParams.get('genre') as Genre | 'all' || 'all');
+  }, [searchParams]);
 
   const gamesByList = (list: GameList) => {
     return filteredGames.filter(game => game.list === list);
@@ -126,7 +164,7 @@ export default function LibraryPage() {
           />
         </div>
         <div className="flex gap-4">
-          <Select value={platformFilter} onValueChange={(value: Platform | 'all') => setPlatformFilter(value)}>
+          <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Filter by Platform" />
             </SelectTrigger>
@@ -137,7 +175,7 @@ export default function LibraryPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={genreFilter} onValueChange={(value: Genre | 'all') => setGenreFilter(value)}>
+          <Select value={genreFilter} onValueChange={handleGenreFilterChange}>
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Filter by Genre" />
             </SelectTrigger>
