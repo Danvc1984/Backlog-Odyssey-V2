@@ -23,7 +23,6 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           width={600}
           height={800}
           className="object-cover aspect-[3/4]"
-          data-ai-hint={game.imageHint}
         />
       </CardHeader>
       <CardContent className="p-4 flex-grow">

@@ -12,7 +12,6 @@ export interface Game {
   genre: Genre;
   list: GameList;
   imageUrl: string;
-  imageHint: string;
   releaseDate?: string;
   estimatedPlaytime?: number;
 }
