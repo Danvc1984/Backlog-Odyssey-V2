@@ -100,7 +100,7 @@ const AppSidebar = () => {
           </SidebarMenu>
         </SidebarContent>
         <SidebarRail />
-        <SidebarFooter className='p-2 pb-10'>
+        <SidebarFooter className='p-2 pb-16'>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out">
