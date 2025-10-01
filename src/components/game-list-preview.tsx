@@ -35,7 +35,7 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games }) => {
         <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
           <p>No games in this list.</p>
            <Button variant="link" asChild className="mt-2">
-              <Link href="/library">Add some games to get started!</Link>
+              <Link href={`/library?list=${encodeURIComponent(title)}`}>Add some games to get started!</Link>
             </Button>
         </div>
       )}
