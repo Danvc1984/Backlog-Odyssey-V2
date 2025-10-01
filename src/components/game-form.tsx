@@ -106,8 +106,11 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     const platform = game.platforms?.map((p: any) => p.platform.name).find((p: any) => PLATFORMS.includes(p as any)) as Platform | undefined;
     if (platform) form.setValue('platform', platform);
     
-    const genres = game.genres?.map((g: any) => g.name).filter((g: any) => allGenres.includes(g as any)) as Genre[] | undefined;
-    if (genres) form.setValue('genres', genres);
+    const gameGenres = game.genres?.map((g: any) => g.name) as Genre[] || [];
+    if (gameGenres.length > 0) {
+      gameGenres.forEach(genre => onAddGenre(genre));
+      form.setValue('genres', gameGenres);
+    }
 
     if (game.released) form.setValue('releaseDate', game.released);
     if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
