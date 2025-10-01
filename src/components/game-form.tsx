@@ -86,7 +86,14 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       });
       setSelectedGameImageUrl(gameToEdit.imageUrl);
     } else {
-      form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+      form.reset({
+        title: '',
+        platform: undefined,
+        genres: [],
+        list: defaultList,
+        releaseDate: '',
+        estimatedPlaytime: 0,
+      });
       setSelectedGameImageUrl(null);
     }
   }, [gameToEdit, defaultList, form]);
