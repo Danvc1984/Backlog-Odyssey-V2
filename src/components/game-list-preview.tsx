@@ -3,12 +3,12 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import type { Game } from '@/lib/types';
+import type { Game, GameList } from '@/lib/types';
 import GameCard from '@/components/game-card';
 import { Button } from '@/components/ui/button';
 
 type GameListPreviewProps = {
-  title: string;
+  title: GameList | 'Now Playing' | 'Backlog' | 'Wishlist' | 'Recently Played';
   games: Game[];
 };
 
@@ -20,8 +20,8 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games }) => {
           {title}
         </h2>
         <Button variant="link" asChild>
-          <Link href="/library">
-            View full library <ArrowRight className="ml-2" />
+          <Link href={`/library?list=${encodeURIComponent(title)}`}>
+            View full list <ArrowRight className="ml-2" />
           </Link>
         </Button>
       </div>

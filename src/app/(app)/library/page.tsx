@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -49,7 +50,7 @@ export default function LibraryPage() {
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>(() => searchParams.get('genre') as Genre | 'all' || 'all');
   
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [activeList, setActiveList] = useState<GameList>('Now Playing');
+  const [activeList, setActiveList] = useState<GameList>(() => (searchParams.get('list') as GameList) || 'Now Playing');
   const [allGenres, setAllGenres] = useState<Genre[]>([]);
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function LibraryPage() {
 
   const updateQueryParam = (key: string, value: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
-    if (value === 'all') {
+    if (value === 'all' || !value) {
       current.delete(key);
     } else {
       current.set(key, value);
@@ -95,6 +96,11 @@ export default function LibraryPage() {
   const handleGenreFilterChange = (value: Genre | 'all') => {
     setGenreFilter(value);
     updateQueryParam('genre', value);
+  };
+
+  const handleActiveListChange = (value: GameList) => {
+    setActiveList(value);
+    updateQueryParam('list', value);
   };
 
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
@@ -125,8 +131,15 @@ export default function LibraryPage() {
   }, [games, searchTerm, searchParams]);
 
   useEffect(() => {
-    setPlatformFilter(searchParams.get('platform') as Platform | 'all' || 'all');
-    setGenreFilter(searchParams.get('genre') as Genre | 'all' || 'all');
+    const list = searchParams.get('list');
+    const platform = searchParams.get('platform');
+    const genre = searchParams.get('genre');
+
+    if (list && gameLists.includes(list as GameList)) {
+        setActiveList(list as GameList);
+    }
+    setPlatformFilter((platform as Platform | 'all') || 'all');
+    setGenreFilter((genre as Genre | 'all') || 'all');
   }, [searchParams]);
 
   const gamesByList = (list: GameList) => {
@@ -189,7 +202,7 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      <Tabs value={activeList} onValueChange={(value) => setActiveList(value as GameList)} className="w-full">
+      <Tabs value={activeList} onValueChange={(value) => handleActiveListChange(value as GameList)} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
           {gameLists.map(list => (
             <TabsTrigger key={list} value={list}>{list}</TabsTrigger>

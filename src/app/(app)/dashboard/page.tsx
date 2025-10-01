@@ -43,6 +43,10 @@ export default function DashboardPage() {
     () => games.filter(g => g.list === 'Wishlist').slice(0, 5),
     [games]
   );
+  const recentlyPlayed = useMemo(
+    () => games.filter(g => g.list === 'Recently Played').slice(0, 5),
+    [games]
+  );
 
   if (dataLoading) {
     return <div className="text-center py-10">Loading dashboard...</div>;
@@ -54,6 +58,7 @@ export default function DashboardPage() {
       <GameListPreview title="Now Playing" games={nowPlaying} />
       <GameListPreview title="Backlog" games={backlog} />
       <GameListPreview title="Wishlist" games={wishlist} />
+      <GameListPreview title="Recently Played" games={recentlyPlayed} />
     </div>
   );
 }
