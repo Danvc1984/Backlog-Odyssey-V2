@@ -8,8 +8,8 @@ import GameCard from '@/components/game-card';
 import { Button } from '@/components/ui/button';
 
 type DashboardPageProps = {
-  games: Game[];
-  dataLoading: boolean;
+  games?: Game[];
+  dataLoading?: boolean;
 };
 
 export default function DashboardPage({

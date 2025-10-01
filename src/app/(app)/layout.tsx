@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, getDocs, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
 import AppHeader from '@/components/header';
@@ -10,10 +10,10 @@ import AppSidebar from '@/components/sidebar';
 import {
   SidebarProvider,
   Sidebar,
-  SidebarInset,
   SidebarBody,
   SidebarContent,
   SidebarRail,
+  SidebarInset,
 } from '@/components/ui/sidebar';
 
 export default function AppLayout({
@@ -45,24 +45,19 @@ export default function AppLayout({
       });
       return () => unsubscribe();
     } else if (!authLoading) {
+      // If no user and not loading, reset games and loading state
       setGames([]);
       setDataLoading(false);
     }
   }, [user, authLoading]);
 
-  if (authLoading && !user) {
+  if (authLoading || (!user && !authLoading && typeof window !== 'undefined' && window.location.pathname !== '/login')) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
       </div>
     );
   }
-
-  const childWithProps = React.cloneElement(children as React.ReactElement, {
-    games,
-    dataLoading,
-    setGames,
-  });
 
   return (
     <SidebarProvider>
@@ -73,7 +68,11 @@ export default function AppLayout({
         <div className="flex flex-col min-h-screen p-4 sm:p-6 lg:p-8">
           <AppHeader allGames={games} />
           <main className="flex-grow mt-8">
-            {childWithProps}
+            {React.cloneElement(children as React.ReactElement, {
+              games,
+              dataLoading,
+              setGames,
+            })}
           </main>
         </div>
       </SidebarInset>

@@ -34,9 +34,9 @@ import GameForm from '@/components/game-form';
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
 type LibraryPageProps = {
-  games: Game[];
-  dataLoading: boolean;
-  setGames: React.Dispatch<React.SetStateAction<Game[]>>;
+  games?: Game[];
+  dataLoading?: boolean;
+  setGames?: React.Dispatch<React.SetStateAction<Game[]>>;
 };
 
 export default function LibraryPage({ games = [], dataLoading, setGames }: LibraryPageProps) {
@@ -47,7 +47,7 @@ export default function LibraryPage({ games = [], dataLoading, setGames }: Libra
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user) {
+    if (user && setGames) {
       const gameWithUser = { ...newGame, userId: user.uid };
       const userGamesCollection = collection(db, 'users', user.uid, 'games');
       const docRef = await addDoc(userGamesCollection, gameWithUser);
