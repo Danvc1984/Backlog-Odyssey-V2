@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { LayoutDashboard, Library, User, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Library, User, ChevronDown, LogOut } from 'lucide-react';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -12,33 +12,30 @@ import {
   SidebarContent,
   SidebarRail,
   SidebarTrigger,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import type { GameList } from '@/lib/types';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
 const AppSidebar = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { signOut } = useAuth();
+  const router = useRouter();
   const activeList = searchParams.get('list');
 
   const isLibraryRoute = pathname === '/library';
 
-  const menuItems = [
-    {
-      href: '/dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      href: '/profile',
-      label: 'My Profile',
-      icon: User,
-    }
-  ];
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
 
   return (
     <>
@@ -46,22 +43,18 @@ const AppSidebar = () => {
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarBody>
-        <SidebarContent>
+        <SidebarContent className="p-2">
           <SidebarMenu>
-            {menuItems.map(item => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-             <Collapsible asChild defaultOpen={isLibraryRoute}>
+            <SidebarMenuItem>
+              <Link href="/dashboard">
+                <SidebarMenuButton isActive={pathname === '/dashboard'} tooltip="Dashboard">
+                  <LayoutDashboard />
+                  <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+
+            <Collapsible asChild defaultOpen={isLibraryRoute}>
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
@@ -94,10 +87,29 @@ const AppSidebar = () => {
                   </ul>
                 </CollapsibleContent>
               </SidebarMenuItem>
-             </Collapsible>
+            </Collapsible>
+            
+            <SidebarMenuItem>
+              <Link href="/profile">
+                <SidebarMenuButton isActive={pathname === '/profile'} tooltip="My Profile">
+                  <User />
+                  <span className="group-data-[collapsible=icon]:hidden">My Profile</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarRail />
+        <SidebarFooter className='p-2'>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={handleSignOut} tooltip="Sign Out">
+                <LogOut />
+                <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </SidebarBody>
     </>
   );
