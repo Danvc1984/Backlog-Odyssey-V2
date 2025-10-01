@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot } from 'firebase/firestore';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
-import { GENRES, PLATFORMS } from '@/lib/constants';
+import { PLATFORMS } from '@/lib/constants';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 
@@ -42,7 +42,7 @@ export default function LibraryPage() {
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
-  const [allGenres, setAllGenres] = useState<Genre[]>(GENRES);
+  const [allGenres, setAllGenres] = useState<Genre[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -55,13 +55,14 @@ export default function LibraryPage() {
         setGames(userGames);
         
         const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []));
-        setAllGenres(prev => Array.from(new Set([...prev, ...uniqueGenres])));
+        setAllGenres(Array.from(uniqueGenres));
         
         setDataLoading(false);
       });
       return () => unsubscribe();
     } else {
       setGames([]);
+      setAllGenres([]);
       setDataLoading(false);
     }
   }, [user]);
