@@ -44,7 +44,6 @@ const AppSidebar = () => {
                   <SidebarMenuButton
                     isActive={pathname === item.href}
                     tooltip={item.label}
-                    className="justify-start"
                   >
                     <item.icon />
                     <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
