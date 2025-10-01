@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { ChevronLeft, PanelLeft } from "lucide-react"
+import { ChevronLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -168,7 +168,7 @@ const Sidebar = React.forwardRef<
     {
       side = "left",
       variant = "sidebar",
-      collapsible = "offcanvas",
+      collapsible = "icon",
       className,
       children,
       ...props
@@ -305,7 +305,7 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-y-0 right-0 z-0 hidden w-px cursor-ew-resize sm:flex",
+        "absolute inset-0 z-0",
         "group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:cursor-pointer",
         className
       )}
@@ -366,6 +366,21 @@ const SidebarHeader = React.forwardRef<
 })
 SidebarHeader.displayName = "SidebarHeader"
 
+const SidebarBody = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      data-sidebar="body"
+      className={cn("relative flex flex-1 flex-col", className)}
+      {...props}
+    />
+  )
+})
+SidebarBody.displayName = "SidebarBody"
+
 const SidebarFooter = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div">
@@ -405,7 +420,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden z-10",
+        "flex min-h-0 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden z-10",
         className
       )}
       {...props}
@@ -738,6 +753,7 @@ SidebarMenuSubButton.displayName = "SidebarMenuSubButton"
 
 export {
   Sidebar,
+  SidebarBody,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,

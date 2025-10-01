@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarBody,
   SidebarContent,
   SidebarRail,
   SidebarTrigger,
@@ -34,24 +35,27 @@ const AppSidebar = () => {
       <SidebarHeader>
         <SidebarTrigger />
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
-          {menuItems.map(item => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
-                  <item.icon />
-                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarRail />
+      <SidebarBody>
+        <SidebarContent>
+          <SidebarMenu>
+            {menuItems.map(item => (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href}>
+                  <SidebarMenuButton
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                    className="justify-start"
+                  >
+                    <item.icon />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarRail />
+      </SidebarBody>
     </>
   );
 };
