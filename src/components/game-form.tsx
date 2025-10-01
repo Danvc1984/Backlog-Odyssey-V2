@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Game, GameList, Platform, Genre } from '@/lib/types';
-import { PLATFORMS, GENRES } from '@/lib/constants';
+import { PLATFORMS } from '@/lib/constants';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
@@ -34,7 +34,7 @@ import { MultiSelect } from './ui/multi-select';
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
   platform: z.enum(PLATFORMS),
-  genres: z.array(z.enum(GENRES)).min(1, 'Please select at least one genre.'),
+  genres: z.array(z.string()).min(1, 'Please select at least one genre.'),
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
   estimatedPlaytime: z.coerce.number().optional(),
@@ -45,11 +45,13 @@ type GameFormValues = z.infer<typeof gameSchema>;
 type GameFormProps = {
   onAddGame: (game: Omit<Game, 'id' | 'userId'>) => void;
   defaultList?: GameList;
+  allGenres: Genre[];
+  onAddGenre: (genre: Genre) => void;
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
-const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist' }) => {
+const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist', allGenres, onAddGenre }) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -104,7 +106,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     const platform = game.platforms?.map((p: any) => p.platform.name).find((p: any) => PLATFORMS.includes(p as any)) as Platform | undefined;
     if (platform) form.setValue('platform', platform);
     
-    const genres = game.genres?.map((g: any) => g.name).filter((g: any) => GENRES.includes(g as any)) as Genre[] | undefined;
+    const genres = game.genres?.map((g: any) => g.name).filter((g: any) => allGenres.includes(g as any)) as Genre[] | undefined;
     if (genres) form.setValue('genres', genres);
 
     if (game.released) form.setValue('releaseDate', game.released);
@@ -212,8 +214,8 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Genres</FormLabel>
-                <MultiSelect
-                  options={GENRES.map(g => ({ value: g, label: g }))}
+                 <MultiSelect
+                  options={allGenres.map(g => ({ value: g, label: g }))}
                   onValueChange={field.onChange}
                   value={field.value}
                   placeholder="Select genres"

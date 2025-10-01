@@ -42,6 +42,7 @@ export default function LibraryPage() {
   const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
+  const [allGenres, setAllGenres] = useState<Genre[]>(GENRES);
 
   useEffect(() => {
     if (user) {
@@ -52,6 +53,10 @@ export default function LibraryPage() {
           doc => ({ id: doc.id, ...doc.data() } as Game)
         );
         setGames(userGames);
+        
+        const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []));
+        setAllGenres(prev => Array.from(new Set([...prev, ...uniqueGenres])));
+        
         setDataLoading(false);
       });
       return () => unsubscribe();
@@ -70,11 +75,17 @@ export default function LibraryPage() {
     }
   };
 
+  const handleAddGenre = (newGenre: Genre) => {
+    if (!allGenres.includes(newGenre)) {
+      setAllGenres(prev => [...prev, newGenre]);
+    }
+  };
+
   const filteredGames = useMemo(() => {
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
-      const matchesGenre = genreFilter === 'all' || game.genres.includes(genreFilter);
+      const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
       return matchesSearch && matchesPlatform && matchesGenre;
     });
   }, [games, searchTerm, platformFilter, genreFilter]);
@@ -98,7 +109,7 @@ export default function LibraryPage() {
               <DialogHeader>
                 <DialogTitle>Add a New Game</DialogTitle>
               </DialogHeader>
-              <GameForm onAddGame={handleAddGame} defaultList={activeList} />
+              <GameForm onAddGame={handleAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
             </DialogContent>
           </Dialog>
         </div>
@@ -131,7 +142,7 @@ export default function LibraryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Genres</SelectItem>
-              {GENRES.map(g => (
+              {allGenres.map(g => (
                 <SelectItem key={g} value={g}>{g}</SelectItem>
               ))}
             </SelectContent>
