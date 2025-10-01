@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game } from '@/lib/types';
-import { platformIcons, genreIcons } from '@/components/icons';
+import { platformIcons } from '@/components/icons';
 import { Calendar, ImageOff } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -47,10 +47,8 @@ const GameCard: React.FC<GameCardProps> = ({ game }) => {
           {game.platform}
         </Badge>
         {(game.genres || []).map(genre => {
-          const GenreIcon = genreIcons[genre];
           return (
-            <Badge variant="secondary" key={genre} className="flex items-center gap-1">
-              {GenreIcon && <GenreIcon className="h-3 w-3" />}
+            <Badge variant="secondary" key={genre}>
               {genre}
             </Badge>
           );
