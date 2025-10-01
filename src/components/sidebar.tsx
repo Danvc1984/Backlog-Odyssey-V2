@@ -40,9 +40,9 @@ const AppSidebar = () => {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
-                  icon={<item.icon />}
                   tooltip={item.label}
                 >
+                  <item.icon />
                   <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                 </SidebarMenuButton>
               </Link>
