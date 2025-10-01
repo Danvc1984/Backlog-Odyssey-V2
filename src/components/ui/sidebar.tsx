@@ -305,7 +305,8 @@ const SidebarRail = React.forwardRef<
       onClick={toggleSidebar}
       title="Toggle Sidebar"
       className={cn(
-        "absolute inset-0 z-0 hidden h-full w-full bg-transparent sm:flex",
+        "absolute inset-y-0 right-0 z-0 hidden w-px cursor-ew-resize sm:flex",
+        "group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:cursor-pointer",
         className
       )}
       {...props}
