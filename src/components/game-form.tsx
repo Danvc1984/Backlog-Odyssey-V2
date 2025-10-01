@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Search, Image as ImageIcon } from 'lucide-react';
+import { Search, Image as ImageIcon, Calendar as CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,8 @@ import { PLATFORMS } from '@/lib/constants';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
+import { cn } from '@/lib/utils';
+import { Calendar } from './ui/calendar';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -62,12 +65,12 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
     defaultValues: {
-      title: gameToEdit?.title || '',
-      platform: gameToEdit?.platform,
-      genres: gameToEdit?.genres || [],
-      list: gameToEdit?.list || defaultList,
-      releaseDate: gameToEdit?.releaseDate || '',
-      estimatedPlaytime: gameToEdit?.estimatedPlaytime || 0,
+      title: '',
+      platform: undefined,
+      genres: [],
+      list: defaultList,
+      releaseDate: '',
+      estimatedPlaytime: 0,
     },
   });
 
@@ -250,11 +253,39 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             control={form.control}
             name="releaseDate"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Release Date</FormLabel>
-                <FormControl>
-                  <Input type="date" placeholder="YYYY-MM-DD" {...field} value={field.value || ''} />
-                </FormControl>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
@@ -302,5 +333,3 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
-
-    
