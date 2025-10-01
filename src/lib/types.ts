@@ -13,6 +13,8 @@ export interface Game {
   list: GameList;
   imageUrl: string;
   imageHint: string;
+  releaseDate?: string;
+  estimatedPlaytime?: number;
 }
 
 export type Recommendation = {

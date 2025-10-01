@@ -25,7 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
 
   const totalGames = games.length;
   const completionRate = useMemo(() => (totalGames > 0 ? Math.round((games.filter(g => g.list === 'Recently Played').length / totalGames) * 100) : 0), [games, totalGames]);
-  const totalPlaytime = useMemo(() => totalGames * 15, [totalGames]); // Mocked data
+  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
 
   const chartConfig = {
     total: {

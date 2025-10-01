@@ -36,6 +36,8 @@ const gameSchema = z.object({
   platform: z.enum(PLATFORMS),
   genre: z.enum(GENRES),
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
+  releaseDate: z.string().optional(),
+  estimatedPlaytime: z.coerce.number().optional(),
 });
 
 type GameFormValues = z.infer<typeof gameSchema>;
@@ -58,11 +60,13 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     defaultValues: {
       title: '',
       list: defaultList,
+      releaseDate: '',
+      estimatedPlaytime: 0,
     },
   });
   
   useEffect(() => {
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList });
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
   }, [defaultList, form]);
 
   const searchGames = useCallback(async (query: string) => {
@@ -99,6 +103,8 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
     if (platform) form.setValue('platform', platform);
     const genre = game.genres?.map((g: any) => g.name).find((g: any) => GENRES.includes(g as any)) as Genre | undefined;
     if (genre) form.setValue('genre', genre);
+    if (game.released) form.setValue('releaseDate', game.released);
+    if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
     setSelectedGameImageUrl(game.background_image);
     setSearchTerm('');
     setSearchResults([]);
@@ -113,7 +119,7 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
       title: 'Game Added!',
       description: `${data.title} has been added to your library.`,
     });
-    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList });
+    form.reset({ title: '', platform: undefined, genre: undefined, list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
     setSelectedGameImageUrl(null);
   }
 
@@ -152,16 +158,17 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
                 <Button
                   key={game.id}
                   variant="ghost"
+                  type="button"
                   className="flex items-center justify-start gap-2 h-auto p-2"
                   onClick={() => handleSelectGame(game)}
                 >
-                  <Image
+                  {game.background_image && <Image
                     src={game.background_image}
                     alt={game.name}
                     width={40}
                     height={53}
                     className="object-cover rounded-sm aspect-[3/4]"
-                  />
+                  />}
                   <span className="text-sm font-medium text-left">{game.name}</span>
                 </Button>
               ))}
@@ -205,6 +212,34 @@ const GameForm: React.FC<GameFormProps> = ({ onAddGame, defaultList = 'Wishlist'
                     {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+           <FormField
+            control={form.control}
+            name="releaseDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Release Date</FormLabel>
+                <FormControl>
+                  <Input type="date" placeholder="YYYY-MM-DD" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="estimatedPlaytime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Est. Playtime (hrs)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="e.g. 40" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
