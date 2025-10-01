@@ -43,7 +43,7 @@ const AppSidebar = () => {
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarBody>
-        <SidebarContent className="p-2">
+        <SidebarContent className="p-2 flex-grow">
           <SidebarMenu>
             <SidebarMenuItem>
               <Link href="/dashboard">
