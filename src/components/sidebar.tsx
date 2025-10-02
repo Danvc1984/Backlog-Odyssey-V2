@@ -88,7 +88,7 @@ const AppSidebar = () => {
                            <SidebarMenuButton
                             size="sm"
                             isActive={isLibraryRoute && activeList === list}
-                            className={cn("w-full justify-start", (isLibrary-route && activeList === list) && "bg-accent/50")}
+                            className={cn("w-full justify-start", (isLibraryRoute && activeList === list) && "bg-accent/50")}
                           >
                              {list}
                            </SidebarMenuButton>
