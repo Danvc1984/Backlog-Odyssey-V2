@@ -24,33 +24,28 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [allGames, setAllGames] = React.useState<Game[]>([]);
+  const [initialLoadComplete, setInitialLoadComplete] = React.useState(false);
 
   React.useEffect(() => {
-    // This single effect handles all redirection logic based on auth and profile state.
-    
-    // Do nothing until authentication has been checked.
-    if (authLoading) {
+    if (!authLoading && !profileLoading) {
+      setInitialLoadComplete(true);
+    }
+  }, [authLoading, profileLoading]);
+
+  React.useEffect(() => {
+    if (!initialLoadComplete) {
       return;
     }
 
-    // If auth is checked and there's no user, redirect to login.
     if (!user) {
       router.push('/login');
       return;
     }
 
-    // If we have a user, but their profile is still loading, do nothing yet.
-    if (profileLoading) {
-      return;
-    }
-    
-    // Now we have a user and their profile has been checked.
-    // If onboarding is not complete and they aren't on the setup page, redirect them.
     if (!profile?.onboardingComplete && pathname !== '/settings/platform') {
       router.push('/settings/platform');
     }
-
-  }, [user, authLoading, profile, profileLoading, router, pathname]);
+  }, [user, profile, initialLoadComplete, router, pathname]);
   
   React.useEffect(() => {
     if (user) {
@@ -67,9 +62,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, authLoading]);
   
-  const isLoading = authLoading || (user && profileLoading);
-
-  if (isLoading) {
+  if (!initialLoadComplete) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
@@ -85,8 +78,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If user is not onboarded, only render the setup page.
-  // For any other route, show a redirecting message until the effect kicks in.
   if (!profile?.onboardingComplete) {
     if (pathname === '/settings/platform') {
       return <>{children}</>;
@@ -98,7 +89,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // User is authenticated and onboarded, render the full app.
   return (
     <SidebarProvider>
       <Sidebar>
