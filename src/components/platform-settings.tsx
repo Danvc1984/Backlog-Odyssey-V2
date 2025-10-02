@@ -14,10 +14,13 @@ import { ALL_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { Separator } from './ui/separator';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
   favoritePlatform: z.string({ required_error: 'Please select a favorite platform.' }),
+  notifyDiscounts: z.boolean().optional(),
+  playsOnSteamDeck: z.boolean().optional(),
 }).refine(data => data.platforms.includes(data.favoritePlatform), {
   message: 'Favorite platform must be one of the selected platforms.',
   path: ['favoritePlatform'],
@@ -39,6 +42,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     defaultValues: {
       platforms: preferences?.platforms || [],
       favoritePlatform: preferences?.favoritePlatform || '',
+      notifyDiscounts: preferences?.notifyDiscounts || false,
+      playsOnSteamDeck: preferences?.playsOnSteamDeck || false,
     },
   });
 
@@ -47,11 +52,20 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       form.reset({
         platforms: preferences.platforms,
         favoritePlatform: preferences.favoritePlatform,
+        notifyDiscounts: preferences.notifyDiscounts,
+        playsOnSteamDeck: preferences.playsOnSteamDeck,
       });
     }
   }, [preferences, form]);
 
   const selectedPlatforms = form.watch('platforms');
+  const playsOnPC = selectedPlatforms && selectedPlatforms.includes('PC');
+
+  useEffect(() => {
+    if (!playsOnPC) {
+      form.setValue('playsOnSteamDeck', false);
+    }
+  }, [playsOnPC, form]);
 
   async function onSubmit(data: PlatformSettingsFormValues) {
     try {
@@ -167,6 +181,57 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 )}
               />
             )}
+            
+            <Separator />
+
+            <div className="space-y-4">
+               <FormField
+                  control={form.control}
+                  name="notifyDiscounts"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Notify me about discounts for games on my Wishlist.
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {playsOnPC && (
+                   <FormField
+                    control={form.control}
+                    name="playsOnSteamDeck"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            I play on a Steam Deck.
+                          </FormLabel>
+                           <FormDescription>
+                            This helps us recommend Steam Deck compatible games.
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                )}
+            </div>
+
+
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={loading} className="w-full sm:w-auto">

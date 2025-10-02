@@ -33,4 +33,6 @@ export type AuthFormValues = {
 export interface UserPreferences {
   platforms: Platform[];
   favoritePlatform: Platform;
+  notifyDiscounts?: boolean;
+  playsOnSteamDeck?: boolean;
 }
