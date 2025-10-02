@@ -68,6 +68,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   // 2. Handle unauthenticated state
   if (!user) {
+    // The useEffect above will handle the redirect, this is a fallback UI.
     return (
       <div className="flex items-center justify-center min-h-screen">
         Redirecting to login...
@@ -80,6 +81,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     if (pathname === '/settings/platform') {
       return children; // Render the onboarding page
     }
+    // The useEffect above will handle the redirect, this is a fallback UI.
     return (
       <div className="flex items-center justify-center min-h-screen">
         Redirecting to setup...
