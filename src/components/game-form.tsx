@@ -265,7 +265,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
           />
         </div>
         <div className="space-y-2">
-          <FormLabel>Add Custom Genre</FormLabel>
+          <FormLabel>Add Another Genre</FormLabel>
           <div className="flex gap-2">
             <Input 
               placeholder="e.g. Metroidvania" 
