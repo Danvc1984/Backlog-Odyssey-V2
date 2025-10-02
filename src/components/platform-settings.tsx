@@ -179,7 +179,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
                       >
-                        {[...selectedPlatforms, "Others/ROMs"].map((platform) => (
+                        {Array.from(new Set([...selectedPlatforms, "Others/ROMs"])).map((platform) => (
                            <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
                            <FormControl>
                              <RadioGroupItem value={platform} />
