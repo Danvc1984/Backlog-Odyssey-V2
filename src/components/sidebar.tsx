@@ -43,6 +43,7 @@ const AppSidebar = () => {
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarBody>
+        <SidebarRail />
         <SidebarContent className="p-2 flex-grow">
           <SidebarMenu>
             <SidebarMenuItem>
@@ -109,7 +110,6 @@ const AppSidebar = () => {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
-        <SidebarRail />
         <SidebarFooter className='p-2 pb-16'>
           <SidebarMenu>
             <SidebarMenuItem>
