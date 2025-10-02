@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
-import { Layers, Search, Image as ImageIcon } from 'lucide-react';
+import { Layers, Search, Image as ImageIcon, Upload } from 'lucide-react';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 
 import {
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
@@ -62,6 +63,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
   const [targetList, setTargetList] = useState<GameList>('Wishlist');
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [activeTab, setActiveTab] = useState("search");
 
   const searchGames = useCallback(async (query: string) => {
     if (query.length < 3) {
@@ -85,13 +87,30 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
       setIsSearching(false);
     }
   }, [toast]);
+  
+  const searchSingleGame = useCallback(async (query: string): Promise<RawgGame | null> => {
+    if (!query) return null;
+    try {
+      const response = await axios.get('https://api.rawg.io/api/games', {
+        params: { key: API_KEY, search: query, page_size: 1 },
+      });
+      if (response.data.results.length > 0) {
+        return response.data.results[0];
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error fetching game "${query}":`, error);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
+    if (activeTab !== 'search') return;
     const delayDebounceFn = setTimeout(() => {
       searchGames(searchTerm);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, searchGames]);
+  }, [searchTerm, searchGames, activeTab]);
 
   const handleSelectGame = (game: RawgGame, checked: boolean) => {
     if (checked) {
@@ -100,6 +119,41 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
       setSelectedGames(prev => prev.filter(g => g.id !== game.id));
     }
   };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'text/plain') {
+      toast({ title: 'Invalid File Type', description: 'Please upload a .txt file.', variant: 'destructive' });
+      return;
+    }
+
+    setIsSearching(true);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target?.result as string;
+      const gameTitles = content.split('\n').map(title => title.trim()).filter(Boolean);
+      
+      const foundGames: RawgGame[] = [];
+      for (const title of gameTitles) {
+        const game = await searchSingleGame(title);
+        if (game) {
+          foundGames.push(game);
+        } else {
+          toast({ title: 'Game Not Found', description: `Could not find a match for "${title}".`, variant: 'destructive' });
+        }
+      }
+      setSelectedGames(prev => [...prev, ...foundGames]);
+      setIsSearching(false);
+      
+      if(foundGames.length > 0) {
+        toast({ title: 'Games Found', description: `Found and selected ${foundGames.length} games from your file.`});
+      }
+    };
+    reader.readAsText(file);
+  };
+
 
   const handleBatchAdd = async () => {
     if (!user || !preferences) {
@@ -176,6 +230,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
       setSearchResults([]);
       setSelectedGames([]);
       setTargetList('Wishlist');
+      setActiveTab('search');
     }
     setIsOpen(open);
   };
@@ -192,84 +247,113 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
         <DialogHeader>
           <DialogTitle>Batch Add Games</DialogTitle>
           <DialogDescription>
-            Search for games and select multiple to add to your library at once.
+            Search for games or upload a file to add multiple games at once.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search for games to add..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <ScrollArea className="h-60 w-full rounded-md border">
-            <div className="p-4">
-              {isSearching && <p className="text-center text-muted-foreground">Searching...</p>}
-              {!isSearching && searchResults.length === 0 && (
-                <p className="text-center text-muted-foreground">
-                  {searchTerm.length < 3 ? 'Enter at least 3 characters to search' : 'No results found.'}
-                </p>
-              )}
-              {searchResults.map(game => (
-                <div key={game.id} className="flex items-center space-x-4 p-2 rounded-md hover:bg-muted">
-                  <Checkbox
-                    id={`batch-game-${game.id}`}
-                    checked={selectedGames.some(g => g.id === game.id)}
-                    onCheckedChange={(checked) => handleSelectGame(game, !!checked)}
-                    className="h-5 w-5"
-                  />
-                  <label htmlFor={`batch-game-${game.id}`} className="flex items-center gap-3 cursor-pointer flex-grow">
-                     {game.background_image ? (
-                        <Image
-                            src={game.background_image}
-                            alt={game.name}
-                            width={45}
-                            height={60}
-                            className="object-cover rounded-sm aspect-[3/4]"
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="search">Search</TabsTrigger>
+                <TabsTrigger value="upload">Upload File</TabsTrigger>
+            </TabsList>
+            <TabsContent value="search">
+                 <div className="space-y-4 py-4">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                        placeholder="Search for games to add..."
+                        className="pl-10"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
                         />
-                     ) : (
-                        <div className="w-[45px] h-[60px] bg-card rounded-sm flex items-center justify-center">
-                            <ImageIcon className="h-6 w-6 text-muted-foreground"/>
+                    </div>
+                    <ScrollArea className="h-60 w-full rounded-md border">
+                        <div className="p-4">
+                        {isSearching && <p className="text-center text-muted-foreground">Searching...</p>}
+                        {!isSearching && searchResults.length === 0 && (
+                            <p className="text-center text-muted-foreground">
+                            {searchTerm.length < 3 ? 'Enter at least 3 characters to search' : 'No results found.'}
+                            </p>
+                        )}
+                        {searchResults.map(game => (
+                            <div key={game.id} className="flex items-center space-x-4 p-2 rounded-md hover:bg-muted">
+                            <Checkbox
+                                id={`batch-game-${game.id}`}
+                                checked={selectedGames.some(g => g.id === game.id)}
+                                onCheckedChange={(checked) => handleSelectGame(game, !!checked)}
+                                className="h-5 w-5"
+                            />
+                            <label htmlFor={`batch-game-${game.id}`} className="flex items-center gap-3 cursor-pointer flex-grow">
+                                {game.background_image ? (
+                                    <Image
+                                        src={game.background_image}
+                                        alt={game.name}
+                                        width={45}
+                                        height={60}
+                                        className="object-cover rounded-sm aspect-[3/4]"
+                                    />
+                                ) : (
+                                    <div className="w-[45px] h-[60px] bg-card rounded-sm flex items-center justify-center">
+                                        <ImageIcon className="h-6 w-6 text-muted-foreground"/>
+                                    </div>
+                                )}
+                                <span className="font-medium">{game.name}</span>
+                            </label>
+                            </div>
+                        ))}
                         </div>
-                     )}
-                     <span className="font-medium">{game.name}</span>
-                  </label>
+                    </ScrollArea>
+                 </div>
+            </TabsContent>
+            <TabsContent value="upload">
+                <div className="space-y-4 py-4">
+                    <div className="flex flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/50 p-8 text-center h-[296px]">
+                        <Upload className="h-10 w-10 text-muted-foreground mb-4"/>
+                        <h3 className="text-lg font-semibold">Upload a file</h3>
+                        <p className="text-sm text-muted-foreground mb-4">Upload a .txt file with one game title per line.</p>
+                        <Input id="file-upload" type="file" className="w-auto" onChange={handleFileUpload} accept=".txt"/>
+                    </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-           {selectedGames.length > 0 && (
-            <div className='space-y-2'>
-              <p className='text-sm font-medium'>Selected Games:</p>
-              <ScrollArea className="h-24 w-full rounded-md border p-2">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedGames.map(game => (
-                      <Badge key={game.id} variant="secondary">{game.name}</Badge>
-                    ))}
-                  </div>
-              </ScrollArea>
-            </div>
-           )}
-           <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">{selectedGames.length} game(s) selected</span>
-              <Select value={targetList} onValueChange={(value: GameList) => setTargetList(value)}>
-                  <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Add to a list" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {(["Wishlist", "Backlog", "Now Playing", "Recently Played"] as GameList[]).map(l => (
-                        <SelectItem key={l} value={l}>{l}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-           </div>
+            </TabsContent>
+        </Tabs>
+       
+        <div className='space-y-2'>
+            <p className='text-sm font-medium'>Selected Games ({selectedGames.length}):</p>
+            <ScrollArea className="h-24 w-full rounded-md border p-2">
+                {selectedGames.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                        {selectedGames.map(game => (
+                        <Badge key={game.id} variant="secondary" className="flex items-center gap-2">
+                            {game.name}
+                             <button onClick={() => handleSelectGame(game, false)} className="text-muted-foreground hover:text-foreground">
+                                <span className="sr-only">Remove {game.name}</span>
+                                &times;
+                            </button>
+                        </Badge>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground text-center py-8">No games selected yet.</p>
+                )}
+            </ScrollArea>
         </div>
+        
+        <div className="flex items-center justify-between pt-4">
+            <span className="text-sm font-medium">{selectedGames.length} game(s) to be added to:</span>
+            <Select value={targetList} onValueChange={(value: GameList) => setTargetList(value)}>
+                <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Add to a list" />
+                </SelectTrigger>
+                <SelectContent>
+                    {(["Wishlist", "Backlog", "Now Playing", "Recently Played"] as GameList[]).map(l => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleBatchAdd} disabled={isAdding || selectedGames.length === 0}>
+          <Button onClick={handleBatchAdd} disabled={isAdding || isSearching || selectedGames.length === 0}>
             {isAdding ? `Adding ${selectedGames.length} games...` : `Add ${selectedGames.length} Game(s)`}
           </Button>
         </DialogFooter>
