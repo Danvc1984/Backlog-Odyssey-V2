@@ -1,9 +1,11 @@
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import type { AuthFormValues } from '@/lib/types';
+import { auth, db } from '@/lib/firebase';
+import type { AuthFormValues, UserProfile } from '@/lib/types';
+import { doc, setDoc } from 'firebase/firestore';
 
 interface AuthContextType {
   user: User | null;
@@ -32,7 +34,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUpWithEmail = async ({ email, password }: AuthFormValues) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (user) {
+      // Create user profile document in Firestore
+      const userProfileRef = doc(db, 'users', user.uid);
+      const newUserProfile: UserProfile = {
+        onboardingComplete: false,
+      };
+      await setDoc(userProfileRef, newUserProfile);
+    }
+    return userCredential;
   };
 
   const signOut = async () => {

@@ -37,3 +37,7 @@ export interface UserPreferences {
   notifyDiscounts?: boolean;
   playsOnSteamDeck?: boolean;
 }
+
+export interface UserProfile {
+  onboardingComplete: boolean;
+}

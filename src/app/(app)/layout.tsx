@@ -16,11 +16,12 @@ import {
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
-import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
+import { UserPreferencesProvider } from '@/hooks/use-user-preferences';
+import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { preferences, loading: prefsLoading } = useUserPreferences();
+  const { profile, loading: profileLoading } = useUserProfile();
   const router = useRouter();
   const pathname = usePathname();
   const [allGames, setAllGames] = React.useState<Game[]>([]);
@@ -30,13 +31,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
       router.push('/login');
     }
   }, [user, authLoading, router]);
-  
+
   React.useEffect(() => {
-    const isLoading = authLoading || prefsLoading;
-    if (!isLoading && user && !preferences?.favoritePlatform && pathname !== '/settings/platform') {
-        router.push('/settings/platform');
+    const isLoading = authLoading || profileLoading;
+    if (!isLoading && user && !profile?.onboardingComplete && pathname !== '/settings/platform') {
+      router.push('/settings/platform');
     }
-  }, [preferences, authLoading, prefsLoading, user, router, pathname]);
+  }, [profile, authLoading, profileLoading, user, router, pathname]);
 
   React.useEffect(() => {
     if (user) {
@@ -53,14 +54,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, authLoading]);
   
-  React.useEffect(() => {
-      if (pathname === '/settings/platform' && preferences?.favoritePlatform) {
-        router.push('/dashboard');
-      }
-  }, [pathname, preferences, router]);
-
-
-  const isLoading = authLoading || prefsLoading;
+  const isLoading = authLoading || profileLoading;
 
   if (isLoading) {
     return (
@@ -78,14 +72,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (pathname === '/settings/platform' && !preferences?.favoritePlatform) {
+  if (pathname === '/settings/platform' && !profile?.onboardingComplete) {
       return children;
   }
   
-  if (pathname === '/settings/platform' && preferences?.favoritePlatform) {
+  if (!profile?.onboardingComplete) {
     return (
         <div className="flex items-center justify-center min-h-screen">
-            Redirecting to dashboard...
+            Redirecting to setup...
         </div>
     );
   }
@@ -115,8 +109,10 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <UserPreferencesProvider>
-      <AppContent>{children}</AppContent>
-    </UserPreferencesProvider>
+    <UserProfileProvider>
+      <UserPreferencesProvider>
+        <AppContent>{children}</AppContent>
+      </UserPreferencesProvider>
+    </UserProfileProvider>
   )
 }

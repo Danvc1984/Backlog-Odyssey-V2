@@ -15,6 +15,10 @@ import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo } from 'react';
 import { Separator } from './ui/separator';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useAuth } from '@/hooks/use-auth';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -34,7 +38,9 @@ type PlatformSettingsProps = {
 
 export default function PlatformSettings({ isOnboarding = false }: PlatformSettingsProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const { preferences, savePreferences, loading } = useUserPreferences();
+  const { profile } = useUserProfile();
   const { toast } = useToast();
 
   const form = useForm<PlatformSettingsFormValues>({
@@ -68,12 +74,19 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   }, [playsOnPC, form]);
 
   async function onSubmit(data: PlatformSettingsFormValues) {
+    if (!user) return;
     try {
       const finalPreferences = {
         ...data,
         platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
       }
       await savePreferences(finalPreferences as UserPreferences);
+      
+      if (isOnboarding && !profile?.onboardingComplete) {
+        const userProfileRef = doc(db, 'users', user.uid);
+        await updateDoc(userProfileRef, { onboardingComplete: true });
+      }
+
       toast({
         title: 'Preferences Saved',
         description: 'Your platform settings have been updated.',
