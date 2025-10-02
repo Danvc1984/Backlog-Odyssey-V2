@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
 import { Layers, Search, Image as ImageIcon } from 'lucide-react';
-import { collection, addDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 
 import {
   Dialog,
