@@ -32,6 +32,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { db } from '@/lib/firebase';
 import type { Game, GameList, Platform, Genre } from '@/lib/types';
+import { Badge } from './ui/badge';
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
@@ -204,7 +205,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <ScrollArea className="h-72 w-full rounded-md border">
+          <ScrollArea className="h-60 w-full rounded-md border">
             <div className="p-4">
               {isSearching && <p className="text-center text-muted-foreground">Searching...</p>}
               {!isSearching && searchResults.length === 0 && (
@@ -240,6 +241,18 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
               ))}
             </div>
           </ScrollArea>
+           {selectedGames.length > 0 && (
+            <div className='space-y-2'>
+              <p className='text-sm font-medium'>Selected Games:</p>
+              <ScrollArea className="h-24 w-full rounded-md border p-2">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedGames.map(game => (
+                      <Badge key={game.id} variant="secondary">{game.name}</Badge>
+                    ))}
+                  </div>
+              </ScrollArea>
+            </div>
+           )}
            <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{selectedGames.length} game(s) selected</span>
               <Select value={targetList} onValueChange={(value: GameList) => setTargetList(value)}>
