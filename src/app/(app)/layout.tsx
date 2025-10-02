@@ -52,6 +52,13 @@ function AppContent({ children }: { children: React.ReactNode }) {
       setAllGames([]);
     }
   }, [user, authLoading]);
+  
+  React.useEffect(() => {
+      if (pathname === '/settings/platform' && preferences?.favoritePlatform) {
+        router.push('/dashboard');
+      }
+  }, [pathname, preferences, router]);
+
 
   const isLoading = authLoading || prefsLoading;
 
@@ -76,7 +83,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   if (pathname === '/settings/platform' && preferences?.favoritePlatform) {
-    router.push('/dashboard');
     return (
         <div className="flex items-center justify-center min-h-screen">
             Redirecting to dashboard...
