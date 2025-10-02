@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -29,7 +30,7 @@ const AppSidebar = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const activeList = searchParams.get('list');
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, state } = useSidebar();
 
   const isLibraryRoute = pathname === '/library';
 
@@ -38,17 +39,22 @@ const AppSidebar = () => {
     router.push('/login');
   };
 
+  const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (state === 'collapsed') {
+      // Prevent clicks on actual buttons from toggling the sidebar
+      if ((e.target as HTMLElement).closest('button')) {
+        return;
+      }
+      toggleSidebar();
+    }
+  };
+
   return (
     <>
       <SidebarHeader>
         <SidebarTrigger />
       </SidebarHeader>
-      <SidebarBody>
-        <div 
-          className="absolute inset-0 z-0 group-data-[state=expanded]:hidden" 
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        />
+      <SidebarBody onClick={handleBodyClick}>
         <SidebarContent className="p-2 flex-grow">
           <SidebarMenu>
             <SidebarMenuItem>
