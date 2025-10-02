@@ -26,14 +26,14 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [allGames, setAllGames] = React.useState<Game[]>([]);
 
   React.useEffect(() => {
-    if (authLoading) return; // Wait for authentication to resolve
+    if (authLoading) return;
 
     if (!user) {
       router.push('/login');
       return;
     }
     
-    if (profileLoading) return; // Wait for profile to resolve
+    if (profileLoading) return;
 
     if (!profile?.onboardingComplete && pathname !== '/settings/platform') {
       router.push('/settings/platform');
@@ -57,7 +57,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   const isLoading = authLoading || (user && profileLoading);
 
-  // 1. Handle primary loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -66,9 +65,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 2. Handle unauthenticated state
   if (!user) {
-    // The useEffect above will handle the redirect, this is a fallback UI.
     return (
       <div className="flex items-center justify-center min-h-screen">
         Redirecting to login...
@@ -76,12 +73,10 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 3. Handle onboarding state for authenticated users
   if (!profile?.onboardingComplete) {
     if (pathname === '/settings/platform') {
-      return children; // Render the onboarding page
+      return <>{children}</>;
     }
-    // The useEffect above will handle the redirect, this is a fallback UI.
     return (
       <div className="flex items-center justify-center min-h-screen">
         Redirecting to setup...
@@ -89,7 +84,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // 4. Render the full app layout for authenticated and onboarded users
   return (
     <SidebarProvider>
       <Sidebar>
