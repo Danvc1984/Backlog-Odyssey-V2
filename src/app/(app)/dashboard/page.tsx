@@ -7,9 +7,11 @@ import { useAuth } from '@/hooks/use-auth';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import GameListPreview from '@/components/game-list-preview';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { preferences, loading: prefsLoading } = useUserPreferences();
   const [games, setGames] = useState<Game[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -48,7 +50,7 @@ export default function DashboardPage() {
     [games]
   );
 
-  if (dataLoading) {
+  if (dataLoading || prefsLoading) {
     return <div className="text-center py-10">Loading dashboard...</div>;
   }
 

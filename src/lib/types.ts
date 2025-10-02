@@ -1,6 +1,8 @@
+
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";
 
-export type Platform = "PC" | "PlayStation" | "Xbox" | "Nintendo Switch";
+export const ALL_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo Switch", "ROMs/Other"] as const;
+export type Platform = typeof ALL_PLATFORMS[number];
 
 export type Genre = "Action" | "Adventure" | "Indie" | "MMO" | "Puzzle" | "RPG" | "Sports" | "Strategy";
 
@@ -26,4 +28,9 @@ export type Recommendation = {
 export type AuthFormValues = {
   email: string;
   password: string
+}
+
+export interface UserPreferences {
+  platforms: Platform[];
+  favoritePlatform: Platform;
 }

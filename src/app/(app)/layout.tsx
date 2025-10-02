@@ -1,6 +1,7 @@
+
 'use client';
 import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import AppHeader from '@/components/header';
 import AppSidebar from '@/components/sidebar';
@@ -15,14 +16,13 @@ import {
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
+import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
+  const { preferences, loading: prefsLoading } = useUserPreferences();
   const router = useRouter();
+  const pathname = usePathname();
   const [allGames, setAllGames] = React.useState<Game[]>([]);
 
   React.useEffect(() => {
@@ -30,6 +30,12 @@ export default function AppLayout({
       router.push('/login');
     }
   }, [user, authLoading, router]);
+  
+  React.useEffect(() => {
+    if (!prefsLoading && user && !preferences?.favoritePlatform && pathname !== '/settings/platform') {
+        router.push('/settings/platform');
+    }
+  }, [preferences, prefsLoading, user, router, pathname]);
 
   React.useEffect(() => {
     if (user) {
@@ -46,12 +52,26 @@ export default function AppLayout({
     }
   }, [user, authLoading]);
 
-  if (authLoading || (!user && !authLoading && typeof window !== 'undefined' && window.location.pathname !== '/login')) {
+  const isLoading = authLoading || prefsLoading;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
       </div>
     );
+  }
+  
+  if (!user) {
+     return (
+      <div className="flex items-center justify-center min-h-screen">
+        Redirecting to login...
+      </div>
+    );
+  }
+  
+  if (pathname === '/settings/platform') {
+      return children;
   }
 
   return (
@@ -69,4 +89,17 @@ export default function AppLayout({
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <UserPreferencesProvider>
+      <AppContent>{children}</AppContent>
+    </UserPreferencesProvider>
+  )
 }

@@ -10,10 +10,10 @@ import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'fireb
 import Link from 'next/link';
 
 import type { Game, Platform, Genre, GameList } from '@/lib/types';
-import { PLATFORMS } from '@/lib/constants';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +49,7 @@ const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently P
 
 export default function LibraryPage() {
   const { user } = useAuth();
+  const { preferences, loading: prefsLoading } = useUserPreferences();
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -203,6 +204,10 @@ export default function LibraryPage() {
     return filteredGames.filter(game => game.list === list);
   };
   
+  if (prefsLoading) {
+    return <div className="text-center py-10">Loading library...</div>;
+  }
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
@@ -254,7 +259,7 @@ export default function LibraryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Platforms</SelectItem>
-              {PLATFORMS.map(p => (
+              {preferences?.platforms.map(p => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
             </SelectContent>
@@ -344,5 +349,3 @@ export default function LibraryPage() {
     </div>
   );
 }
-
-    

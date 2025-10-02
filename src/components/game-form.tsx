@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { Game, GameList, Platform, Genre } from '@/lib/types';
-import { PLATFORMS } from '@/lib/constants';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
+import type { Game, GameList, Platform, Genre, ALL_PLATFORMS } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
@@ -37,7 +37,7 @@ import { Calendar } from './ui/calendar';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
-  platform: z.enum(PLATFORMS),
+  platform: z.custom<Platform>(val => typeof val === 'string' && val.length > 0, 'Platform is required.'),
   genres: z.array(z.string()).min(1, 'Please select at least one genre.'),
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
@@ -58,6 +58,7 @@ const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
 const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', allGenres, onAddGenre, gameToEdit }) => {
   const { toast } = useToast();
+  const { preferences } = useUserPreferences();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
@@ -67,7 +68,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     resolver: zodResolver(gameSchema),
     defaultValues: {
       title: gameToEdit?.title || '',
-      platform: gameToEdit?.platform || undefined,
+      platform: gameToEdit?.platform || preferences?.favoritePlatform,
       genres: gameToEdit?.genres || [],
       list: gameToEdit?.list || defaultList,
       releaseDate: gameToEdit?.releaseDate || '',
@@ -89,7 +90,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     } else {
       form.reset({
         title: '',
-        platform: undefined,
+        platform: preferences?.favoritePlatform,
         genres: [],
         list: defaultList,
         releaseDate: '',
@@ -97,7 +98,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       });
       setSelectedGameImageUrl(null);
     }
-  }, [gameToEdit, defaultList, form]);
+  }, [gameToEdit, defaultList, form, preferences]);
 
   const searchGames = useCallback(async (query: string) => {
     if (query.length < 3) {
@@ -129,9 +130,25 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 
   const handleSelectGame = (game: any) => {
     form.setValue('title', game.name);
-    const platform = game.platforms?.map((p: any) => p.platform.name).find((p: any) => PLATFORMS.includes(p as any)) as Platform | undefined;
-    if (platform) form.setValue('platform', platform);
     
+    const favoritePlatform = preferences?.favoritePlatform;
+    const userPlatforms = preferences?.platforms || [];
+    const gamePlatforms = game.platforms?.map((p: any) => p.platform.name as Platform) || [];
+    
+    let platformToSet: Platform | undefined;
+
+    if (favoritePlatform && gamePlatforms.includes(favoritePlatform)) {
+      platformToSet = favoritePlatform;
+    } else {
+      platformToSet = gamePlatforms.find((p: Platform) => userPlatforms.includes(p));
+    }
+    
+    if (platformToSet) {
+      form.setValue('platform', platformToSet);
+    } else if (userPlatforms.includes('ROMs/Other')) {
+      form.setValue('platform', 'ROMs/Other');
+    }
+
     const gameGenres = game.genres?.map((g: any) => g.name) as Genre[] || [];
     if (gameGenres.length > 0) {
       gameGenres.forEach(genre => onAddGenre(genre));
@@ -161,7 +178,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         title: 'Game Added!',
         description: `${data.title} has been added to your library.`,
       });
-      form.reset({ title: '', platform: undefined, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
       setSelectedGameImageUrl(null);
     }
   }
@@ -240,7 +257,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {PLATFORMS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    {preferences?.platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -363,5 +380,3 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
-
-    
