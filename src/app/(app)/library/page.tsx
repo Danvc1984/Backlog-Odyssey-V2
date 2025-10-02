@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search } from 'lucide-react';
+import { PlusCircle, Search, Layers } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -44,6 +44,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameCard from '@/components/game-card';
 import GameForm from '@/components/game-form';
+import BatchAddGames from '@/components/batch-add-games';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
@@ -222,6 +223,7 @@ export default function LibraryPage() {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
         <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <BatchAddGames onAddGenre={handleAddGenre} />
           <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
