@@ -40,8 +40,15 @@ const AppSidebar = () => {
   };
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // If the click is on the sidebar body itself (the empty space), toggle the sidebar.
+    // This allows collapsing by clicking the background when expanded.
+    if (e.target === e.currentTarget) {
+      toggleSidebar();
+      return;
+    }
+    
+    // This allows expanding by clicking the rail when collapsed, while ignoring clicks on buttons.
     if (state === 'collapsed') {
-      // Prevent clicks on actual buttons from toggling the sidebar
       if ((e.target as HTMLElement).closest('button')) {
         return;
       }
