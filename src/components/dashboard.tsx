@@ -26,7 +26,15 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   }, [games]);
 
   const totalGames = games.length;
-  const completionRate = useMemo(() => (totalGames > 0 ? Math.round((games.filter(g => g.list === 'Recently Played').length / totalGames) * 100) : 0), [games, totalGames]);
+  
+  const completionRate = useMemo(() => {
+    const gamesToConsider = games.filter(g => g.list !== 'Wishlist');
+    const totalGamesToConsider = gamesToConsider.length;
+    return totalGamesToConsider > 0 
+      ? Math.round((games.filter(g => g.list === 'Recently Played').length / totalGamesToConsider) * 100) 
+      : 0;
+  }, [games]);
+
   const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
 
   const chartConfig = {
