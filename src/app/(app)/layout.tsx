@@ -32,10 +32,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }, [user, authLoading, router]);
   
   React.useEffect(() => {
-    if (!prefsLoading && user && !preferences?.favoritePlatform && pathname !== '/settings/platform') {
+    const isLoading = authLoading || prefsLoading;
+    if (!isLoading && user && !preferences?.favoritePlatform && pathname !== '/settings/platform') {
         router.push('/settings/platform');
     }
-  }, [preferences, prefsLoading, user, router, pathname]);
+  }, [preferences, authLoading, prefsLoading, user, router, pathname]);
 
   React.useEffect(() => {
     if (user) {
@@ -70,9 +71,19 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (pathname === '/settings/platform') {
+  if (pathname === '/settings/platform' && !preferences?.favoritePlatform) {
       return children;
   }
+  
+  if (pathname === '/settings/platform' && preferences?.favoritePlatform) {
+    router.push('/dashboard');
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            Redirecting to dashboard...
+        </div>
+    );
+  }
+
 
   return (
     <SidebarProvider>
