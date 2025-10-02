@@ -41,13 +41,17 @@ const AppSidebar = () => {
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
+
     if (state === 'expanded') {
+      // If expanded, collapse if the click is on the background (not a link/button).
       if (!target.closest('a, button')) {
         toggleSidebar();
       }
     } else if (state === 'collapsed') {
-      // Allow clicking anywhere on the collapsed bar to expand it.
-      toggleSidebar();
+      // If collapsed, expand if the click is NOT on a link/button.
+      if (!target.closest('a, button')) {
+        toggleSidebar();
+      }
     }
   };
 
