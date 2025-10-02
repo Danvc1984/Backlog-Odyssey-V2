@@ -61,6 +61,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
+  const [newGenre, setNewGenre] = useState('');
   
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -165,6 +166,14 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     }
   }
 
+  const handleAddNewGenre = () => {
+    if (newGenre && !allGenres.includes(newGenre)) {
+      onAddGenre(newGenre);
+      form.setValue('genres', [...form.getValues('genres'), newGenre]);
+      setNewGenre('');
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
@@ -255,6 +264,17 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             )}
           />
         </div>
+        <div className="space-y-2">
+          <FormLabel>Add Custom Genre</FormLabel>
+          <div className="flex gap-2">
+            <Input 
+              placeholder="e.g. Metroidvania" 
+              value={newGenre}
+              onChange={(e) => setNewGenre(e.target.value)}
+            />
+            <Button type="button" variant="outline" onClick={handleAddNewGenre}>Add</Button>
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-4">
            <FormField
             control={form.control}
@@ -343,3 +363,5 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
