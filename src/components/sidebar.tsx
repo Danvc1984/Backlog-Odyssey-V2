@@ -10,9 +10,9 @@ import {
   SidebarMenuButton,
   SidebarBody,
   SidebarContent,
-  SidebarRail,
   SidebarTrigger,
   SidebarFooter,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ const AppSidebar = () => {
   const { signOut } = useAuth();
   const router = useRouter();
   const activeList = searchParams.get('list');
+  const { toggleSidebar } = useSidebar();
 
   const isLibraryRoute = pathname === '/library';
 
@@ -43,7 +44,11 @@ const AppSidebar = () => {
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarBody>
-        <SidebarRail />
+        <div 
+          className="absolute inset-0 z-0 group-data-[state=expanded]:hidden" 
+          onClick={toggleSidebar}
+          aria-hidden="true"
+        />
         <SidebarContent className="p-2 flex-grow">
           <SidebarMenu>
             <SidebarMenuItem>
