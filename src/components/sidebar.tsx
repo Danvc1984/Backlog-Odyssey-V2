@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -56,19 +57,29 @@ const AppSidebar = () => {
 
             <Collapsible asChild defaultOpen={isLibraryRoute}>
               <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    isActive={isLibraryRoute}
-                    tooltip="My Library"
-                    className="justify-between"
-                  >
-                    <div className='flex items-center gap-2'>
-                      <Library />
-                      <span className="group-data-[collapsible=icon]:hidden">My Library</span>
-                    </div>
-                    <ChevronDown className="h-4 w-4 group-data-[collapsible=icon]:hidden transition-transform duration-200 [&[data-state=open]]:-rotate-180" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
+                <div className='flex items-center justify-between pr-2'>
+                  <Link href="/library?list=Now%20Playing" className='flex-grow'>
+                    <SidebarMenuButton
+                      isActive={isLibraryRoute}
+                      tooltip="My Library"
+                      className="w-full justify-start"
+                    >
+                      <div className='flex items-center gap-2'>
+                        <Library />
+                        <span className="group-data-[collapsible=icon]:hidden">My Library</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </Link>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 group-data-[collapsible=icon]:hidden"
+                    >
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:-rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                </div>
                 <CollapsibleContent>
                   <ul className="pl-7 py-2 space-y-1 group-data-[collapsible=icon]:hidden">
                     {gameLists.map(list => (
@@ -77,7 +88,7 @@ const AppSidebar = () => {
                            <SidebarMenuButton
                             size="sm"
                             isActive={isLibraryRoute && activeList === list}
-                            className={cn("w-full justify-start", (isLibraryRoute && activeList === list) && "bg-accent/50")}
+                            className={cn("w-full justify-start", (isLibrary-route && activeList === list) && "bg-accent/50")}
                           >
                              {list}
                            </SidebarMenuButton>
