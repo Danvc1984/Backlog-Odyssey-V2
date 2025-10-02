@@ -41,18 +41,13 @@ const AppSidebar = () => {
 
   const handleBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-
     if (state === 'expanded') {
-      // If expanded, collapse if the click is on the body but not on an interactive element.
       if (!target.closest('a, button')) {
         toggleSidebar();
       }
     } else if (state === 'collapsed') {
-      // If collapsed, expand only if the click is directly on the body (the rail).
-      // This prevents expanding when clicking the icon buttons themselves.
-      if (target === e.currentTarget) {
-        toggleSidebar();
-      }
+      // Allow clicking anywhere on the collapsed bar to expand it.
+      toggleSidebar();
     }
   };
 
