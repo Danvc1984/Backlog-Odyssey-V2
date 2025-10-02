@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { ALL_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
+import { ALL_PLATFORMS, USER_SELECTABLE_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
@@ -21,7 +21,7 @@ const platformSettingsSchema = z.object({
   favoritePlatform: z.string({ required_error: 'Please select a favorite platform.' }),
   notifyDiscounts: z.boolean().optional(),
   playsOnSteamDeck: z.boolean().optional(),
-}).refine(data => data.platforms.includes(data.favoritePlatform), {
+}).refine(data => [...data.platforms, 'Others/ROMs'].includes(data.favoritePlatform), {
   message: 'Favorite platform must be one of the selected platforms.',
   path: ['favoritePlatform'],
 });
@@ -69,7 +69,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
   async function onSubmit(data: PlatformSettingsFormValues) {
     try {
-      await savePreferences(data as UserPreferences);
+      const finalPreferences = {
+        ...data,
+        platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
+      }
+      await savePreferences(finalPreferences as UserPreferences);
       toast({
         title: 'Preferences Saved',
         description: 'Your platform settings have been updated.',
@@ -109,7 +113,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                     </FormDescription>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    {ALL_PLATFORMS.map((platform) => (
+                    {USER_SELECTABLE_PLATFORMS.map((platform) => (
                       <FormField
                         key={platform}
                         control={form.control}
@@ -142,6 +146,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         }}
                       />
                     ))}
+                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={true}
+                            disabled={true}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal text-muted-foreground">
+                          Others/ROMs
+                        </FormLabel>
+                      </FormItem>
                   </div>
                   <FormMessage />
                 </FormItem>
@@ -164,7 +179,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
                       >
-                        {selectedPlatforms.map((platform) => (
+                        {[...selectedPlatforms, "Others/ROMs"].map((platform) => (
                            <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
                            <FormControl>
                              <RadioGroupItem value={platform} />
