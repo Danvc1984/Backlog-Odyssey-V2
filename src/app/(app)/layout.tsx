@@ -27,17 +27,24 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [allGames, setAllGames] = React.useState<Game[]>([]);
 
   React.useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
+    // Wait for auth to finish loading
+    if (authLoading) return;
 
-  React.useEffect(() => {
-    const isLoading = authLoading || profileLoading;
-    if (!isLoading && user && !profile?.onboardingComplete && pathname !== '/settings/platform') {
+    // If no user, redirect to login
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    // If user is logged in, but profile is still loading, wait
+    if(profileLoading) return;
+
+    // If user is logged in, profile is loaded, but onboarding is not complete, redirect to setup
+    if (user && !profile?.onboardingComplete && pathname !== '/settings/platform') {
       router.push('/settings/platform');
     }
-  }, [profile, authLoading, profileLoading, user, router, pathname]);
+
+  }, [user, authLoading, profile, profileLoading, router, pathname]);
 
   React.useEffect(() => {
     if (user) {
@@ -56,7 +63,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   const isLoading = authLoading || profileLoading;
 
-  if (isLoading) {
+  // Show a global loading state while auth or profile is loading
+  if (isLoading && pathname !== '/settings/platform') {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
@@ -64,6 +72,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
+  // If no user is authenticated, show a redirecting message or a blank screen
   if (!user) {
      return (
       <div className="flex items-center justify-center min-h-screen">
@@ -72,10 +81,12 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
   
+  // Allow the onboarding page to render without the full layout
   if (pathname === '/settings/platform' && !profile?.onboardingComplete) {
       return children;
   }
   
+  // If onboarding is not complete but user tries to access other pages, show a redirecting message
   if (!profile?.onboardingComplete) {
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -84,7 +95,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-
+  // Render the full app layout
   return (
     <SidebarProvider>
       <Sidebar>
