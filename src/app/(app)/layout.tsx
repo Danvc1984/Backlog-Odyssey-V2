@@ -10,7 +10,6 @@ import {
   Sidebar,
   SidebarBody,
   SidebarContent,
-  SidebarRail,
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { collection, onSnapshot } from 'firebase/firestore';
@@ -27,23 +26,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const [allGames, setAllGames] = React.useState<Game[]>([]);
 
   React.useEffect(() => {
-    // Wait for auth to finish loading
-    if (authLoading) return;
+    if (authLoading) return; // Wait for authentication to resolve
 
-    // If no user, redirect to login
     if (!user) {
       router.push('/login');
       return;
     }
     
-    // If user is logged in, but profile is still loading, wait
-    if(profileLoading) return;
+    if (profileLoading) return; // Wait for profile to resolve
 
-    // If user is logged in, profile is loaded, but onboarding is not complete, redirect to setup
-    if (user && !profile?.onboardingComplete && pathname !== '/settings/platform') {
+    if (!profile?.onboardingComplete && pathname !== '/settings/platform') {
       router.push('/settings/platform');
     }
-
   }, [user, authLoading, profile, profileLoading, router, pathname]);
 
   React.useEffect(() => {
@@ -61,41 +55,39 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, authLoading]);
   
-  const isLoading = authLoading || profileLoading;
+  const isLoading = authLoading || (user && profileLoading);
 
-  // Show a global loading state while auth or profile is loading
-  if (isLoading && pathname !== '/settings/platform') {
+  // 1. Handle primary loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         Loading...
       </div>
     );
   }
-  
-  // If no user is authenticated, show a redirecting message or a blank screen
+
+  // 2. Handle unauthenticated state
   if (!user) {
-     return (
+    return (
       <div className="flex items-center justify-center min-h-screen">
         Redirecting to login...
       </div>
     );
   }
-  
-  // Allow the onboarding page to render without the full layout
-  if (pathname === '/settings/platform' && !profile?.onboardingComplete) {
-      return children;
-  }
-  
-  // If onboarding is not complete but user tries to access other pages, show a redirecting message
+
+  // 3. Handle onboarding state for authenticated users
   if (!profile?.onboardingComplete) {
+    if (pathname === '/settings/platform') {
+      return children; // Render the onboarding page
+    }
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            Redirecting to setup...
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        Redirecting to setup...
+      </div>
     );
   }
 
-  // Render the full app layout
+  // 4. Render the full app layout for authenticated and onboarded users
   return (
     <SidebarProvider>
       <Sidebar>
