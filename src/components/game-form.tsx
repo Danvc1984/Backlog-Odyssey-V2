@@ -145,8 +145,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     
     if (platformToSet) {
       form.setValue('platform', platformToSet);
-    } else if (userPlatforms.includes('ROMs/Other')) {
-      form.setValue('platform', 'ROMs/Other');
+    } else if (userPlatforms.includes('Others/ROMs')) {
+      form.setValue('platform', 'Others/ROMs');
     }
 
     const gameGenres = game.genres?.map((g: any) => g.name) as Genre[] || [];

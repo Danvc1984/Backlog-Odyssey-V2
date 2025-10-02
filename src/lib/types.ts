@@ -1,7 +1,7 @@
 
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";
 
-export const ALL_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo Switch", "ROMs/Other"] as const;
+export const ALL_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Others/ROMs"] as const;
 export type Platform = typeof ALL_PLATFORMS[number];
 
 export type Genre = "Action" | "Adventure" | "Indie" | "MMO" | "Puzzle" | "RPG" | "Sports" | "Strategy";

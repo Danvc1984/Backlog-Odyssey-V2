@@ -14,5 +14,5 @@ export const platformIcons: Record<Platform, React.ComponentType<LucideProps>> =
   "PlayStation": Gamepad2,
   "Xbox": Gamepad,
   "Nintendo Switch": Square,
-  "ROMs/Other": Archive,
+  "Others/ROMs": Archive,
 };
