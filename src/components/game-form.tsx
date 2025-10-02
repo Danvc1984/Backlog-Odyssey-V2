@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Search, Image as ImageIcon, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
@@ -184,12 +184,21 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   }
 
   const handleAddNewGenre = () => {
-    if (newGenre && !allGenres.includes(newGenre)) {
-      onAddGenre(newGenre);
+    if (newGenre && !allGenres.includes(newGenre as Genre)) {
+      onAddGenre(newGenre as Genre);
       form.setValue('genres', [...form.getValues('genres'), newGenre]);
       setNewGenre('');
     }
   };
+
+  const sortedPlatforms = useMemo(() => {
+    if (!preferences?.platforms) return [];
+    return [...preferences.platforms].sort((a, b) => {
+      if (a === 'Others/ROMs') return 1;
+      if (b === 'Others/ROMs') return -1;
+      return a.localeCompare(b);
+    });
+  }, [preferences?.platforms]);
 
   return (
     <Form {...form}>
@@ -257,7 +266,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {preferences?.platforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    {sortedPlatforms.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <FormMessage />

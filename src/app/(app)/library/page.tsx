@@ -203,6 +203,15 @@ export default function LibraryPage() {
   const gamesByList = (list: GameList) => {
     return filteredGames.filter(game => game.list === list);
   };
+
+  const sortedPlatforms = useMemo(() => {
+    if (!preferences?.platforms) return [];
+    return [...preferences.platforms].sort((a, b) => {
+      if (a === 'Others/ROMs') return 1;
+      if (b === 'Others/ROMs') return -1;
+      return a.localeCompare(b);
+    });
+  }, [preferences?.platforms]);
   
   if (prefsLoading) {
     return <div className="text-center py-10">Loading library...</div>;
@@ -259,7 +268,7 @@ export default function LibraryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Platforms</SelectItem>
-              {preferences?.platforms.map(p => (
+              {sortedPlatforms.map(p => (
                 <SelectItem key={p} value={p}>{p}</SelectItem>
               ))}
             </SelectContent>

@@ -13,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { ALL_PLATFORMS, USER_SELECTABLE_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Separator } from './ui/separator';
 
 const platformSettingsSchema = z.object({
@@ -89,6 +89,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       });
     }
   }
+
+  const sortedFavoritePlatforms = useMemo(() => {
+    if (!selectedPlatforms) return [];
+    const uniquePlatforms = Array.from(new Set([...selectedPlatforms, "Others/ROMs"]));
+    return uniquePlatforms.sort((a, b) => {
+        if (a === 'Others/ROMs') return 1;
+        if (b === 'Others/ROMs') return -1;
+        return a.localeCompare(b);
+    });
+  }, [selectedPlatforms]);
+
 
   return (
     <Card>
@@ -179,7 +190,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
                       >
-                        {Array.from(new Set([...selectedPlatforms, "Others/ROMs"])).map((platform) => (
+                        {sortedFavoritePlatforms.map((platform) => (
                            <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
                            <FormControl>
                              <RadioGroupItem value={platform} />
