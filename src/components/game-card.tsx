@@ -58,6 +58,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
             ) : null}
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => onEdit(game)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" className="h-7 w-7 bg-primary/80 hover:bg-primary text-primary-foreground">
@@ -77,10 +80,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => onEdit(game)}>
-              <Pencil className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </CardContent>
