@@ -87,7 +87,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon">
+      <Sidebar>
         <AppSidebar />
       </Sidebar>
       <SidebarInset>

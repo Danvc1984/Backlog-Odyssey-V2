@@ -15,7 +15,7 @@ import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo } from 'react';
 import { Separator } from './ui/separator';
-import { useUserProfile } from '@/hooks/use-user-profile';
+import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
