@@ -43,19 +43,16 @@ const AppSidebar = () => {
     const target = e.target as HTMLElement;
 
     if (state === 'expanded') {
-      // If expanded, check if the click was on a non-interactive part of the sidebar body.
-      // If the click is on a link or button, we don't want to collapse.
-      if (target.closest('a, button')) {
-        return;
+      // If expanded, collapse if the click is on the body but not on an interactive element.
+      if (!target.closest('a, button')) {
+        toggleSidebar();
       }
-      toggleSidebar();
     } else if (state === 'collapsed') {
-      // If collapsed, expand it unless a specific button on the rail was clicked.
-      // The trigger button will handle its own toggle.
-      if (target.closest('[data-sidebar="trigger"]')) {
-        return;
+      // If collapsed, expand only if the click is directly on the body (the rail).
+      // This prevents expanding when clicking the icon buttons themselves.
+      if (target === e.currentTarget) {
+        toggleSidebar();
       }
-      toggleSidebar();
     }
   };
 
