@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
-import { Layers, Search, Image as ImageIcon, Upload } from 'lucide-react';
+import { Layers, Search, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 
 import {
@@ -307,10 +307,20 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
             <TabsContent value="upload">
                 <div className="space-y-4 py-4">
                     <div className="flex flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/50 p-8 text-center h-[296px]">
-                        <Upload className="h-10 w-10 text-muted-foreground mb-4"/>
-                        <h3 className="text-lg font-semibold">Upload a file</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Upload a .txt file with one game title per line.</p>
-                        <Input id="file-upload" type="file" className="w-auto" onChange={handleFileUpload} accept=".txt"/>
+                        {isSearching ? (
+                            <>
+                                <Loader2 className="h-10 w-10 text-muted-foreground animate-spin mb-4" />
+                                <h3 className="text-lg font-semibold">Searching for games...</h3>
+                                <p className="text-sm text-muted-foreground">Please wait while we process your file.</p>
+                            </>
+                        ) : (
+                            <>
+                                <Upload className="h-10 w-10 text-muted-foreground mb-4"/>
+                                <h3 className="text-lg font-semibold">Upload a file</h3>
+                                <p className="text-sm text-muted-foreground mb-4">Upload a .txt file with one game title per line.</p>
+                                <Input id="file-upload" type="file" className="w-auto" onChange={handleFileUpload} accept=".txt"/>
+                            </>
+                        )}
                     </div>
                 </div>
             </TabsContent>
@@ -363,3 +373,5 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
 };
 
 export default BatchAddGames;
+
+    
