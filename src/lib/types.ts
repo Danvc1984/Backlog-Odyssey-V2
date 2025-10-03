@@ -5,7 +5,7 @@ export const USER_SELECTABLE_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo
 export const ALL_PLATFORMS = [...USER_SELECTABLE_PLATFORMS, "Others/ROMs"] as const;
 export type Platform = typeof ALL_PLATFORMS[number];
 
-export type Genre = "Action" | "Adventure" | "Indie" | "MMO" | "Puzzle" | "RPG" | "Sports" | "Strategy";
+export type Genre = string;
 
 export interface Game {
   id: string;

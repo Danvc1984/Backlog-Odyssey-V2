@@ -81,7 +81,7 @@ export default function LibraryPage() {
         );
         setGames(userGames);
         
-        const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []));
+        const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []).filter(g => g).map(g => g.trim()));
         setAllGenres(Array.from(uniqueGenres).sort());
         
         setDataLoading(false);
@@ -187,8 +187,8 @@ export default function LibraryPage() {
   };
 
   const handleAddGenre = (newGenre: Genre) => {
-    if (!allGenres.includes(newGenre)) {
-      setAllGenres(prev => [...prev, newGenre].sort());
+    if (newGenre && !allGenres.map(g => g.toLowerCase()).includes(newGenre.toLowerCase())) {
+        setAllGenres(prev => [...prev, newGenre].sort());
     }
   };
 
