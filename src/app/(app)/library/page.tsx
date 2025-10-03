@@ -192,18 +192,27 @@ export default function LibraryPage() {
     }
   };
 
-  const filteredGames = useMemo(() => {
-    return games.filter(game => {
+  const gamesByList = useMemo(() => {
+    const initialLists: Record<GameList, Game[]> = {
+      'Now Playing': [],
+      'Backlog': [],
+      'Wishlist': [],
+      'Recently Played': [],
+    };
+    
+    return games.reduce((acc, game) => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
       const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter as Genre));
-      return matchesSearch && matchesPlatform && matchesGenre;
-    });
-  }, [games, searchTerm, platformFilter, genreFilter]);
 
-  const gamesByList = (list: GameList) => {
-    return filteredGames.filter(game => game.list === list);
-  };
+      if (matchesSearch && matchesPlatform && matchesGenre) {
+        if(acc[game.list]) {
+          acc[game.list].push(game);
+        }
+      }
+      return acc;
+    }, initialLists);
+  }, [games, searchTerm, platformFilter, genreFilter]);
 
   const sortedPlatforms = useMemo(() => {
     if (!preferences?.platforms) return [];
@@ -281,8 +290,8 @@ export default function LibraryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Genres</SelectItem>
-              {allGenres.map(g => (
-                <SelectItem key={g} value={g}>{g}</SelectItem>
+              {allGenres.map((g,i) => (
+                <SelectItem key={`${g}-${i}`} value={g}>{g}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -310,8 +319,8 @@ export default function LibraryPage() {
                 layout
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
                 <AnimatePresence>
-                  {gamesByList(list).length > 0 ? (
-                    gamesByList(list).map((game, index) => (
+                  {gamesByList[list].length > 0 ? (
+                    gamesByList[list].map((game, index) => (
                       <motion.div
                         key={game.id}
                         layout
