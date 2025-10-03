@@ -135,15 +135,21 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
       const content = e.target?.result as string;
       const gameTitles = content.split('\n').map(title => title.trim()).filter(Boolean);
       
+      const searchPromises = gameTitles.map(title => 
+        searchSingleGame(title).then(game => ({ title, game }))
+      );
+
+      const results = await Promise.all(searchPromises);
+
       const foundGames: RawgGame[] = [];
-      for (const title of gameTitles) {
-        const game = await searchSingleGame(title);
+      results.forEach(({ title, game }) => {
         if (game) {
           foundGames.push(game);
         } else {
           toast({ title: 'Game Not Found', description: `Could not find a match for "${title}".`, variant: 'destructive' });
         }
-      }
+      });
+      
       setSelectedGames(prev => [...prev, ...foundGames]);
       setIsSearching(false);
       
