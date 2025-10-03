@@ -61,7 +61,7 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
-  const [genreFilter, setGenreFilter] = useState<Genre | 'all'>('all');
+  const [genreFilter, setGenreFilter] = useState<string | 'all'>('all');
   
   const [isAddFormOpen, setAddFormOpen] = useState(false);
   const [isEditFormOpen, setEditFormOpen] = useState(false);
@@ -69,7 +69,7 @@ export default function LibraryPage() {
   const [deletingGame, setDeletingGame] = useState<Game | null>(null);
 
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
-  const [allGenres, setAllGenres] = useState<Genre[]>([]);
+  const [allGenres, setAllGenres] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -97,7 +97,7 @@ export default function LibraryPage() {
   useEffect(() => {
     const list = searchParams.get('list') as GameList | null;
     const platform = searchParams.get('platform') as Platform | 'all' | null;
-    const genre = searchParams.get('genre') as Genre | 'all' | null;
+    const genre = searchParams.get('genre') as string | 'all' | null;
     
     if (list && gameLists.includes(list)) {
       setActiveList(list);
@@ -123,7 +123,7 @@ export default function LibraryPage() {
     updateQueryParam('platform', value);
   };
   
-  const handleGenreFilterChange = (value: Genre | 'all') => {
+  const handleGenreFilterChange = (value: string | 'all') => {
     setGenreFilter(value);
     updateQueryParam('genre', value);
   };
@@ -186,7 +186,7 @@ export default function LibraryPage() {
     }
   };
 
-  const handleAddGenre = (newGenre: Genre) => {
+  const handleAddGenre = (newGenre: string) => {
     if (newGenre && !allGenres.map(g => g.toLowerCase()).includes(newGenre.toLowerCase())) {
         setAllGenres(prev => [...prev, newGenre].sort());
     }
@@ -203,7 +203,7 @@ export default function LibraryPage() {
     return games.reduce((acc, game) => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
-      const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter as Genre));
+      const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
 
       if (matchesSearch && matchesPlatform && matchesGenre) {
         if(acc[game.list]) {
@@ -232,7 +232,7 @@ export default function LibraryPage() {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
         <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <BatchAddGames onAddGenre={handleAddGenre} />
+          <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
           <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">

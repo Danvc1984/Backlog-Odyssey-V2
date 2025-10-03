@@ -49,9 +49,10 @@ type RawgGame = {
 
 type BatchAddGamesProps = {
   onAddGenre: (genre: Genre) => void;
+  defaultList: GameList;
 };
 
-const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
+const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }) => {
   const { user } = useAuth();
   const { preferences } = useUserPreferences();
   const { toast } = useToast();
@@ -63,7 +64,14 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
   const [targetList, setTargetList] = useState<GameList>('Wishlist');
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [activeTab, setActiveTab] = useState("search");
+  const [activeTab, setActiveTab] = useState("upload");
+  
+  useEffect(() => {
+    if (defaultList) {
+      setTargetList(defaultList);
+    }
+  }, [defaultList]);
+
 
   const searchGames = useCallback(async (query: string) => {
     if (query.length < 3) {
@@ -235,8 +243,8 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
       setSearchTerm('');
       setSearchResults([]);
       setSelectedGames([]);
-      setTargetList('Wishlist');
-      setActiveTab('search');
+      setTargetList(defaultList || 'Wishlist');
+      setActiveTab('upload');
     }
     setIsOpen(open);
   };
@@ -245,7 +253,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="outline">
           <Layers className="mr-2 h-4 w-4" /> Batch Add
         </Button>
       </DialogTrigger>
@@ -379,5 +387,3 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre }) => {
 };
 
 export default BatchAddGames;
-
-    
