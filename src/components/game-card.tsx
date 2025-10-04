@@ -40,8 +40,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
 
   return (
       <motion.div layout>
-        <Card className="h-full group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
-          <CardHeader className="p-0 relative aspect-[3/4]">
+        <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
+          <CardHeader className="p-0 relative aspect-[3/4] overflow-hidden rounded-t-lg">
             {game.imageUrl ? (
               <Image
                 src={game.imageUrl}
