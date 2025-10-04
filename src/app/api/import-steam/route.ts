@@ -1,12 +1,13 @@
 
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
 import axios from 'axios';
-import type { Game, Platform } from '@/lib/types';
+import type { Game } from '@/lib/types';
 
 const db = getFirestore(adminApp);
 const auth = getAuth(adminApp);
@@ -18,13 +19,11 @@ async function resolveVanityURL(vanityId: string): Promise<string> {
     if (!vanityId) {
         throw new Error('Steam ID or Vanity URL is required.');
     }
-    // If it's already a numeric 64-bit ID, return it.
     if (/^\d{17}$/.test(vanityId)) {
         return vanityId;
     }
 
     let vanityName = vanityId;
-    // Extract vanity name from full URL
     if (vanityId.includes('steamcommunity.com/id/')) {
         vanityName = vanityId.substring(vanityId.indexOf('steamcommunity.com/id/') + 'steamcommunity.com/id/'.length).split('/')[0];
     } else if (vanityId.includes('steamcommunity.com/profiles/')) {
@@ -98,7 +97,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { steamId } = await req.json();
+    const { steamId, importMode } = await req.json();
 
     if (!STEAM_API_KEY) {
         return NextResponse.json({ message: 'Steam API Key is not configured on the server.' }, { status: 500 });
@@ -109,15 +108,33 @@ export async function POST(req: NextRequest) {
     
     try {
         const steamId64 = await resolveVanityURL(steamId);
-
-        // Save the resolved Steam ID to user's profile
+        
         const userProfileRef = db.collection('users').doc(uid);
         await userProfileRef.update({ steamId: steamId64 });
 
-        const steamGames = await getOwnedGames(steamId64);
-        const batch = db.batch();
+        let steamGames = await getOwnedGames(steamId64);
         const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
+
+        if (importMode === 'new') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('steamAppId', '!=', null).get();
+            const existingSteamAppIds = new Set(existingGamesSnapshot.docs.map(doc => doc.data().steamAppId));
+            steamGames = steamGames.filter(steamGame => !existingSteamAppIds.has(steamGame.appid));
+        } else if (importMode === 'full') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
+            const deleteBatch = db.batch();
+            existingGamesSnapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
+            await deleteBatch.commit();
+        }
+
+        if (steamGames.length === 0) {
+            return NextResponse.json({ 
+                message: 'No new games to import.', 
+                importedCount: 0,
+                failedCount: 0,
+            });
+        }
         
+        const batch = db.batch();
         const rawgPromises = steamGames.map(steamGame => getRawgGameDetails(steamGame.name).then(rawgDetails => ({ steamGame, rawgDetails })));
         
         const results = await Promise.all(rawgPromises);
@@ -138,6 +155,7 @@ export async function POST(req: NextRequest) {
                     imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
                     releaseDate: rawgDetails.released,
                     estimatedPlaytime: rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || 0,
+                    steamAppId: steamGame.appid,
                 };
                 batch.set(gameDocRef, newGame);
                 importedCount++;

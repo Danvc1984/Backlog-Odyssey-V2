@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +21,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -40,11 +52,12 @@ type PlatformSettingsProps = {
 export default function PlatformSettings({ isOnboarding = false }: PlatformSettingsProps) {
   const router = useRouter();
   const { user, getAuthToken } = useAuth();
-  const { preferences, savePreferences, loading } = useUserPreferences();
+  const { preferences, savePreferences, loading: prefsLoading } = useUserPreferences();
   const { profile, loading: profileLoading } = useUserProfile();
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
   const [steamVanityId, setSteamVanityId] = useState('');
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   const form = useForm<PlatformSettingsFormValues>({
     resolver: zodResolver(platformSettingsSchema),
@@ -91,6 +104,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       }
       await savePreferences(finalPreferences as UserPreferences);
       
+      if (steamVanityId) {
+        const userProfileRef = doc(db, 'users', user.uid);
+        await updateDoc(userProfileRef, { steamId: steamVanityId });
+      }
+
       if (isOnboarding && !profile?.onboardingComplete) {
         const userProfileRef = doc(db, 'users', user.uid);
         await updateDoc(userProfileRef, { onboardingComplete: true });
@@ -98,7 +116,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
       toast({
         title: 'Preferences Saved',
-        description: 'Your platform settings have been updated.',
+        description: 'Your platform and profile settings have been updated.',
       });
       if (isOnboarding) {
         router.push('/dashboard');
@@ -106,17 +124,18 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to save preferences. Please try again.',
+        description: 'Failed to save settings. Please try again.',
         variant: 'destructive',
       });
     }
   }
-
-  const handleSteamImport = async () => {
+  
+  const handleSteamImport = async (importMode: 'full' | 'new') => {
+    setShowImportDialog(false);
     if (!steamVanityId) {
       toast({
         title: 'Steam ID required',
-        description: 'Please enter your Steam vanity URL or ID.',
+        description: 'Please enter your Steam vanity URL or ID and save it before importing.',
         variant: 'destructive',
       });
       return;
@@ -134,7 +153,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ steamId: steamVanityId }),
+        body: JSON.stringify({ steamId: steamVanityId, importMode }),
       });
 
       const result = await response.json();
@@ -144,7 +163,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       }
       
       toast({
-        title: 'Steam Library Imported!',
+        title: 'Steam Library Import Complete!',
         description: `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
       });
 
@@ -158,6 +177,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       setIsImporting(false);
     }
   }
+
 
   const sortedFavoritePlatforms = useMemo(() => {
     if (!selectedPlatforms) return [];
@@ -327,22 +347,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   )}
               </div>
             </CardContent>
-            <CardFooter>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                {loading ? 'Saving...' : isOnboarding ? 'Continue to Dashboard' : 'Save Changes'}
-              </Button>
-            </CardFooter>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Steam Integration</CardTitle>
               <CardDescription>
-                Enter your Steam vanity URL or 64-bit ID to import your game library. Your profile must be public.
+                Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+               <div className="space-y-2">
                 <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
                 <Input 
                   id='steamId'
@@ -353,10 +368,35 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 />
               </div>
             </CardContent>
-            <CardFooter>
-                <Button onClick={handleSteamImport} disabled={isImporting || profileLoading}>
-                  {isImporting ? 'Importing...' : 'Save and Import Games'}
-                </Button>
+             <CardFooter className="flex justify-between">
+              <Button type="submit" disabled={prefsLoading}>
+                {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Profile'}
+              </Button>
+              
+               <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="outline" disabled={isImporting || profileLoading || !steamVanityId}>
+                    {isImporting ? 'Importing...' : 'Import Steam Library'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      How would you like to import your games? A 'Full Re-import' will replace your current PC library. 'Add New Games' will only add games that are not already in your library.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSteamImport('new')}>
+                      Add New Games
+                    </AlertDialogAction>
+                    <AlertDialogAction onClick={() => handleSteamImport('full')}>
+                      Full Re-import
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </CardFooter>
           </Card>
         </form>
@@ -364,5 +404,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
-
-    

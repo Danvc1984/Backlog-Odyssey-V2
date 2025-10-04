@@ -1,4 +1,5 @@
 
+
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";
 
 export const USER_SELECTABLE_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo Switch"] as const;
@@ -17,6 +18,7 @@ export interface Game {
   imageUrl: string;
   releaseDate?: string;
   estimatedPlaytime?: number;
+  steamAppId?: number;
 }
 
 export type Recommendation = {
