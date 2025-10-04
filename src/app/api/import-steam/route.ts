@@ -118,14 +118,14 @@ export async function POST(req: NextRequest) {
         const batch = db.batch();
         const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
         
-        const userPrefsDoc = await db.collection('users').doc(uid).collection('preferences').doc('platform').get();
-        const userPreferences = userPrefsDoc.data();
+        const rawgPromises = steamGames.map(steamGame => getRawgGameDetails(steamGame.name).then(rawgDetails => ({ steamGame, rawgDetails })));
+        
+        const results = await Promise.all(rawgPromises);
 
         let importedCount = 0;
         let failedCount = 0;
 
-        for (const steamGame of steamGames) {
-            const rawgDetails = await getRawgGameDetails(steamGame.name);
+        for (const { steamGame, rawgDetails } of results) {
             if (rawgDetails) {
                 const gameDocRef = gamesCollectionRef.doc();
                 
