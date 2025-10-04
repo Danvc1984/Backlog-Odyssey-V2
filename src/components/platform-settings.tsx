@@ -39,7 +39,7 @@ type PlatformSettingsProps = {
 
 export default function PlatformSettings({ isOnboarding = false }: PlatformSettingsProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, getAuthToken } = useAuth();
   const { preferences, savePreferences, loading } = useUserPreferences();
   const { profile, loading: profileLoading } = useUserProfile();
   const { toast } = useToast();
@@ -123,9 +123,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     }
     setIsImporting(true);
     try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('You must be logged in to import your library.');
+      }
+
       const response = await fetch('/api/import-steam', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ steamId: steamVanityId }),
       });
 
@@ -164,15 +172,15 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
   return (
     <div className='space-y-6'>
-      <Card>
-        <CardHeader>
-          <CardTitle>Platform Preferences</CardTitle>
-          <CardDescription>
-            Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
-          </CardDescription>
-        </CardHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Platform Preferences</CardTitle>
+              <CardDescription>
+                Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
+              </CardDescription>
+            </CardHeader>
             <CardContent className="space-y-6">
               <FormField
                 control={form.control}
@@ -324,35 +332,37 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 {loading ? 'Saving...' : isOnboarding ? 'Continue to Dashboard' : 'Save Changes'}
               </Button>
             </CardFooter>
-          </form>
-        </Form>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Steam Integration</CardTitle>
-          <CardDescription>
-            Enter your Steam vanity URL or 64-bit ID to import your game library. Your profile must be public.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
-            <Input 
-              id='steamId'
-              placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
-              value={steamVanityId}
-              onChange={(e) => setSteamVanityId(e.target.value)}
-              disabled={isImporting}
-            />
-          </div>
-        </CardContent>
-        <CardFooter>
-            <Button onClick={handleSteamImport} disabled={isImporting || profileLoading}>
-              {isImporting ? 'Importing...' : 'Save and Import Games'}
-            </Button>
-        </CardFooter>
-      </Card>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Steam Integration</CardTitle>
+              <CardDescription>
+                Enter your Steam vanity URL or 64-bit ID to import your game library. Your profile must be public.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
+                <Input 
+                  id='steamId'
+                  placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
+                  value={steamVanityId}
+                  onChange={(e) => setSteamVanityId(e.target.value)}
+                  disabled={isImporting}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleSteamImport} disabled={isImporting || profileLoading}>
+                  {isImporting ? 'Importing...' : 'Save and Import Games'}
+                </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
     </div>
   );
 }
+
+    
