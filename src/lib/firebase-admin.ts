@@ -1,5 +1,5 @@
 
-import * as admin from 'firebase-admin';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
@@ -12,15 +12,15 @@ const serviceAccountJson = JSON.parse(
 );
 
 
-let adminApp: admin.app.App;
+let adminApp: App;
 
-if (!admin.apps.length) {
-  adminApp = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountJson),
+if (!getApps().length) {
+  adminApp = initializeApp({
+    credential: cert(serviceAccountJson),
     projectId: 'studio-8063658966-c0f00',
   });
 } else {
-  adminApp = admin.app();
+  adminApp = getApps()[0];
 }
 
 export { adminApp };

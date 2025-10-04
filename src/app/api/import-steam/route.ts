@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
 import axios from 'axios';
 import type { Game, Platform } from '@/lib/types';
