@@ -13,6 +13,7 @@ interface AuthContextType {
   signInWithEmail: (values: AuthFormValues) => Promise<any>;
   signUpWithEmail: (values: AuthFormValues) => Promise<any>;
   signOut: () => Promise<void>;
+  getAuthToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +29,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     return () => unsubscribe();
   }, []);
+
+  const getAuthToken = async () => {
+    if (auth.currentUser) {
+        return auth.currentUser.getIdToken();
+    }
+    return null;
+  }
 
   const signInWithEmail = async ({ email, password }: AuthFormValues) => {
     return signInWithEmailAndPassword(auth, email, password);
@@ -57,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signInWithEmail, signUpWithEmail, signOut, getAuthToken }}>
       {children}
     </AuthContext.Provider>
   );

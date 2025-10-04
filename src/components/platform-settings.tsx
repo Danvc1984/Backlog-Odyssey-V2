@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,12 +14,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { ALL_PLATFORMS, USER_SELECTABLE_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useMemo } from 'react';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Input } from './ui/input';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -40,8 +41,10 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const router = useRouter();
   const { user } = useAuth();
   const { preferences, savePreferences, loading } = useUserPreferences();
-  const { profile } = useUserProfile();
+  const { profile, loading: profileLoading } = useUserProfile();
   const { toast } = useToast();
+  const [isImporting, setIsImporting] = useState(false);
+  const [steamVanityId, setSteamVanityId] = useState('');
 
   const form = useForm<PlatformSettingsFormValues>({
     resolver: zodResolver(platformSettingsSchema),
@@ -52,6 +55,12 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       playsOnSteamDeck: preferences?.playsOnSteamDeck || false,
     },
   });
+  
+  useEffect(() => {
+    if (profile?.steamId) {
+      setSteamVanityId(profile.steamId);
+    }
+  }, [profile]);
 
   useEffect(() => {
     if (preferences) {
@@ -103,6 +112,45 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     }
   }
 
+  const handleSteamImport = async () => {
+    if (!steamVanityId) {
+      toast({
+        title: 'Steam ID required',
+        description: 'Please enter your Steam vanity URL or ID.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setIsImporting(true);
+    try {
+      const response = await fetch('/api/import-steam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ steamId: steamVanityId }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to import Steam library.');
+      }
+      
+      toast({
+        title: 'Steam Library Imported!',
+        description: `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
+      });
+
+    } catch (error: any) {
+      toast({
+        title: 'Import Failed',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  }
+
   const sortedFavoritePlatforms = useMemo(() => {
     if (!selectedPlatforms) return [];
     const uniquePlatforms = Array.from(new Set([...selectedPlatforms, "Others/ROMs"]));
@@ -115,139 +163,119 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Platform Preferences</CardTitle>
-        <CardDescription>
-          Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
-        </CardDescription>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="platforms"
-              render={() => (
-                <FormItem>
-                  <div className="mb-4">
-                    <FormLabel className="text-base">Your Platforms</FormLabel>
-                    <FormDescription>
-                      Select all the platforms you currently play on.
-                    </FormDescription>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {USER_SELECTABLE_PLATFORMS.map((platform) => (
-                      <FormField
-                        key={platform}
-                        control={form.control}
-                        name="platforms"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={platform}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(platform)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([...field.value, platform])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== platform
-                                          )
-                                        )
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                {platform}
-                              </FormLabel>
-                            </FormItem>
-                          )
-                        }}
-                      />
-                    ))}
-                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={true}
-                            disabled={true}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal text-muted-foreground">
-                          Others/ROMs
-                        </FormLabel>
-                      </FormItem>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {selectedPlatforms && selectedPlatforms.length > 0 && (
+    <div className='space-y-6'>
+      <Card>
+        <CardHeader>
+          <CardTitle>Platform Preferences</CardTitle>
+          <CardDescription>
+            Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
+          </CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
               <FormField
                 control={form.control}
-                name="favoritePlatform"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Favorite Platform</FormLabel>
-                    <FormDescription>
-                      This will be the default platform when adding new games.
-                    </FormDescription>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-1"
-                      >
-                        {sortedFavoritePlatforms.map((platform) => (
-                           <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
-                           <FormControl>
-                             <RadioGroupItem value={platform} />
-                           </FormControl>
-                           <FormLabel className="font-normal">
-                             {platform}
-                           </FormLabel>
-                         </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
+                name="platforms"
+                render={() => (
+                  <FormItem>
+                    <div className="mb-4">
+                      <FormLabel className="text-base">Your Platforms</FormLabel>
+                      <FormDescription>
+                        Select all the platforms you currently play on.
+                      </FormDescription>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      {USER_SELECTABLE_PLATFORMS.map((platform) => (
+                        <FormField
+                          key={platform}
+                          control={form.control}
+                          name="platforms"
+                          render={({ field }) => {
+                            return (
+                              <FormItem
+                                key={platform}
+                                className="flex flex-row items-start space-x-3 space-y-0"
+                              >
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(platform)}
+                                    onCheckedChange={(checked) => {
+                                      return checked
+                                        ? field.onChange([...field.value, platform])
+                                        : field.onChange(
+                                            field.value?.filter(
+                                              (value) => value !== platform
+                                            )
+                                          )
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal">
+                                  {platform}
+                                </FormLabel>
+                              </FormItem>
+                            )
+                          }}
+                        />
+                      ))}
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={true}
+                              disabled={true}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal text-muted-foreground">
+                            Others/ROMs
+                          </FormLabel>
+                        </FormItem>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-            
-            <Separator />
 
-            <div className="space-y-4">
-               <FormField
+              {selectedPlatforms && selectedPlatforms.length > 0 && (
+                <FormField
                   control={form.control}
-                  name="notifyDiscounts"
+                  name="favoritePlatform"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormItem className="space-y-3">
+                      <FormLabel>Favorite Platform</FormLabel>
+                      <FormDescription>
+                        This will be the default platform when adding new games.
+                      </FormDescription>
                       <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {sortedFavoritePlatforms.map((platform) => (
+                            <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value={platform} />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {platform}
+                            </FormLabel>
+                          </FormItem>
+                          ))}
+                        </RadioGroup>
                       </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Notify me about discounts for games on my Wishlist.
-                        </FormLabel>
-                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
+              )}
+              
+              <Separator />
 
-                {playsOnPC && (
-                   <FormField
+              <div className="space-y-4">
+                <FormField
                     control={form.control}
-                    name="playsOnSteamDeck"
+                    name="notifyDiscounts"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
@@ -258,27 +286,73 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel>
-                            I play on a Steam Deck.
+                            Notify me about discounts for games on my Wishlist.
                           </FormLabel>
-                           <FormDescription>
-                            This helps us recommend Steam Deck compatible games.
-                          </FormDescription>
                         </div>
                       </FormItem>
                     )}
                   />
-                )}
-            </div>
 
-
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-              {loading ? 'Saving...' : isOnboarding ? 'Continue to Dashboard' : 'Save Changes'}
+                  {playsOnPC && (
+                    <FormField
+                      control={form.control}
+                      name="playsOnSteamDeck"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              I play on a Steam Deck.
+                            </FormLabel>
+                            <FormDescription>
+                              This helps us recommend Steam Deck compatible games.
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                {loading ? 'Saving...' : isOnboarding ? 'Continue to Dashboard' : 'Save Changes'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Steam Integration</CardTitle>
+          <CardDescription>
+            Enter your Steam vanity URL or 64-bit ID to import your game library. Your profile must be public.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
+            <Input 
+              id='steamId'
+              placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
+              value={steamVanityId}
+              onChange={(e) => setSteamVanityId(e.target.value)}
+              disabled={isImporting}
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+            <Button onClick={handleSteamImport} disabled={isImporting || profileLoading}>
+              {isImporting ? 'Importing...' : 'Save and Import Games'}
             </Button>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

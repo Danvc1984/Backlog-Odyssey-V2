@@ -40,4 +40,5 @@ export interface UserPreferences {
 
 export interface UserProfile {
   onboardingComplete: boolean;
+  steamId?: string;
 }
