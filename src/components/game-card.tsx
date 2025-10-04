@@ -31,9 +31,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   const compatIconColor = game.steamDeckCompat ? {
     native: 'text-green-500',
     platinum: 'text-green-400',
-    gold: 'text-yellow-500',
-    silver: 'text-orange-500',
-    bronze: 'text-red-500',
+    gold: 'text-gold-500',
+    silver: 'text-silver-500',
+    bronze: 'text-bronze-500',
     borked: 'text-red-700',
     unknown: 'text-muted-foreground',
   }[game.steamDeckCompat] : 'text-muted-foreground';
