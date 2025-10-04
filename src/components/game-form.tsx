@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Search, Image as ImageIcon, Calendar as CalendarIcon } from 'lucide-react';
+import { Search, Image as ImageIcon, Calendar as CalendarIcon, Star } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
 import { Calendar } from './ui/calendar';
+import { Slider } from './ui/slider';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -42,6 +43,7 @@ const gameSchema = z.object({
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
   estimatedPlaytime: z.coerce.number().optional(),
+  rating: z.coerce.number().min(0).max(5).optional(),
 });
 
 type GameFormValues = z.infer<typeof gameSchema>;
@@ -73,6 +75,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       list: gameToEdit?.list || defaultList,
       releaseDate: gameToEdit?.releaseDate || '',
       estimatedPlaytime: gameToEdit?.estimatedPlaytime || 0,
+      rating: gameToEdit?.rating || 0,
     },
   });
 
@@ -85,6 +88,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         list: gameToEdit.list,
         releaseDate: gameToEdit.releaseDate,
         estimatedPlaytime: gameToEdit.estimatedPlaytime,
+        rating: gameToEdit.rating,
       });
       setSelectedGameImageUrl(gameToEdit.imageUrl);
     } else {
@@ -95,6 +99,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         list: defaultList,
         releaseDate: '',
         estimatedPlaytime: 0,
+        rating: 0,
       });
       setSelectedGameImageUrl(null);
     }
@@ -169,7 +174,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   async function onSubmit(data: GameFormValues) {
     const newGame = { 
       ...data,
-      imageUrl: selectedGameImageUrl || ''
+      imageUrl: selectedGameImageUrl || '',
+      rating: data.rating === 0 ? undefined : data.rating
     };
     
     onSave(newGame as Omit<Game, 'id' | 'userId'>);
@@ -178,7 +184,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         title: 'Game Added!',
         description: `${data.title} has been added to your library.`,
       });
-      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0 });
+      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0, rating: 0 });
       setSelectedGameImageUrl(null);
     }
   }
@@ -199,6 +205,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       return a.localeCompare(b);
     });
   }, [preferences?.platforms]);
+
+  const ratingValue = form.watch('rating');
 
   return (
     <Form {...form}>
@@ -361,6 +369,32 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             )}
           />
         </div>
+         <FormField
+          control={form.control}
+          name="rating"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                <div className="flex items-center justify-between">
+                  <span>Rating</span>
+                  <div className='flex items-center gap-1'>
+                    <span className="text-sm font-bold text-yellow-400">{ratingValue ? ratingValue : 'N/A'}</span>
+                    <Star className={cn("h-4 w-4", ratingValue ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
+                  </div>
+                </div>
+              </FormLabel>
+              <FormControl>
+                 <Slider
+                  defaultValue={[field.value || 0]}
+                  max={5}
+                  step={1}
+                  onValueChange={(value) => field.onChange(value[0])}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="list"
@@ -390,3 +424,5 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
