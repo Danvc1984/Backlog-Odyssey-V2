@@ -87,7 +87,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   }, [preferences, form]);
 
   const selectedPlatforms = form.watch('platforms');
-  const playsOnPC = selectedPlatforms && selectedPlatforms.includes('PC');
+  const playsOnPC = useMemo(() => selectedPlatforms?.includes('PC') || false, [selectedPlatforms]);
 
   useEffect(() => {
     if (!playsOnPC) {
@@ -349,52 +349,54 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Steam Integration</CardTitle>
-              <CardDescription>
-                Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-               <div className="space-y-2">
-                <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
-                <Input 
-                  id='steamId'
-                  placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
-                  value={steamVanityId}
-                  onChange={(e) => setSteamVanityId(e.target.value)}
-                  disabled={isImporting}
-                />
-              </div>
-            </CardContent>
-             <CardFooter className="justify-end">
-               <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" disabled={isImporting || profileLoading || !steamVanityId}>
-                    {isImporting ? 'Importing...' : 'Import Steam Library'}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      A 'Full Import' will add all games from your Steam library, which might create duplicates. 'Add New Games' will only import games that are not already in your Backlog Odyssey library.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction disabled={!profile?.steamId} onClick={() => handleSteamImport('new')}>
-                      Add New Games
-                    </AlertDialogAction>
-                    <AlertDialogAction onClick={() => handleSteamImport('full')}>
-                      Full Import
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardFooter>
-          </Card>
+          {playsOnPC && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Steam Integration</CardTitle>
+                <CardDescription>
+                  Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <div className="space-y-2">
+                  <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
+                  <Input 
+                    id='steamId'
+                    placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
+                    value={steamVanityId}
+                    onChange={(e) => setSteamVanityId(e.target.value)}
+                    disabled={isImporting}
+                  />
+                </div>
+              </CardContent>
+               <CardFooter className="justify-end">
+                 <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+                  <AlertDialogTrigger asChild>
+                    <Button type="button" variant="outline" disabled={isImporting || profileLoading || !steamVanityId}>
+                      {isImporting ? 'Importing...' : 'Import Steam Library'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        A 'Full Import' will add all games from your Steam library, which might create duplicates. 'Add New Games' will only import games that are not already in your Backlog Odyssey library.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction disabled={!profile?.steamId} onClick={() => handleSteamImport('new')}>
+                        Add New Games
+                      </AlertDialogAction>
+                      <AlertDialogAction onClick={() => handleSteamImport('full')}>
+                        Full Import
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardFooter>
+            </Card>
+          )}
 
           <Button type="submit" disabled={prefsLoading}>
             {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
@@ -404,3 +406,5 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
+
+    

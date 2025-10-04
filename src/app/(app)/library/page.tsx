@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers } from 'lucide-react';
+import { PlusCircle, Search, Layers, Import } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -62,6 +62,7 @@ export default function LibraryPage() {
   
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<string | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'default' | 'alphabetical'>('default');
   
   const [isAddFormOpen, setAddFormOpen] = useState(false);
   const [isEditFormOpen, setEditFormOpen] = useState(false);
@@ -70,6 +71,8 @@ export default function LibraryPage() {
 
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
   const [allGenres, setAllGenres] = useState<string[]>([]);
+  
+  const playsOnPC = useMemo(() => preferences?.platforms?.includes('PC') || false, [preferences]);
 
   useEffect(() => {
     if (user) {
@@ -203,11 +206,14 @@ export default function LibraryPage() {
 
   const gamesByList = useMemo(() => {
     return gameLists.reduce((acc, list) => {
-      acc[list] = filteredGames
-        .filter(game => game.list === list);
+      let listGames = filteredGames.filter(game => game.list === list);
+      if (sortBy === 'alphabetical') {
+        listGames = listGames.sort((a, b) => a.title.localeCompare(b.title));
+      }
+      acc[list] = listGames;
       return acc;
     }, {} as Record<GameList, Game[]>);
-  }, [filteredGames]);
+  }, [filteredGames, sortBy]);
 
 
   const sortedPlatforms = useMemo(() => {
@@ -228,6 +234,11 @@ export default function LibraryPage() {
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
         <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {playsOnPC && (
+            <Button variant="outline" onClick={() => router.push('/profile')}>
+              <Import className="mr-2 h-4 w-4" /> Import from Steam
+            </Button>
+          )}
           <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
           <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
             <DialogTrigger asChild>
@@ -269,6 +280,15 @@ export default function LibraryPage() {
           />
         </div>
         <div className="flex gap-4">
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'default' | 'alphabetical')}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="alphabetical">Alphabetical (A-Z)</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Filter by Platform" />
@@ -360,3 +380,5 @@ export default function LibraryPage() {
     </div>
   );
 }
+
+    
