@@ -15,17 +15,20 @@ import {
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
-import { UserPreferencesProvider } from '@/hooks/use-user-preferences';
+import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
-import { DealsProvider } from '@/hooks/use-deals';
+import { DealsProvider, useDeals } from '@/hooks/use-deals';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserProfile();
+  const { preferences } = useUserPreferences();
+  const { fetchDeals } = useDeals();
   const router = useRouter();
   const pathname = usePathname();
   const [allGames, setAllGames] = React.useState<Game[]>([]);
   const [initialLoadComplete, setInitialLoadComplete] = React.useState(false);
+  const dealsFetchedRef = React.useRef(false);
 
   React.useEffect(() => {
     if (!authLoading && !profileLoading) {
@@ -62,6 +65,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
       setAllGames([]);
     }
   }, [user, authLoading]);
+
+  React.useEffect(() => {
+    if (allGames.length > 0 && preferences?.notifyDiscounts && !dealsFetchedRef.current) {
+        const wishlistGames = allGames.filter(g => g.list === 'Wishlist' && g.platform === 'PC' && g.steamAppId);
+        const steamAppIds = wishlistGames.map(g => g.steamAppId as number);
+        
+        if (steamAppIds.length > 0) {
+            fetchDeals(steamAppIds, true); // Pass true to show toast only if deals are found
+            dealsFetchedRef.current = true; // Mark as fetched to prevent re-fetching on component re-renders
+        }
+    }
+  }, [allGames, preferences, fetchDeals]);
   
   if (!initialLoadComplete) {
     return (

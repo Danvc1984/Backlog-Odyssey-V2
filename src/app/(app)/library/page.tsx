@@ -256,14 +256,6 @@ export default function LibraryPage() {
     }, {} as Record<GameList, Game[]>);
   }, [filteredGames, sortBy]);
 
-  const handleCheckDeals = useCallback(() => {
-    const wishlistGames = gamesByList['Wishlist'];
-    const steamAppIds = wishlistGames
-      .filter(game => game.platform === 'PC' && game.steamAppId)
-      .map(game => game.steamAppId as number);
-    fetchDeals(steamAppIds);
-  }, [gamesByList, fetchDeals]);
-
   const sortedPlatforms = useMemo(() => {
     if (!preferences?.platforms) return [];
     return [...preferences.platforms].sort((a, b) => {
@@ -301,12 +293,6 @@ export default function LibraryPage() {
               <Button variant="outline" onClick={() => router.push('/profile')}>
                 <SteamIcon className="mr-2 h-4 w-4" />
                 Import from Steam
-              </Button>
-            )}
-            {activeList === 'Wishlist' && playsOnPC && !dataLoading && !prefsLoading && (
-              <Button variant="outline" onClick={handleCheckDeals} disabled={dealsLoading}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                {dealsLoading ? 'Checking...' : 'Check for Deals'}
               </Button>
             )}
             <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />

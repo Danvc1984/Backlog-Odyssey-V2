@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
@@ -11,7 +12,7 @@ export interface Deal {
 interface DealsContextType {
   deals: Record<string, Deal>;
   loading: boolean;
-  fetchDeals: (appIds: number[]) => Promise<void>;
+  fetchDeals: (appIds: number[], silent?: boolean) => Promise<void>;
 }
 
 const DealsContext = createContext<DealsContextType | undefined>(undefined);
@@ -21,9 +22,11 @@ export const DealsProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchDeals = useCallback(async (appIds: number[]) => {
+  const fetchDeals = useCallback(async (appIds: number[], silent = false) => {
     if (appIds.length === 0) {
-      toast({ title: 'No Steam games in Wishlist', description: 'There are no PC games with a Steam ID in your wishlist to check for deals.' });
+      if (!silent) {
+        toast({ title: 'No Steam games in Wishlist', description: 'There are no PC games with a Steam ID in your wishlist to check for deals.' });
+      }
       return;
     }
 
@@ -52,18 +55,22 @@ export const DealsProvider = ({ children }: { children: ReactNode }) => {
           description: `Found discounts for ${foundDealsCount} game(s) in your wishlist.`,
         });
       } else {
-        toast({
-          title: 'No Deals Found',
-          description: 'None of the games in your wishlist have a discount on Steam right now.',
-        });
+        if (!silent) {
+          toast({
+            title: 'No Deals Found',
+            description: 'None of the games in your wishlist have a discount on Steam right now.',
+          });
+        }
       }
     } catch (error: any) {
       console.error('Failed to fetch deals:', error);
-      toast({
-        title: 'Error Fetching Deals',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+      if (!silent) {
+        toast({
+          title: 'Error Fetching Deals',
+          description: error.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      }
       setDeals({});
     } finally {
       setLoading(false);
