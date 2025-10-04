@@ -58,10 +58,8 @@ const getSteamAppIdFlow = ai.defineFlow(
         if (steamStore) {
             // The URL can be in various language keys, e.g., url_en, url_ru.
             // We'll find the first one that exists.
-            const storeUrl = Object.keys(steamStore).reduce((acc, key) => {
-                if(key.startsWith('url_')) return steamStore[key];
-                return acc;
-            }, '');
+            const storeUrlKey = Object.keys(steamStore).find(key => key.startsWith('url_'));
+            const storeUrl = storeUrlKey ? steamStore[storeUrlKey] : undefined;
           
             if (storeUrl && storeUrl.includes('store.steampowered.com/app/')) {
                 const urlParts = storeUrl.split('/');
