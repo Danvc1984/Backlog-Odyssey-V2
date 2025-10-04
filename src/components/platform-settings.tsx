@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { SteamIcon } from './icons';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -372,7 +373,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                <CardFooter className="justify-end">
                  <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId}>
+                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId} className="h-12 px-10 text-base">
+                      <SteamIcon className="mr-2 h-5 w-5" />
                       {isImporting ? 'Importing...' : 'Import Steam Library'}
                     </Button>
                   </AlertDialogTrigger>
