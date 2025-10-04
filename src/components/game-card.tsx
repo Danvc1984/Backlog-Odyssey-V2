@@ -47,12 +47,31 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
             </div>
           )}
           <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
-            {game.rating && game.rating > 0 && (
-              <div className="flex items-center gap-1 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
-                <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
-                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+            {(game.rating && game.rating > 0) || (game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat) ? (
+              <div className="flex items-center gap-2 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
+                {game.rating && game.rating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                  </div>
+                )}
+                {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <SteamDeckCompatIcon className={cn("h-4 w-4", {
+                          'text-green-400': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
+                          'text-yellow-400': ['silver', 'bronze'].includes(game.steamDeckCompat),
+                          'text-destructive': game.steamDeckCompat === 'borked',
+                          'text-muted-foreground': game.steamDeckCompat === 'unknown'
+                      })} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
-            )}
+            ) : null}
           </div>
         </div>
         <CardContent className="p-4 flex-grow space-y-2">
@@ -118,21 +137,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
               );
             })}
           </div>
-           {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
-            <Tooltip>
-                <TooltipTrigger>
-                    <SteamDeckCompatIcon className={cn("h-4 w-4", {
-                        'text-green-500': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
-                        'text-yellow-500': ['silver', 'bronze'].includes(game.steamDeckCompat),
-                        'text-red-500': game.steamDeckCompat === 'borked',
-                        'text-muted-foreground': game.steamDeckCompat === 'unknown'
-                    })} />
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
-                </TooltipContent>
-            </Tooltip>
-          )}
         </CardFooter>
       </Card>
     </motion.div>
