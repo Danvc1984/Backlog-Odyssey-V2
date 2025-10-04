@@ -1,3 +1,4 @@
+
 import type { SteamDeckCompat } from "@/app/api/steam/utils";
 
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";

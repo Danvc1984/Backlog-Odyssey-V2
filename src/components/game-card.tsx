@@ -27,6 +27,7 @@ const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently P
 const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) => {
   const { preferences } = useUserPreferences();
   const PlatformIcon = platformIcons[game.platform];
+  const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
 
   return (
     <motion.div layout>
@@ -37,7 +38,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
               src={game.imageUrl}
               alt={game.title}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               className="object-cover transition-transform duration-300 rounded-t-lg"
             />
           ) : (
@@ -99,22 +100,39 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
             </div>
           </div>
         </CardContent>
-        <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
-          <Link href={`/library?platform=${game.platform}`}>
-            <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
-              {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
-              {game.platform}
-            </Badge>
-          </Link>
-          {(game.genres || []).map(genre => {
-            return (
-              <Link href={`/library?genre=${genre}`} key={genre}>
-                <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">
-                  {genre}
-                </Badge>
-              </Link>
-            );
-          })}
+        <CardFooter className="p-4 pt-0 flex justify-between items-center">
+          <div className='flex flex-wrap gap-2'>
+            <Link href={`/library?platform=${game.platform}`}>
+              <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
+                {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
+                {game.platform}
+              </Badge>
+            </Link>
+            {(game.genres || []).map(genre => {
+              return (
+                <Link href={`/library?genre=${genre}`} key={genre}>
+                  <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">
+                    {genre}
+                  </Badge>
+                </Link>
+              );
+            })}
+          </div>
+           {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+            <Tooltip>
+                <TooltipTrigger>
+                    <SteamDeckCompatIcon className={cn("h-4 w-4", {
+                        'text-green-500': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
+                        'text-yellow-500': ['silver', 'bronze'].includes(game.steamDeckCompat),
+                        'text-red-500': game.steamDeckCompat === 'borked',
+                        'text-muted-foreground': game.steamDeckCompat === 'unknown'
+                    })} />
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                </TooltipContent>
+            </Tooltip>
+          )}
         </CardFooter>
       </Card>
     </motion.div>

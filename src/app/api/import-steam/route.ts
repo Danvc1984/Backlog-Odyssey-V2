@@ -1,3 +1,4 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -110,11 +111,7 @@ export async function POST(req: NextRequest) {
         const userProfileRef = db.collection('users').doc(uid);
         const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
         
-        const [userProfileSnap, prefDocSnap] = await Promise.all([
-            userProfileRef.get(),
-            prefDocRef.get()
-        ]);
-        
+        const prefDocSnap = await prefDocRef.get();
         const preferences = (prefDocSnap.data() as UserPreferences) || {};
         const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
         
