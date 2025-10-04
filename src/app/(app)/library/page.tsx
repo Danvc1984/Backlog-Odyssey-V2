@@ -9,12 +9,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 
-import type { Game, Platform, Genre, GameList } from '@/lib/types';
+import type { Game, Platform, Genre, GameList, SteamDeckCompat } from '@/lib/types';
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { getSteamAppId } from '@/ai/flows/get-steam-app-id';
+import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -148,6 +149,10 @@ export default function LibraryPage() {
         const { steamAppId } = await getSteamAppId({ title: gameData.title });
         if (steamAppId) {
           gameData.steamAppId = steamAppId;
+          if (preferences?.playsOnSteamDeck) {
+            const steamDeckCompat = await getSteamDeckCompat(steamAppId);
+            gameData.steamDeckCompat = steamDeckCompat;
+          }
         }
       }
       await addDoc(collection(db, 'users', user.uid, 'games'), gameData);
@@ -168,9 +173,14 @@ export default function LibraryPage() {
         const { steamAppId } = await getSteamAppId({ title: gameData.title });
         if (steamAppId) {
           gameData.steamAppId = steamAppId;
+          if (preferences?.playsOnSteamDeck) {
+            const steamDeckCompat = await getSteamDeckCompat(steamAppId);
+            gameData.steamDeckCompat = steamDeckCompat;
+          }
         } else {
           // If it can't be found, make sure we don't have a stale one
           delete gameData.steamAppId;
+          delete gameData.steamDeckCompat;
         }
       }
       await updateDoc(gameRef, gameData);
@@ -414,3 +424,5 @@ export default function LibraryPage() {
     </TooltipProvider>
   );
 }
+
+    
