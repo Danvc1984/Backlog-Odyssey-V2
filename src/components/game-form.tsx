@@ -34,7 +34,6 @@ import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
 import { Calendar } from './ui/calendar';
-import { Slider } from './ui/slider';
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -65,6 +64,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
   const [newGenre, setNewGenre] = useState('');
+  const [hoverRating, setHoverRating] = useState(0);
   
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -206,7 +206,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     });
   }, [preferences?.platforms]);
 
-  const ratingValue = form.watch('rating');
+  const ratingValue = form.watch('rating') || 0;
 
   return (
     <Form {...form}>
@@ -374,22 +374,32 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>
-                <div className="flex items-center justify-between">
-                  <span>Rating</span>
-                  <div className='flex items-center gap-1'>
-                    <span className="text-sm font-bold text-yellow-400">{ratingValue ? ratingValue : 'N/A'}</span>
-                    <Star className={cn("h-4 w-4", ratingValue ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground")} />
-                  </div>
-                </div>
-              </FormLabel>
+              <div className="flex items-center justify-between">
+                  <FormLabel>Rating</FormLabel>
+                  <span className="text-sm font-bold text-yellow-400">{ratingValue ? `${ratingValue}/5` : 'N/A'}</span>
+              </div>
               <FormControl>
-                 <Slider
-                  defaultValue={[field.value || 0]}
-                  max={5}
-                  step={1}
-                  onValueChange={(value) => field.onChange(value[0])}
-                />
+                <div 
+                  className="flex items-center gap-1"
+                  onMouseLeave={() => setHoverRating(0)}
+                >
+                  {[1, 2, 3, 4, 5].map((starValue) => (
+                    <Star
+                      key={starValue}
+                      className={cn(
+                        "h-6 w-6 cursor-pointer transition-colors",
+                        (hoverRating >= starValue || ratingValue >= starValue)
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-muted-foreground"
+                      )}
+                      onMouseEnter={() => setHoverRating(starValue)}
+                      onClick={() => {
+                        const newRating = starValue === ratingValue ? 0 : starValue;
+                        field.onChange(newRating);
+                      }}
+                    />
+                  ))}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
