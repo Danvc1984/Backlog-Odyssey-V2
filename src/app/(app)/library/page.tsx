@@ -389,14 +389,15 @@ export default function LibraryPage() {
                   className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
                   <AnimatePresence>
                     {gamesByList[list].length > 0 ? (
-                      gamesByList[list].map((game) => (
+                      gamesByList[list].map((game, index) => (
                           <GameCard 
                             key={game.id}
                             game={game}
                             deal={game.steamAppId ? deals[game.steamAppId] : undefined}
                             onEdit={handleEditGame} 
                             onMove={handleMoveGame} 
-                            onDelete={confirmDeleteGame} 
+                            onDelete={confirmDeleteGame}
+                            priority={index === 0}
                           />
                       ))
                     ) : (

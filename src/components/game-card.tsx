@@ -22,11 +22,12 @@ type GameCardProps = {
   onEdit: (game: Game) => void;
   onMove: (game: Game, newList: GameList) => void;
   onDelete: (game: Game) => void;
+  priority?: boolean;
 };
 
 const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently Played"];
 
-const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelete }) => {
+const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelete, priority = false }) => {
   const { preferences } = useUserPreferences();
   const PlatformIcon = platformIcons[game.platform];
   const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
@@ -40,6 +41,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               src={game.imageUrl}
               alt={game.title}
               fill
+              priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
               className="object-cover transition-transform duration-300 rounded-t-lg"
             />

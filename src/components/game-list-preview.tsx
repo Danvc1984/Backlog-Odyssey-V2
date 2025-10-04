@@ -34,14 +34,15 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, 
         </div>
         {games.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {games.map(game => (
+            {games.map((game, index) => (
               <GameCard 
                 key={game.id} 
                 game={game} 
                 deal={game.steamAppId && deals ? deals[game.steamAppId] : undefined}
                 onEdit={onEdit} 
                 onMove={onMove} 
-                onDelete={onDelete} 
+                onDelete={onDelete}
+                priority={index === 0 && title === 'Now Playing'}
               />
             ))}
           </div>
