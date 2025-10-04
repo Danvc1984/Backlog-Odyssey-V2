@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 
 type GameCardProps = {
@@ -39,7 +39,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   };
 
   return (
-    <TooltipProvider>
       <motion.div layout>
         <Card className="h-full group flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
           <CardHeader className="p-0 relative aspect-[3/4]">
@@ -132,7 +131,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
           </CardFooter>
         </Card>
       </motion.div>
-    </TooltipProvider>
   );
 };
 
