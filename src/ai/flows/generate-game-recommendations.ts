@@ -17,6 +17,7 @@ const GameSchema = z.object({
   platform: z.string().describe('The platform the game is played on.'),
   genres: z.array(z.string()).describe('The genres of the game.'),
   list: z.enum(['Wishlist', 'Backlog', 'Now Playing', 'Recently Played']).describe('The list the game is in.'),
+  rating: z.number().optional().describe('The user\'s personal rating for the game, from 1 to 5.'),
 });
 
 const GenerateGameRecommendationsInputSchema = z.object({
@@ -57,12 +58,12 @@ const prompt = ai.definePrompt({
 
 Game Library:
 {{#each gameLibrary}}
-- {{title}} ({{platform}}, {{#each genres}}{{.}}{{#unless @last}}, {{/unless}}{{/each}}, {{list}})
+- {{title}} ({{platform}}, {{#each genres}}{{.}}{{#unless @last}}, {{/unless}}{{/each}}, {{list}}, {{#if rating}}{{rating}}/5 stars{{/if}})
 {{/each}}
 
 Gaming Habits: {{gamingHabits}}
 
-Provide a list of game recommendations with the title, platform, genre and a brief explanation of why each game was recommended.  Consider the player’s different lists when formulating the recommendations.  For example, recommend games similar to what they are currently playing, or recommend games that would be good additions to their Wishlist or Backlog.
+Provide a list of game recommendations with the title, platform, genre and a brief explanation of why each game was recommended.  Consider the player’s different lists and ratings when formulating the recommendations. For example, recommend games similar to what they are currently playing or highly rated, or recommend games that would be good additions to their Wishlist or Backlog.
 `,
 });
 

@@ -22,6 +22,7 @@ export interface Game {
   estimatedPlaytime?: number;
   steamAppId?: number;
   steamDeckCompat?: SteamDeckCompat;
+  rating?: number;
 }
 
 export type Recommendation = {

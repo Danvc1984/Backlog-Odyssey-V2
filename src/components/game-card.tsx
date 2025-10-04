@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
 import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
-import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
@@ -31,7 +31,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
 
   const compatIconColor = game.steamDeckCompat ? {
     native: 'text-green-500',
-    platinum: 'text-green-400',
+    platinum: 'text-yellow-400',
     gold: 'text-yellow-500',
     silver: 'text-gray-400',
     bronze: 'text-orange-500',
@@ -55,18 +55,26 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
               <ImageOff className="w-16 h-16 text-muted-foreground" />
             </div>
           )}
-          {preferences?.playsOnSteamDeck && game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="absolute top-2 right-2 bg-background/80 rounded-full p-1 backdrop-blur-sm">
-                  <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor)} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
+            {preferences?.playsOnSteamDeck && game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="bg-background/80 rounded-full p-1 backdrop-blur-sm">
+                    <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor)} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {game.rating && game.rating > 0 && (
+              <div className="flex items-center gap-1 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
+                <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
+                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+              </div>
+            )}
+          </div>
         </div>
         <CardContent className="p-4 flex-grow space-y-2">
           <CardTitle className="text-base font-medium leading-tight line-clamp-2">

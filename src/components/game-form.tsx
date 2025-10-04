@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Search, Image as ImageIcon, Calendar as CalendarIcon } from 'lucide-react';
+import { Search, Image as ImageIcon, Calendar as CalendarIcon, Star } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ const gameSchema = z.object({
   releaseDate: z.string().optional(),
   estimatedPlaytime: z.coerce.number().optional(),
   steamAppId: z.number().optional(),
+  rating: z.number().min(0).max(5).optional(),
 });
 
 type GameFormValues = z.infer<typeof gameSchema>;
@@ -65,6 +66,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
   const [newGenre, setNewGenre] = useState('');
+  const [hoverRating, setHoverRating] = useState(0);
   
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -76,8 +78,11 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       releaseDate: gameToEdit?.releaseDate || '',
       estimatedPlaytime: gameToEdit?.estimatedPlaytime || 0,
       steamAppId: gameToEdit?.steamAppId || undefined,
+      rating: gameToEdit?.rating || 0,
     },
   });
+
+  const currentRating = form.watch('rating');
 
   useEffect(() => {
     if (gameToEdit) {
@@ -89,6 +94,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         releaseDate: gameToEdit.releaseDate,
         estimatedPlaytime: gameToEdit.estimatedPlaytime,
         steamAppId: gameToEdit.steamAppId,
+        rating: gameToEdit.rating,
       });
       setSelectedGameImageUrl(gameToEdit.imageUrl);
     } else {
@@ -100,6 +106,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         releaseDate: '',
         estimatedPlaytime: 0,
         steamAppId: undefined,
+        rating: 0,
       });
       setSelectedGameImageUrl(null);
     }
@@ -194,6 +201,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       ...data,
       imageUrl: selectedGameImageUrl || '',
       steamDeckCompat,
+      rating: data.rating === 0 ? undefined : data.rating,
     };
     
     onSave(newGame as Omit<Game, 'id' | 'userId'>);
@@ -202,7 +210,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         title: 'Game Added!',
         description: `${data.title} has been added to your library.`,
       });
-      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0, steamAppId: undefined });
+      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0, steamAppId: undefined, rating: 0 });
       setSelectedGameImageUrl(null);
     }
   }
@@ -276,6 +284,31 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             </div>
           </PopoverContent>
         </Popover>
+         <FormField
+          control={form.control}
+          name="rating"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Personal Rating</FormLabel>
+              <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={cn(
+                      'h-6 w-6 cursor-pointer transition-colors',
+                      (hoverRating || currentRating || 0) >= star
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-muted-foreground'
+                    )}
+                    onMouseEnter={() => setHoverRating(star)}
+                    onClick={() => field.onChange(star === currentRating ? 0 : star)}
+                  />
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -413,5 +446,3 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
-
-    
