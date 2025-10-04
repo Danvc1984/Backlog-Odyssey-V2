@@ -303,6 +303,12 @@ export default function LibraryPage() {
                 Import from Steam
               </Button>
             )}
+            {activeList === 'Wishlist' && playsOnPC && !dataLoading && !prefsLoading && (
+              <Button variant="outline" onClick={handleCheckDeals} disabled={dealsLoading}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                {dealsLoading ? 'Checking...' : 'Check for Deals'}
+              </Button>
+            )}
             <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
             <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
               <DialogTrigger asChild>
@@ -344,12 +350,6 @@ export default function LibraryPage() {
             />
           </div>
           <div className="flex gap-4">
-            {activeList === 'Wishlist' && playsOnPC && !dataLoading && (
-              <Button variant="outline" onClick={handleCheckDeals} disabled={dealsLoading}>
-                <Sparkles className="mr-2 h-4 w-4" />
-                {dealsLoading ? 'Checking...' : 'Check for Deals'}
-              </Button>
-            )}
             <Button variant="outline" size="icon" onClick={handleSortToggle}>
               {sortIcon}
             </Button>
