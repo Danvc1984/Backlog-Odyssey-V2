@@ -34,8 +34,6 @@ import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { db } from '@/lib/firebase';
 import type { Game, GameList, Platform, Genre, SteamDeckCompat } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { getSteamAppId } from '@/ai/flows/get-steam-app-id';
-import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
@@ -66,7 +64,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
   const [targetList, setTargetList] = useState<GameList>('Wishlist');
   const [isSearching, setIsSearching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [activeTab, setActiveTab] = useState("upload");
+  const [activeTab, setActiveTab] = useState("search");
   
   useEffect(() => {
     if (defaultList) {
@@ -216,14 +214,18 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         };
 
         if (newGame.platform === 'PC') {
-          const { steamAppId } = await getSteamAppId({ title: newGame.title });
-          if (steamAppId) {
-            newGame.steamAppId = steamAppId;
-            if (preferences.playsOnSteamDeck) {
-              const steamDeckCompat = await getSteamDeckCompat(steamAppId);
-              newGame.steamDeckCompat = steamDeckCompat;
+            try {
+                const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(newGame.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
+                const steamDetails = await response.json();
+                if (steamDetails.steamAppId) {
+                    newGame.steamAppId = steamDetails.steamAppId;
+                }
+                if (steamDetails.steamDeckCompat) {
+                    newGame.steamDeckCompat = steamDetails.steamDeckCompat;
+                }
+            } catch (error) {
+                console.error(`Failed to fetch steam details for ${newGame.title}`, error);
             }
-          }
         }
         return newGame;
       });
@@ -262,7 +264,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       setSearchResults([]);
       setSelectedGames([]);
       setTargetList(defaultList || 'Wishlist');
-      setActiveTab('upload');
+      setActiveTab('search');
     }
     setIsOpen(open);
   };
@@ -405,5 +407,3 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
 };
 
 export default BatchAddGames;
-
-    

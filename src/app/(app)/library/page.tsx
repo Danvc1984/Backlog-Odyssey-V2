@@ -14,7 +14,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { getSteamAppId } from '@/ai/flows/get-steam-app-id';
 import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 import { Button } from '@/components/ui/button';
@@ -143,16 +142,20 @@ export default function LibraryPage() {
   };
 
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user) {
+    if (user && preferences) {
       let gameData: any = { ...newGame, userId: user.uid };
       if (gameData.platform === 'PC') {
-        const { steamAppId } = await getSteamAppId({ title: gameData.title });
-        if (steamAppId) {
-          gameData.steamAppId = steamAppId;
-          if (preferences?.playsOnSteamDeck) {
-            const steamDeckCompat = await getSteamDeckCompat(steamAppId);
-            gameData.steamDeckCompat = steamDeckCompat;
-          }
+         try {
+            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
+            const steamDetails = await response.json();
+            if (steamDetails.steamAppId) {
+                gameData.steamAppId = steamDetails.steamAppId;
+            }
+            if (steamDetails.steamDeckCompat) {
+                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
+            }
+        } catch (error) {
+            console.error('Failed to fetch steam details', error);
         }
       }
       await addDoc(collection(db, 'users', user.uid, 'games'), gameData);
@@ -166,21 +169,25 @@ export default function LibraryPage() {
   };
 
   const handleUpdateGame = async (updatedGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user && editingGame) {
+    if (user && editingGame && preferences) {
       const gameRef = doc(db, 'users', user.uid, 'games', editingGame.id);
       let gameData: any = { ...updatedGame };
        if (gameData.platform === 'PC') {
-        const { steamAppId } = await getSteamAppId({ title: gameData.title });
-        if (steamAppId) {
-          gameData.steamAppId = steamAppId;
-          if (preferences?.playsOnSteamDeck) {
-            const steamDeckCompat = await getSteamDeckCompat(steamAppId);
-            gameData.steamDeckCompat = steamDeckCompat;
-          }
-        } else {
-          // If it can't be found, make sure we don't have a stale one
-          delete gameData.steamAppId;
-          delete gameData.steamDeckCompat;
+         try {
+            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
+            const steamDetails = await response.json();
+            if (steamDetails.steamAppId) {
+                gameData.steamAppId = steamDetails.steamAppId;
+            } else {
+                delete gameData.steamAppId;
+            }
+            if (steamDetails.steamDeckCompat) {
+                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
+            } else {
+                delete gameData.steamDeckCompat;
+            }
+        } catch (error) {
+            console.error('Failed to fetch steam details', error);
         }
       }
       await updateDoc(gameRef, gameData);
@@ -424,7 +431,3 @@ export default function LibraryPage() {
     </TooltipProvider>
   );
 }
-
-    
-    
-    
