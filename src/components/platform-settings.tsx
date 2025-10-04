@@ -164,7 +164,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       
       toast({
         title: 'Steam Library Import Complete!',
-        description: `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
+        description: result.message || `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
       });
 
     } catch (error: any) {
@@ -347,11 +347,6 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   )}
               </div>
             </CardContent>
-            <CardFooter>
-              <Button type="submit" disabled={prefsLoading}>
-                {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
-              </Button>
-            </CardFooter>
           </Card>
           
           <Card>
@@ -389,7 +384,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleSteamImport('new')}>
+                    <AlertDialogAction disabled={!profile?.steamId} onClick={() => handleSteamImport('new')}>
                       Add New Games
                     </AlertDialogAction>
                     <AlertDialogAction onClick={() => handleSteamImport('full')}>
@@ -400,6 +395,10 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
               </AlertDialog>
             </CardFooter>
           </Card>
+
+          <Button type="submit" disabled={prefsLoading}>
+            {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
+          </Button>
         </form>
       </Form>
     </div>
