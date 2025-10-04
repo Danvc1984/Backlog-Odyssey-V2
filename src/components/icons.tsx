@@ -1,3 +1,4 @@
+
 import {
   Laptop,
   Gamepad2,
@@ -37,9 +38,9 @@ export const SteamIcon = (props: LucideProps) => (
 export const steamDeckCompatIcons: Record<SteamDeckCompat, React.ComponentType<LucideProps>> = {
   native: CheckCircle2,
   platinum: Star,
-  gold: AlertCircle,
-  silver: XCircle,
-  bronze: XCircle,
+  gold: CheckCircle2,
+  silver: AlertCircle,
+  bronze: AlertCircle,
   borked: XCircle,
   unknown: HelpCircle,
 };
@@ -51,5 +52,5 @@ export const steamDeckCompatTooltips: Record<SteamDeckCompat, string> = {
   silver: 'Silver: Runs with minor issues, but generally playable.',
   bronze: 'Bronze: Runs, but with major issues. Crashes or has performance problems.',
   borked: 'Borked: The game is unplayable.',
-  unknown: 'Unknown: This game\'s Steam Deck compatibility is unknown.',
+  unknown: "This game's Steam Deck compatibility is unknown.",
 };
