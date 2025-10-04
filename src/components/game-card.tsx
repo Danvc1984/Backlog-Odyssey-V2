@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { motion } from 'framer-motion';
+import React from 'react';
 
 type GameCardProps = {
   game: Game;
@@ -107,4 +108,4 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   );
 };
 
-export default GameCard;
+export default React.memo(GameCard);

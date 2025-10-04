@@ -10,9 +10,12 @@ import { Button } from '@/components/ui/button';
 type GameListPreviewProps = {
   title: GameList | 'Now Playing' | 'Backlog' | 'Wishlist' | 'Recently Played';
   games: Game[];
+  onEdit: (game: Game) => void;
+  onMove: (game: Game, newList: GameList) => void;
+  onDelete: (game: Game) => void;
 };
 
-const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games }) => {
+const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, onEdit, onMove, onDelete }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -28,7 +31,7 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games }) => {
       {games.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {games.map(game => (
-            <GameCard key={game.id} game={game} />
+            <GameCard key={game.id} game={game} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
           ))}
         </div>
       ) : (

@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { PlusCircle, Search, Layers } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -191,28 +191,24 @@ export default function LibraryPage() {
         setAllGenres(prev => [...prev, newGenre].sort());
     }
   };
-
-  const gamesByList = useMemo(() => {
-    const initialLists: Record<GameList, Game[]> = {
-      'Now Playing': [],
-      'Backlog': [],
-      'Wishlist': [],
-      'Recently Played': [],
-    };
-    
-    return games.reduce((acc, game) => {
+  
+  const filteredGames = useMemo(() => {
+    return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
       const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
-
-      if (matchesSearch && matchesPlatform && matchesGenre) {
-        if(acc[game.list]) {
-          acc[game.list].push(game);
-        }
-      }
-      return acc;
-    }, initialLists);
+      return matchesSearch && matchesPlatform && matchesGenre;
+    });
   }, [games, searchTerm, platformFilter, genreFilter]);
+
+  const gamesByList = useMemo(() => {
+    return gameLists.reduce((acc, list) => {
+      acc[list] = filteredGames
+        .filter(game => game.list === list);
+      return acc;
+    }, {} as Record<GameList, Game[]>);
+  }, [filteredGames]);
+
 
   const sortedPlatforms = useMemo(() => {
     if (!preferences?.platforms) return [];
