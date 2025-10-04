@@ -53,9 +53,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               <Badge 
                 className={cn(
                   'text-white shadow-lg flex items-center gap-1 border-none',
-                  deal.discountPercent < 40 && 'bg-green-500',
-                  deal.discountPercent >= 40 && deal.discountPercent < 80 && 'bg-green-600',
-                  deal.discountPercent >= 80 && 'bg-green-700'
+                  deal.discountPercent < 40 && 'bg-green-500 hover:bg-green-500',
+                  deal.discountPercent >= 40 && deal.discountPercent < 80 && 'bg-green-600 hover:bg-green-600',
+                  deal.discountPercent >= 80 && 'bg-green-700 hover:bg-green-700'
                 )}
               >
                 {deal.discountPercent >= 80 && <Sparkles className="h-3 w-3" />}
