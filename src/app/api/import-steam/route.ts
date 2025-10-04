@@ -2,15 +2,10 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { adminApp } from '@/lib/firebase-admin';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import axios from 'axios';
 import type { Game, UserPreferences } from '@/lib/types';
 import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
-
-const db = getFirestore(adminApp);
-const auth = getAuth(adminApp);
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
@@ -82,6 +77,9 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
 }
 
 export async function POST(req: NextRequest) {
+    const auth = getAdminAuth();
+    const db = getAdminFirestore();
+
     const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
     if (!authToken) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

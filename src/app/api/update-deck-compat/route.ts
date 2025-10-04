@@ -1,15 +1,14 @@
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { adminApp } from '@/lib/firebase-admin';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
-const db = getFirestore(adminApp);
-const auth = getAuth(adminApp);
-
 export async function POST(req: NextRequest) {
+    const auth = getAdminAuth();
+    const db = getAdminFirestore();
+
     const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
     if (!authToken) {
         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
