@@ -289,7 +289,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
           name="rating"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Personal Rating</FormLabel>
+              <FormLabel>My Interest Rating</FormLabel>
               <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
