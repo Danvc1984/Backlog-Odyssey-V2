@@ -372,7 +372,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                <CardFooter className="justify-end">
                  <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" variant="outline" disabled={isImporting || profileLoading || !steamVanityId}>
+                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId}>
                       {isImporting ? 'Importing...' : 'Import Steam Library'}
                     </Button>
                   </AlertDialogTrigger>
