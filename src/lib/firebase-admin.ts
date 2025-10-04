@@ -1,34 +1,8 @@
 
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
+import type { App } from 'firebase-admin/app';
 
-const getAdminApp = (): App => {
-  if (getApps().length > 0) {
-    return getApps()[0];
-  }
+// This file is intentionally left simplified to avoid premature initialization.
+// Admin app initialization should be handled within the specific API routes that need it.
+// This prevents errors related to environment variable loading in serverless environments.
 
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-  if (!serviceAccount) {
-    throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
-  }
-
-  const serviceAccountJson = JSON.parse(
-    Buffer.from(serviceAccount, 'base64').toString('utf-8')
-  );
-
-  return initializeApp({
-    credential: cert(serviceAccountJson),
-    projectId: 'studio-8063658966-c0f00',
-  });
-};
-
-function getAdminAuth() {
-  return getAuth(getAdminApp());
-}
-
-function getAdminFirestore() {
-  return getFirestore(getAdminApp());
-}
-
-export { getAdminApp, getAdminAuth, getAdminFirestore };
+export type { App };

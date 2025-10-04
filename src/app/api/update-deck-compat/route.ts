@@ -2,12 +2,36 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
+// Helper function to initialize Firebase Admin SDK
+function getAdminApp(): App {
+    if (getApps().length) {
+        return getApps()[0];
+    }
+
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccount) {
+        throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+    }
+
+    const serviceAccountJson = JSON.parse(
+        Buffer.from(serviceAccount, 'base64').toString('utf-8')
+    );
+
+    return initializeApp({
+        credential: cert(serviceAccountJson),
+        projectId: 'studio-8063658966-c0f00',
+    });
+}
+
 export async function POST(req: NextRequest) {
-    const auth = getAdminAuth();
-    const db = getAdminFirestore();
+    const adminApp = getAdminApp();
+    const auth = getAuth(adminApp);
+    const db = getFirestore(adminApp);
 
     const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
     if (!authToken) {
