@@ -32,8 +32,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { db } from '@/lib/firebase';
-import type { Game, GameList, Platform, Genre } from '@/lib/types';
+import type { Game, GameList, Platform, Genre, SteamDeckCompat } from '@/lib/types';
 import { Badge } from './ui/badge';
+import { getSteamAppId } from '@/ai/flows/get-steam-app-id';
+import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
@@ -213,6 +215,17 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           estimatedPlaytime: game.playtime || 0,
         };
 
+        if (newGame.platform === 'PC') {
+          const { steamAppId } = await getSteamAppId({ title: newGame.title });
+          if (steamAppId) {
+            newGame.steamAppId = steamAppId;
+            if (preferences.playsOnSteamDeck) {
+              const steamDeckCompat = await getSteamDeckCompat(steamAppId);
+              newGame.steamDeckCompat = steamDeckCompat;
+            }
+          }
+        }
+
         const docRef = doc(gamesCollectionRef);
         batch.set(docRef, newGame);
       }
@@ -387,3 +400,5 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
 };
 
 export default BatchAddGames;
+
+    
