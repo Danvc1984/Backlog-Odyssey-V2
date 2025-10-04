@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import type { Game, GameList } from '@/lib/types';
+import type { Deal } from '@/hooks/use-deals';
 import GameCard from '@/components/game-card';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from './ui/tooltip';
@@ -11,12 +12,13 @@ import { TooltipProvider } from './ui/tooltip';
 type GameListPreviewProps = {
   title: GameList | 'Now Playing' | 'Backlog' | 'Wishlist' | 'Recently Played';
   games: Game[];
+  deals?: Record<string, Deal>;
   onEdit: (game: Game) => void;
   onMove: (game: Game, newList: GameList) => void;
   onDelete: (game: Game) => void;
 };
 
-const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, onEdit, onMove, onDelete }) => {
+const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, onEdit, onMove, onDelete }) => {
   return (
     <TooltipProvider>
       <div>
@@ -33,7 +35,14 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, onEdit,
         {games.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {games.map(game => (
-              <GameCard key={game.id} game={game} onEdit={onEdit} onMove={onMove} onDelete={onDelete} />
+              <GameCard 
+                key={game.id} 
+                game={game} 
+                deal={game.steamAppId && deals ? deals[game.steamAppId] : undefined}
+                onEdit={onEdit} 
+                onMove={onMove} 
+                onDelete={onDelete} 
+              />
             ))}
           </div>
         ) : (

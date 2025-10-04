@@ -20,10 +20,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import GameForm from '@/components/game-form';
+import { useDeals } from '@/hooks/use-deals';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { deals } = useDeals();
   const [games, setGames] = useState<Game[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   
@@ -131,7 +133,7 @@ export default function DashboardPage() {
       <Dashboard games={games} />
       <GameListPreview title="Now Playing" games={nowPlaying} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
       <GameListPreview title="Backlog" games={backlog} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
-      <GameListPreview title="Wishlist" games={wishlist} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
+      <GameListPreview title="Wishlist" games={wishlist} deals={deals} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
       <GameListPreview title="Recently Played" games={recentlyPlayed} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
 
       <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
