@@ -1,3 +1,4 @@
+
 'use client';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,42 +99,44 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
   async function onSubmit(data: PlatformSettingsFormValues) {
     if (!user) return;
-    try {
-      const finalPreferences = {
-        ...data,
-        platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
-      }
-      await savePreferences(finalPreferences as UserPreferences);
-      
-      if (steamVanityId && steamVanityId !== profile?.steamId) {
-        const userProfileRef = doc(db, 'users', user.uid);
-        await updateDoc(userProfileRef, { steamId: steamVanityId });
-      }
+    
+    const finalPreferences = {
+      ...data,
+      platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
+    }
+    await savePreferences(finalPreferences as UserPreferences);
+    
+    if (steamVanityId && steamVanityId !== profile?.steamId) {
+      const userProfileRef = doc(db, 'users', user.uid);
+      await updateDoc(userProfileRef, { steamId: steamVanityId });
+    }
 
-      if (isOnboarding && !profile?.onboardingComplete) {
-        const userProfileRef = doc(db, 'users', user.uid);
-        await updateDoc(userProfileRef, { onboardingComplete: true });
-      }
-
-      toast({
-        title: 'Preferences Saved',
-        description: 'Your platform and profile settings have been updated.',
-      });
-      if (isOnboarding) {
-        router.push('/dashboard');
-      }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to save settings. Please try again.',
-        variant: 'destructive',
-      });
+    if (isOnboarding && !profile?.onboardingComplete) {
+      const userProfileRef = doc(db, 'users', user.uid);
+      await updateDoc(userProfileRef, { onboardingComplete: true });
     }
   }
   
   const handleSteamImport = async (importMode: 'full' | 'new') => {
     setShowImportDialog(false);
-    if (!steamVanityId) {
+    
+    // Programmatically trigger form validation and submission
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        title: 'Form Incomplete',
+        description: 'Please fix the errors on the form before importing.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Save settings before importing
+    await onSubmit(form.getValues());
+    
+    const currentSteamId = form.getValues().platforms.includes('PC') ? steamVanityId : '';
+
+    if (!currentSteamId) {
       toast({
         title: 'Steam ID required',
         description: 'Please enter your Steam vanity URL or ID and save it before importing.',
@@ -141,6 +144,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       });
       return;
     }
+    
     setIsImporting(true);
     try {
       const token = await getAuthToken();
@@ -154,7 +158,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ steamId: steamVanityId, importMode }),
+        body: JSON.stringify({ steamId: currentSteamId, importMode }),
       });
 
       const result = await response.json();
@@ -167,6 +171,10 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         title: 'Steam Library Import Complete!',
         description: `Successfully imported ${result.importedCount} games. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
       });
+
+      if (isOnboarding) {
+        router.push('/dashboard');
+      }
 
     } catch (error: any) {
       toast({
@@ -211,6 +219,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     }
   }
 
+  const handleSaveAndContinue = async (data: PlatformSettingsFormValues) => {
+    await onSubmit(data);
+    toast({
+      title: 'Preferences Saved',
+      description: 'Your platform and profile settings have been updated.',
+    });
+    if (isOnboarding) {
+      router.push('/dashboard');
+    }
+  }
+
 
   const sortedFavoritePlatforms = useMemo(() => {
     if (!selectedPlatforms) return [];
@@ -226,7 +245,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   return (
     <div className='space-y-6'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleSaveAndContinue)} className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Platform Preferences</CardTitle>
