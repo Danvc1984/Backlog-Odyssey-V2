@@ -14,9 +14,11 @@ import React from 'react';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
+import type { Deal } from '@/hooks/use-deals';
 
 type GameCardProps = {
   game: Game;
+  deal?: Deal;
   onEdit: (game: Game) => void;
   onMove: (game: Game, newList: GameList) => void;
   onDelete: (game: Game) => void;
@@ -24,7 +26,7 @@ type GameCardProps = {
 
 const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently Played"];
 
-const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) => {
+const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelete }) => {
   const { preferences } = useUserPreferences();
   const PlatformIcon = platformIcons[game.platform];
   const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
@@ -44,6 +46,13 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
           ) : (
             <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
               <ImageOff className="w-16 h-16 text-muted-foreground" />
+            </div>
+          )}
+          {deal && (
+            <div className="absolute top-2 left-2">
+              <Badge className="bg-green-500 text-white shadow-lg">
+                -{deal.discountPercent}%
+              </Badge>
             </div>
           )}
           <div className="absolute top-2 right-2 flex flex-col items-end gap-2">

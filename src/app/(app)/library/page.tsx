@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, Import, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
+import { PlusCircle, Search, Layers, Import, ArrowDownUp, ArrowDownAZ, ArrowUpZA, Sparkles } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { getSteamDeckCompat } from '@/app/api/steam/utils';
+import { useDeals } from '@/hooks/use-deals';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +56,7 @@ type SortBy = 'default' | 'alpha-asc' | 'alpha-desc';
 export default function LibraryPage() {
   const { user } = useAuth();
   const { preferences, loading: prefsLoading } = useUserPreferences();
+  const { deals, loading: dealsLoading, fetchDeals } = useDeals();
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -255,6 +256,13 @@ export default function LibraryPage() {
     }, {} as Record<GameList, Game[]>);
   }, [filteredGames, sortBy]);
 
+  const handleCheckDeals = useCallback(() => {
+    const wishlistGames = gamesByList['Wishlist'];
+    const steamAppIds = wishlistGames
+      .filter(game => game.platform === 'PC' && game.steamAppId)
+      .map(game => game.steamAppId as number);
+    fetchDeals(steamAppIds);
+  }, [gamesByList, fetchDeals]);
 
   const sortedPlatforms = useMemo(() => {
     if (!preferences?.platforms) return [];
@@ -336,6 +344,12 @@ export default function LibraryPage() {
             />
           </div>
           <div className="flex gap-4">
+            {activeList === 'Wishlist' && playsOnPC && !dataLoading && (
+              <Button variant="outline" onClick={handleCheckDeals} disabled={dealsLoading}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                {dealsLoading ? 'Checking...' : 'Check for Deals'}
+              </Button>
+            )}
             <Button variant="outline" size="icon" onClick={handleSortToggle}>
               {sortIcon}
             </Button>
@@ -392,7 +406,8 @@ export default function LibraryPage() {
                       gamesByList[list].map((game) => (
                           <GameCard 
                             key={game.id}
-                            game={game} 
+                            game={game}
+                            deal={game.steamAppId ? deals[game.steamAppId] : undefined}
                             onEdit={handleEditGame} 
                             onMove={handleMoveGame} 
                             onDelete={confirmDeleteGame} 
@@ -431,5 +446,3 @@ export default function LibraryPage() {
     </TooltipProvider>
   );
 }
-
-    

@@ -17,6 +17,7 @@ import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
 import { UserPreferencesProvider } from '@/hooks/use-user-preferences';
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
+import { DealsProvider } from '@/hooks/use-deals';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -115,7 +116,9 @@ export default function AppLayout({
   return (
     <UserProfileProvider>
       <UserPreferencesProvider>
-        <AppContent>{children}</AppContent>
+        <DealsProvider>
+          <AppContent>{children}</AppContent>
+        </DealsProvider>
       </UserPreferencesProvider>
     </UserProfileProvider>
   )
