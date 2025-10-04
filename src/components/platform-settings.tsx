@@ -164,7 +164,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       
       toast({
         title: 'Steam Library Import Complete!',
-        description: result.message || `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
+        description: `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
       });
 
     } catch (error: any) {
@@ -404,5 +404,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
-
-    
