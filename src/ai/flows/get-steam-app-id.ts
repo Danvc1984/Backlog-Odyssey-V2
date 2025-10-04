@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow to retrieve the Steam App ID for a given game title.
@@ -51,15 +52,18 @@ const getSteamAppIdFlow = ai.defineFlow(
 
       if (response.data.results.length > 0) {
         const game = response.data.results[0];
+        
+        // Find the Steam store and extract the app ID from any available URL.
         const steamStore = game.stores?.find((s: any) => s.store.slug === 'steam');
-
         if (steamStore) {
-            const storeUrl = steamStore.url_en || Object.keys(steamStore).reduce((acc, key) => {
+            // The URL can be in various language keys, e.g., url_en, url_ru.
+            // We'll find the first one that exists.
+            const storeUrl = Object.keys(steamStore).reduce((acc, key) => {
                 if(key.startsWith('url_')) return steamStore[key];
                 return acc;
             }, '');
           
-            if (storeUrl) {
+            if (storeUrl && storeUrl.includes('store.steampowered.com/app/')) {
                 const urlParts = storeUrl.split('/');
                 const appIdIndex = urlParts.indexOf('app');
                 if (appIdIndex > -1 && urlParts.length > appIdIndex + 1) {
