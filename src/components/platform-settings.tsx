@@ -356,7 +356,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
                <div className="space-y-2">
                 <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
                 <Input 
@@ -383,7 +383,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   <AlertDialogHeader>
                     <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
                     <AlertDialogDescription>
-                      How would you like to import your games? A 'Full Re-import' will replace your current PC library. 'Add New Games' will only add games that are not already in your library.
+                      A 'Full Import' will add all games from your Steam library, which might create duplicates. 'Add New Games' will only import games that are not already in your Backlog Odyssey library.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -392,7 +392,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                       Add New Games
                     </AlertDialogAction>
                     <AlertDialogAction onClick={() => handleSteamImport('full')}>
-                      Full Re-import
+                      Full Import
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -404,3 +404,5 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
+
+    
