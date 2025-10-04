@@ -27,17 +27,6 @@ const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently P
 const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) => {
   const { preferences } = useUserPreferences();
   const PlatformIcon = platformIcons[game.platform];
-  const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
-
-  const compatIconColor = game.steamDeckCompat ? {
-    native: 'text-green-500',
-    platinum: 'text-yellow-400',
-    gold: 'text-yellow-500',
-    silver: 'text-gray-400',
-    bronze: 'text-orange-500',
-    borked: 'text-red-700',
-    unknown: 'text-muted-foreground',
-  }[game.steamDeckCompat] : 'text-muted-foreground';
 
   return (
     <motion.div layout>
@@ -48,6 +37,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
               src={game.imageUrl}
               alt={game.title}
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-cover transition-transform duration-300 rounded-t-lg"
             />
           ) : (
@@ -56,18 +46,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
             </div>
           )}
           <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
-            {preferences?.playsOnSteamDeck && game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="bg-background/80 rounded-full p-1 backdrop-blur-sm">
-                    <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor)} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
             {game.rating && game.rating > 0 && (
               <div className="flex items-center gap-1 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
                 <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
