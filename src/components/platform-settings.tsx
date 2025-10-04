@@ -104,7 +104,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       }
       await savePreferences(finalPreferences as UserPreferences);
       
-      if (steamVanityId) {
+      if (steamVanityId && steamVanityId !== profile?.steamId) {
         const userProfileRef = doc(db, 'users', user.uid);
         await updateDoc(userProfileRef, { steamId: steamVanityId });
       }
@@ -347,8 +347,13 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   )}
               </div>
             </CardContent>
+            <CardFooter>
+              <Button type="submit" disabled={prefsLoading}>
+                {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
+              </Button>
+            </CardFooter>
           </Card>
-
+          
           <Card>
             <CardHeader>
               <CardTitle>Steam Integration</CardTitle>
@@ -368,11 +373,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 />
               </div>
             </CardContent>
-             <CardFooter className="flex justify-between">
-              <Button type="submit" disabled={prefsLoading}>
-                {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Profile'}
-              </Button>
-              
+             <CardFooter className="justify-end">
                <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
                 <AlertDialogTrigger asChild>
                   <Button type="button" variant="outline" disabled={isImporting || profileLoading || !steamVanityId}>
@@ -404,5 +405,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
-
-    
