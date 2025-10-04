@@ -1,6 +1,3 @@
-
-
-
 'use client';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -434,7 +431,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                     <AlertDialogHeader>
                       <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
                       <AlertDialogDescription>
-                       A 'Full Import' will replace all PC games in your library with your current Steam library. 'Add New Games' will only import games from Steam that are not already in your Backlog Odyssey library. This can only be done after an initial import.
+                       A 'Full Import' will add all games from your Steam library, which may create duplicates if you have imported before. 'Add New Games' will only import games you don't already have.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -460,5 +457,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
-
-    

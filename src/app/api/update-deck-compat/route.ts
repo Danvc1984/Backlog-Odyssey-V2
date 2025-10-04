@@ -1,11 +1,10 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
-import { getSteamDeckCompat } from '../import-steam/route';
+import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 const db = getFirestore(adminApp);
 const auth = getAuth(adminApp);

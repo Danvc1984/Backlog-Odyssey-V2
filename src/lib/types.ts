@@ -1,5 +1,4 @@
-
-
+import type { SteamDeckCompat } from "@/app/api/steam/utils";
 
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";
 
@@ -7,7 +6,7 @@ export const USER_SELECTABLE_PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo
 export const ALL_PLATFORMS = [...USER_SELECTABLE_PLATFORMS, "Others/ROMs"] as const;
 export type Platform = typeof ALL_PLATFORMS[number];
 
-export type SteamDeckCompat = 'verified' | 'playable' | 'unsupported' | 'borked' | 'unknown';
+export type { SteamDeckCompat };
 
 export type Genre = string;
 

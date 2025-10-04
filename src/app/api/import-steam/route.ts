@@ -1,7 +1,3 @@
-
-
-
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -9,7 +5,8 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
 import axios from 'axios';
-import type { Game, SteamDeckCompat, UserPreferences } from '@/lib/types';
+import type { Game, UserPreferences } from '@/lib/types';
+import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 
 const db = getFirestore(adminApp);
 const auth = getAuth(adminApp);
@@ -82,21 +79,6 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
         return null;
     }
 }
-
-export async function getSteamDeckCompat(appId: number): Promise<SteamDeckCompat> {
-    try {
-        const response = await axios.get(`https://www.protondb.com/api/v1/reports/summaries/${appId}.json`);
-        const tier = response.data?.tier;
-        if (['native', 'platinum'].includes(tier)) return 'verified';
-        if (tier === 'gold') return 'playable';
-        if (tier === 'silver' || tier === 'bronze') return 'unsupported';
-        if (tier === 'borked') return 'borked';
-        return 'unknown';
-    } catch (error) {
-        return 'unknown';
-    }
-}
-
 
 export async function POST(req: NextRequest) {
     const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
