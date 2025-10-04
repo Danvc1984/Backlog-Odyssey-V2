@@ -12,7 +12,7 @@ import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
-// Helper function to initialize Firebase Admin SDK
+// Helper function to initialize Firebase Admin SDK within this route
 function getAdminApp(): App {
     if (getApps().length) {
         return getApps()[0];

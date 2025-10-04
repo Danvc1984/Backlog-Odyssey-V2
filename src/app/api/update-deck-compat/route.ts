@@ -7,7 +7,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
-// Helper function to initialize Firebase Admin SDK
+// Helper function to initialize Firebase Admin SDK within this route
 function getAdminApp(): App {
     if (getApps().length) {
         return getApps()[0];
