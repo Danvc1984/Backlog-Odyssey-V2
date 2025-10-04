@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
 import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
-import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star } from 'lucide-react';
+import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
@@ -50,7 +50,15 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
           )}
           {deal && (
             <div className="absolute top-2 left-2">
-              <Badge className="bg-green-500 text-white shadow-lg">
+              <Badge 
+                className={cn(
+                  'text-white shadow-lg flex items-center gap-1 border-none',
+                  deal.discountPercent < 40 && 'bg-green-500',
+                  deal.discountPercent >= 40 && deal.discountPercent < 80 && 'bg-green-600',
+                  deal.discountPercent >= 80 && 'bg-green-700'
+                )}
+              >
+                {deal.discountPercent >= 80 && <Sparkles className="h-3 w-3" />}
                 -{deal.discountPercent}%
               </Badge>
             </div>
