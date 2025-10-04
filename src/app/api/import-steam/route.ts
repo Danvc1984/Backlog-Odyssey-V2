@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -7,7 +8,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { adminApp } from '@/lib/firebase-admin';
 import axios from 'axios';
-import type { Game } from '@/lib/types';
+import type { Game, SteamDeckCompat, UserPreferences } from '@/lib/types';
 
 const db = getFirestore(adminApp);
 const auth = getAuth(adminApp);
@@ -81,6 +82,20 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
     }
 }
 
+async function getSteamDeckCompat(appId: number): Promise<SteamDeckCompat> {
+    try {
+        const response = await axios.get(`https://www.protondb.com/api/v1/reports/summaries/${appId}.json`);
+        const tier = response.data?.tier;
+        if (['native', 'platinum'].includes(tier)) return 'verified';
+        if (tier === 'gold') return 'playable';
+        if (tier === 'silver' || tier === 'bronze') return 'unsupported';
+        if (tier === 'borked') return 'borked';
+        return 'unknown';
+    } catch (error) {
+        return 'unknown';
+    }
+}
+
 
 export async function POST(req: NextRequest) {
     const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
@@ -110,8 +125,23 @@ export async function POST(req: NextRequest) {
         const steamId64 = await resolveVanityURL(steamId);
         
         const userProfileRef = db.collection('users').doc(uid);
+        const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
+        
+        const [userProfileSnap, prefDocSnap] = await Promise.all([
+            userProfileRef.get(),
+            prefDocRef.get()
+        ]);
+        
+        const userProfile = userProfileSnap.data() || {};
+        const preferences = (prefDocSnap.data() as UserPreferences) || {};
+        const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
+        
         await userProfileRef.update({ steamId: steamId64 });
 
+        if (playsOnSteamDeck && !preferences.playsOnSteamDeck) {
+          await prefDocRef.set({ playsOnSteamDeck: true }, { merge: true });
+        }
+        
         let steamGames = await getOwnedGames(steamId64);
         const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
 
@@ -135,14 +165,21 @@ export async function POST(req: NextRequest) {
         }
         
         const batch = db.batch();
-        const rawgPromises = steamGames.map(steamGame => getRawgGameDetails(steamGame.name).then(rawgDetails => ({ steamGame, rawgDetails })));
+        const gamePromises = steamGames.map(async (steamGame) => {
+            const rawgDetails = await getRawgGameDetails(steamGame.name);
+            let steamDeckCompat: SteamDeckCompat = 'unknown';
+            if (playsOnSteamDeck && rawgDetails) {
+                steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
+            }
+            return { steamGame, rawgDetails, steamDeckCompat };
+        });
         
-        const results = await Promise.all(rawgPromises);
+        const results = await Promise.all(gamePromises);
 
         let importedCount = 0;
         let failedCount = 0;
 
-        for (const { steamGame, rawgDetails } of results) {
+        for (const { steamGame, rawgDetails, steamDeckCompat } of results) {
             if (rawgDetails) {
                 const gameDocRef = gamesCollectionRef.doc();
                 
@@ -156,6 +193,7 @@ export async function POST(req: NextRequest) {
                     releaseDate: rawgDetails.released,
                     estimatedPlaytime: rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || 0,
                     steamAppId: steamGame.appid,
+                    steamDeckCompat: steamDeckCompat,
                 };
                 batch.set(gameDocRef, newGame);
                 importedCount++;

@@ -1,16 +1,20 @@
 
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
-import { platformIcons } from '@/components/icons';
+import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
 import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
 import { motion } from 'framer-motion';
 import React from 'react';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/utils';
 
 type GameCardProps = {
   game: Game;
@@ -22,7 +26,17 @@ type GameCardProps = {
 const gameLists: GameList[] = ["Now Playing", "Backlog", "Wishlist", "Recently Played"];
 
 const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) => {
+  const { preferences } = useUserPreferences();
   const PlatformIcon = platformIcons[game.platform];
+  const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
+
+  const compatIconColor = {
+    verified: 'text-green-500',
+    playable: 'text-yellow-500',
+    unsupported: 'text-red-500',
+    borked: 'text-red-700',
+    unknown: 'text-muted-foreground',
+  };
 
   return (
     <motion.div layout>
@@ -39,6 +53,20 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
             <div className="w-full h-full bg-card flex items-center justify-center">
               <ImageOff className="w-16 h-16 text-muted-foreground" />
             </div>
+          )}
+          {preferences?.playsOnSteamDeck && game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute top-2 right-2 bg-background/80 rounded-full p-1 backdrop-blur-sm">
+                    <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor[game.steamDeckCompat])} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </CardHeader>
         <CardContent className="p-4 flex-grow space-y-2">
