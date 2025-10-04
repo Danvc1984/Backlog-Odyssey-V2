@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
+import { getSteamAppId } from '@/ai/flows/get-steam-app-id';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,8 +143,14 @@ export default function LibraryPage() {
 
   const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user) {
-      const gameWithUser = { ...newGame, userId: user.uid };
-      await addDoc(collection(db, 'users', user.uid, 'games'), gameWithUser);
+      let gameData: any = { ...newGame, userId: user.uid };
+      if (gameData.platform === 'PC') {
+        const { steamAppId } = await getSteamAppId({ title: gameData.title });
+        if (steamAppId) {
+          gameData.steamAppId = steamAppId;
+        }
+      }
+      await addDoc(collection(db, 'users', user.uid, 'games'), gameData);
       setAddFormOpen(false);
     }
   };
@@ -156,7 +163,17 @@ export default function LibraryPage() {
   const handleUpdateGame = async (updatedGame: Omit<Game, 'id' | 'userId'>) => {
     if (user && editingGame) {
       const gameRef = doc(db, 'users', user.uid, 'games', editingGame.id);
-      await updateDoc(gameRef, updatedGame);
+      let gameData: any = { ...updatedGame };
+       if (gameData.platform === 'PC') {
+        const { steamAppId } = await getSteamAppId({ title: gameData.title });
+        if (steamAppId) {
+          gameData.steamAppId = steamAppId;
+        } else {
+          // If it can't be found, make sure we don't have a stale one
+          delete gameData.steamAppId;
+        }
+      }
+      await updateDoc(gameRef, gameData);
       setEditFormOpen(false);
       setEditingGame(null);
       toast({
