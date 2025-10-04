@@ -12,8 +12,6 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import axios from 'axios';
 
-const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
-
 const GetSteamAppIdInputSchema = z.object({
   title: z.string().describe('The title of the game.'),
 });
@@ -37,44 +35,29 @@ const getSteamAppIdFlow = ai.defineFlow(
     outputSchema: GetSteamAppIdOutputSchema,
   },
   async ({ title }) => {
-    if (!API_KEY) {
-        console.error('RAWG API Key is not configured.');
-        return { steamAppId: undefined };
-    }
     try {
-      const response = await axios.get('https://api.rawg.io/api/games', {
+      const response = await axios.get('https://store.steampowered.com/api/storesearch/', {
         params: {
-          key: API_KEY,
-          search: title,
-          page_size: 1,
+          term: title,
+          l: 'english',
+          cc: 'US',
         },
       });
 
-      if (response.data.results.length > 0) {
-        const game = response.data.results[0];
+      if (response.data && response.data.items && response.data.items.length > 0) {
+        // Find an exact match if possible
+        const exactMatch = response.data.items.find((item: any) => item.name.toLowerCase() === title.toLowerCase());
+        const game = exactMatch || response.data.items[0];
         
-        // Find the Steam store and extract the app ID from any available URL.
-        const steamStore = game.stores?.find((s: any) => s.store.slug === 'steam');
-        if (steamStore) {
-            // The URL can be in various language keys, e.g., url_en, url_ru.
-            // We'll find the first one that exists.
-            const storeUrlKey = Object.keys(steamStore).find(key => key.startsWith('url_'));
-            const storeUrl = storeUrlKey ? steamStore[storeUrlKey] : undefined;
-          
-            if (storeUrl && storeUrl.includes('store.steampowered.com/app/')) {
-                const urlParts = storeUrl.split('/');
-                const appIdIndex = urlParts.indexOf('app');
-                if (appIdIndex > -1 && urlParts.length > appIdIndex + 1) {
-                    const appId = parseInt(urlParts[appIdIndex + 1], 10);
-                    if (!isNaN(appId)) {
-                        return { steamAppId: appId };
-                    }
-                }
-            }
+        if (game.id) {
+          const steamAppId = parseInt(game.id, 10);
+          if (!isNaN(steamAppId)) {
+            return { steamAppId };
+          }
         }
       }
     } catch (error) {
-      console.error('Error fetching from RAWG API:', error);
+      console.error('Error fetching from Steam API:', error);
     }
 
     return { steamAppId: undefined };
