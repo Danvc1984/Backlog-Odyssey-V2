@@ -1,6 +1,7 @@
 
 
 
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -82,7 +83,7 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
     }
 }
 
-async function getSteamDeckCompat(appId: number): Promise<SteamDeckCompat> {
+export async function getSteamDeckCompat(appId: number): Promise<SteamDeckCompat> {
     try {
         const response = await axios.get(`https://www.protondb.com/api/v1/reports/summaries/${appId}.json`);
         const tier = response.data?.tier;
@@ -132,7 +133,6 @@ export async function POST(req: NextRequest) {
             prefDocRef.get()
         ]);
         
-        const userProfile = userProfileSnap.data() || {};
         const preferences = (prefDocSnap.data() as UserPreferences) || {};
         const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
         

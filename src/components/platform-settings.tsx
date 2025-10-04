@@ -1,5 +1,6 @@
 
 
+
 'use client';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { SteamIcon } from './icons';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -56,6 +58,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const { profile, loading: profileLoading } = useUserProfile();
   const { toast } = useToast();
   const [isImporting, setIsImporting] = useState(false);
+  const [isUpdatingCompat, setIsUpdatingCompat] = useState(false);
   const [steamVanityId, setSteamVanityId] = useState('');
   const [showImportDialog, setShowImportDialog] = useState(false);
 
@@ -88,6 +91,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
   const selectedPlatforms = form.watch('platforms');
   const playsOnPC = useMemo(() => selectedPlatforms?.includes('PC') || false, [selectedPlatforms]);
+  const playsOnSteamDeck = form.watch('playsOnSteamDeck');
 
   useEffect(() => {
     if (!playsOnPC) {
@@ -162,9 +166,9 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         throw new Error(result.message || 'Failed to import Steam library.');
       }
       
-      toast({
+       toast({
         title: 'Steam Library Import Complete!',
-        description: `Successfully imported ${result.importedCount} games to your backlog. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
+        description: `Successfully imported ${result.importedCount} games. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
       });
 
     } catch (error: any) {
@@ -175,6 +179,38 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       });
     } finally {
       setIsImporting(false);
+    }
+  }
+
+  const handleUpdateCompat = async () => {
+    setIsUpdatingCompat(true);
+    try {
+      const token = await getAuthToken();
+      if (!token) {
+        throw new Error('You must be logged in.');
+      }
+      const response = await fetch('/api/update-deck-compat', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message);
+
+      toast({
+        title: 'Update Complete',
+        description: 'Steam Deck compatibility status has been updated for your PC games.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdatingCompat(false);
     }
   }
 
@@ -322,28 +358,45 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   />
 
                   {playsOnPC && (
-                    <FormField
-                      control={form.control}
-                      name="playsOnSteamDeck"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              I play on a Steam Deck.
-                            </FormLabel>
-                            <FormDescription>
-                              This helps us recommend Steam Deck compatible games.
-                            </FormDescription>
-                          </div>
-                        </FormItem>
+                    <>
+                      <FormField
+                        control={form.control}
+                        name="playsOnSteamDeck"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>
+                                I play on a Steam Deck.
+                              </FormLabel>
+                              <FormDescription>
+                                This helps us recommend Steam Deck compatible games.
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      {playsOnSteamDeck && (
+                        <div className="pl-4">
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            onClick={handleUpdateCompat}
+                            disabled={isUpdatingCompat}
+                          >
+                            {isUpdatingCompat ? 'Updating...' : 'Update Compatibility Status'}
+                          </Button>
+                          <FormDescription className="mt-2">
+                              Check for the latest Steam Deck compatibility status for all your PC games.
+                          </FormDescription>
+                        </div>
                       )}
-                    />
+                    </>
                   )}
               </div>
             </CardContent>
@@ -372,7 +425,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                <CardFooter className="justify-end">
                  <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId} className="h-12 px-10 text-base">
+                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
+                      <SteamIcon className="mr-2 h-5 w-5" />
                       {isImporting ? 'Importing...' : 'Import Steam Library'}
                     </Button>
                   </AlertDialogTrigger>
@@ -380,7 +434,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                     <AlertDialogHeader>
                       <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
                       <AlertDialogDescription>
-                        A 'Full Import' will add all games from your Steam library, which might create duplicates. 'Add New Games' will only import games that are not already in your Backlog Odyssey library.
+                       A 'Full Import' will replace all PC games in your library with your current Steam library. 'Add New Games' will only import games from Steam that are not already in your Backlog Odyssey library. This can only be done after an initial import.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
