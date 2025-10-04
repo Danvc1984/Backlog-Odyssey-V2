@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, Import } from 'lucide-react';
+import { PlusCircle, Search, Layers, Import, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -45,8 +45,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameCard from '@/components/game-card';
 import GameForm from '@/components/game-form';
 import BatchAddGames from '@/components/batch-add-games';
+import { SteamIcon } from '@/components/icons';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
+
+type SortBy = 'default' | 'alpha-asc' | 'alpha-desc';
 
 export default function LibraryPage() {
   const { user } = useAuth();
@@ -62,7 +65,7 @@ export default function LibraryPage() {
   
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<string | 'all'>('all');
-  const [sortBy, setSortBy] = useState<'default' | 'alphabetical'>('default');
+  const [sortBy, setSortBy] = useState<SortBy>('default');
   
   const [isAddFormOpen, setAddFormOpen] = useState(false);
   const [isEditFormOpen, setEditFormOpen] = useState(false);
@@ -207,8 +210,10 @@ export default function LibraryPage() {
   const gamesByList = useMemo(() => {
     return gameLists.reduce((acc, list) => {
       let listGames = filteredGames.filter(game => game.list === list);
-      if (sortBy === 'alphabetical') {
+      if (sortBy === 'alpha-asc') {
         listGames = listGames.sort((a, b) => a.title.localeCompare(b.title));
+      } else if (sortBy === 'alpha-desc') {
+        listGames = listGames.sort((a, b) => b.title.localeCompare(a.title));
       }
       acc[list] = listGames;
       return acc;
@@ -224,6 +229,20 @@ export default function LibraryPage() {
       return a.localeCompare(b);
     });
   }, [preferences?.platforms]);
+
+  const handleSortToggle = () => {
+    setSortBy(prev => {
+      if (prev === 'default') return 'alpha-asc';
+      if (prev === 'alpha-asc') return 'alpha-desc';
+      return 'default';
+    });
+  };
+
+  const sortIcon = useMemo(() => {
+    if (sortBy === 'alpha-asc') return <ArrowDownAZ />;
+    if (sortBy === 'alpha-desc') return <ArrowUpZA />;
+    return <ArrowDownUp />;
+  }, [sortBy]);
   
   if (prefsLoading) {
     return <div className="text-center py-10">Loading library...</div>;
@@ -236,7 +255,7 @@ export default function LibraryPage() {
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {playsOnPC && (
             <Button variant="outline" onClick={() => router.push('/profile')}>
-              <Import className="mr-2 h-4 w-4" /> Import from Steam
+              <SteamIcon className="mr-2" /> Import from Steam
             </Button>
           )}
           <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
@@ -280,15 +299,9 @@ export default function LibraryPage() {
           />
         </div>
         <div className="flex gap-4">
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'default' | 'alphabetical')}>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
-              <SelectItem value="alphabetical">Alphabetical (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
+          <Button variant="outline" size="icon" onClick={handleSortToggle}>
+            {sortIcon}
+          </Button>
           <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
             <SelectTrigger className="w-full md:w-[180px]">
               <SelectValue placeholder="Filter by Platform" />
@@ -380,5 +393,3 @@ export default function LibraryPage() {
     </div>
   );
 }
-
-    
