@@ -45,7 +45,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameCard from '@/components/game-card';
 import GameForm from '@/components/game-form';
 import BatchAddGames from '@/components/batch-add-games';
-import { SteamIcon } from '@/components/icons';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
@@ -255,7 +254,8 @@ export default function LibraryPage() {
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           {playsOnPC && (
             <Button variant="outline" onClick={() => router.push('/profile')}>
-              <SteamIcon className="mr-2" /> Import from Steam
+              <Import className="mr-2 h-4 w-4" />
+              Import from Steam
             </Button>
           )}
           <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
