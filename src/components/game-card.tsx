@@ -1,5 +1,3 @@
-
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,27 +28,29 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
   const PlatformIcon = platformIcons[game.platform];
   const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
 
-  const compatIconColor = {
-    verified: 'text-green-500',
-    playable: 'text-yellow-500',
-    unsupported: 'text-red-500',
+  const compatIconColor = game.steamDeckCompat ? {
+    native: 'text-green-500',
+    platinum: 'text-green-400',
+    gold: 'text-yellow-500',
+    silver: 'text-orange-500',
+    bronze: 'text-red-500',
     borked: 'text-red-700',
     unknown: 'text-muted-foreground',
-  };
+  }[game.steamDeckCompat] : 'text-muted-foreground';
 
   return (
       <motion.div layout>
         <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
-          <CardHeader className="p-0 relative aspect-[3/4] overflow-hidden rounded-t-lg">
+          <CardHeader className="p-0 relative aspect-[3/4] rounded-t-lg">
             {game.imageUrl ? (
               <Image
                 src={game.imageUrl}
                 alt={game.title}
                 fill
-                className="object-cover transition-transform duration-300"
+                className="object-cover transition-transform duration-300 rounded-t-lg"
               />
             ) : (
-              <div className="w-full h-full bg-card flex items-center justify-center">
+              <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
                 <ImageOff className="w-16 h-16 text-muted-foreground" />
               </div>
             )}
@@ -58,7 +58,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onEdit, onMove, onDelete }) =
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="absolute top-2 right-2 bg-background/80 rounded-full p-1 backdrop-blur-sm">
-                      <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor[game.steamDeckCompat])} />
+                      <SteamDeckCompatIcon className={cn("h-5 w-5", compatIconColor)} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
