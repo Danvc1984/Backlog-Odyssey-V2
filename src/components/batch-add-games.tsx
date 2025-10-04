@@ -186,7 +186,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       const batch = writeBatch(db);
       const gamesCollectionRef = collection(db, 'users', user.uid, 'games');
 
-      for (const game of selectedGames) {
+      const gameProcessingPromises = selectedGames.map(async (game) => {
         const gamePlatforms = game.platforms?.map(p => p.platform.name as Platform) || [];
         const userPlatforms = preferences.platforms || [];
         let platformToSet: Platform | undefined;
@@ -225,9 +225,14 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
             }
           }
         }
+        return newGame;
+      });
 
+      const processedGames = await Promise.all(gameProcessingPromises);
+
+      for (const gameData of processedGames) {
         const docRef = doc(gamesCollectionRef);
-        batch.set(docRef, newGame);
+        batch.set(docRef, gameData);
       }
 
       await batch.commit();
