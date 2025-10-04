@@ -32,9 +32,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { db } from '@/lib/firebase';
-import type { Game, GameList, Platform, Genre, SteamDeckCompat } from '@/lib/types';
+import type { Game, GameList, Platform, Genre } from '@/lib/types';
 import { Badge } from './ui/badge';
-import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
@@ -46,7 +45,6 @@ type RawgGame = {
   genres: { name: string }[];
   released: string;
   playtime: number;
-  stores: { store: { slug: string }, url: string }[];
 };
 
 type BatchAddGamesProps = {
@@ -83,7 +81,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
     setIsSearching(true);
     try {
       const response = await axios.get('https://api.rawg.io/api/games', {
-        params: { key: API_KEY, search: query, page_size: 10, stores: 'steam' },
+        params: { key: API_KEY, search: query, page_size: 10 },
       });
       setSearchResults(response.data.results);
     } catch (error) {
@@ -102,7 +100,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
     if (!query) return null;
     try {
       const response = await axios.get('https://api.rawg.io/api/games', {
-        params: { key: API_KEY, search: query, page_size: 1, stores: 'steam' },
+        params: { key: API_KEY, search: query, page_size: 1 },
       });
       if (response.data.results.length > 0) {
         return response.data.results[0];
@@ -204,21 +202,6 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         const gameGenres = game.genres?.map(g => g.name as Genre) || [];
         gameGenres.forEach(onAddGenre);
 
-        let steamAppId: number | undefined;
-        const steamStore = game.stores?.find(s => s.store.slug === 'steam');
-        if (steamStore) {
-            const urlParts = steamStore.url.split('/');
-            const appIdIndex = urlParts.indexOf('app');
-            if (appIdIndex > -1 && urlParts.length > appIdIndex + 1) {
-                steamAppId = parseInt(urlParts[appIdIndex + 1], 10);
-            }
-        }
-
-        let steamDeckCompat: SteamDeckCompat = 'unknown';
-        if (preferences.playsOnSteamDeck && platformToSet === 'PC' && steamAppId) {
-            steamDeckCompat = await getSteamDeckCompat(steamAppId);
-        }
-
         const newGame: Omit<Game, 'id'> = {
           userId: user.uid,
           title: game.name,
@@ -228,8 +211,6 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           imageUrl: game.background_image || '',
           releaseDate: game.released,
           estimatedPlaytime: game.playtime || 0,
-          steamAppId: steamAppId,
-          steamDeckCompat: steamDeckCompat,
         };
 
         const docRef = doc(gamesCollectionRef);
@@ -406,5 +387,3 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
 };
 
 export default BatchAddGames;
-
-    
