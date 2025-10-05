@@ -20,7 +20,9 @@ export interface Game {
   list: GameList;
   imageUrl: string;
   releaseDate?: string;
-  estimatedPlaytime?: number;
+  playtimeMain?: number;
+  playtimeMainExtra?: number;
+  playtimeCompletionist?: number;
   steamAppId?: number;
   steamDeckCompat?: SteamDeckCompat;
   rating?: number;
@@ -48,4 +50,14 @@ export interface UserPreferences {
 export interface UserProfile {
   onboardingComplete: boolean;
   steamId?: string;
+}
+
+export interface Challenge {
+  id: string;
+  userId: string;
+  title: string;
+  goal: number;
+  progress: number;
+  status: 'active' | 'completed';
+  createdAt: any;
 }

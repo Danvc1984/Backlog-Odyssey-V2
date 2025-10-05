@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -14,7 +15,7 @@ type DashboardProps = {
 const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   const genreData = useMemo(() => {
     const counts = games.reduce((acc, game) => {
-      game.genres.forEach(genre => {
+      (game.genres || []).forEach(genre => {
         acc[genre] = (acc[genre] || 0) + 1;
       });
       return acc;
@@ -35,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       : 0;
   }, [games]);
 
-  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
+  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.playtimeMain || 0), 0), [games]);
 
   const chartConfig = {
     total: {
@@ -70,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalPlaytime}h</div>
-          <p className="text-xs text-muted-foreground">Estimated across all games</p>
+          <p className="text-xs text-muted-foreground">Estimated main story playtime</p>
         </CardContent>
       </Card>
       <Card className="md:col-span-2 lg:col-span-1">
@@ -83,13 +84,13 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardContent>
       </Card>
 
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card className="md:col-span-2 lg:col-span-4">
         <CardHeader>
           <CardTitle>Genre Distribution</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={genreData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+            <BarChart accessibilityLayer data={genreData.slice(0, 10)} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
               <YAxis />

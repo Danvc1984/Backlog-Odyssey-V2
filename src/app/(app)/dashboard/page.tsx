@@ -1,10 +1,10 @@
 
 'use client';
 import { useMemo, useState, useEffect } from 'react';
-import type { Game, GameList } from '@/lib/types';
+import type { Game, GameList, Challenge } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import GameListPreview from '@/components/game-list-preview';
 import { useToast } from '@/hooks/use-toast';
@@ -18,18 +18,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import GameForm from '@/components/game-form';
+import ChallengeForm from '@/components/challenge-form';
+import ChallengeCard from '@/components/challenge-card';
 import { useDeals } from '@/hooks/use-deals';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { deals } = useDeals();
   const [games, setGames] = useState<Game[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   
   const [isEditFormOpen, setEditFormOpen] = useState(false);
+  const [isChallengeFormOpen, setChallengeFormOpen] = useState(false);
   const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [deletingGame, setDeletingGame] = useState<Game | null>(null);
   const [allGenres, setAllGenres] = useState<string[]>([]);
@@ -38,7 +44,9 @@ export default function DashboardPage() {
     if (user) {
       setDataLoading(true);
       const gamesCollection = collection(db, 'users', user.uid, 'games');
-      const unsubscribe = onSnapshot(gamesCollection, snapshot => {
+      const challengesCollection = collection(db, 'users', user.uid, 'challenges');
+
+      const unsubscribeGames = onSnapshot(gamesCollection, snapshot => {
         const userGames = snapshot.docs.map(
           doc => ({ id: doc.id, ...doc.data() } as Game)
         );
@@ -46,12 +54,23 @@ export default function DashboardPage() {
         
         const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []).filter(g => g).map(g => g.trim()));
         setAllGenres(Array.from(uniqueGenres).sort());
-        
+      });
+
+      const unsubscribeChallenges = onSnapshot(challengesCollection, snapshot => {
+        const userChallenges = snapshot.docs.map(
+          doc => ({ id: doc.id, ...doc.data() } as Challenge)
+        );
+        setChallenges(userChallenges.filter(c => c.status === 'active'));
         setDataLoading(false);
       });
-      return () => unsubscribe();
+
+      return () => {
+        unsubscribeGames();
+        unsubscribeChallenges();
+      };
     } else {
       setGames([]);
+      setChallenges([]);
       setDataLoading(false);
     }
   }, [user]);
@@ -82,6 +101,11 @@ export default function DashboardPage() {
         title: 'Game Moved!',
         description: `${game.title} moved to ${newList}.`,
       });
+
+      // Update challenges if a game is 'completed'
+      if (newList === 'Recently Played') {
+        await updateChallengesProgress();
+      }
     }
   };
 
@@ -104,6 +128,55 @@ export default function DashboardPage() {
   const handleAddGenre = (newGenre: string) => {
     if (newGenre && !allGenres.map(g => g.toLowerCase()).includes(newGenre.toLowerCase())) {
         setAllGenres(prev => [...prev, newGenre].sort());
+    }
+  };
+
+  const handleAddChallenge = async (data: { title: string, goal: number }) => {
+    if (user) {
+        await addDoc(collection(db, 'users', user.uid, 'challenges'), {
+            userId: user.uid,
+            title: data.title,
+            goal: data.goal,
+            progress: 0,
+            status: 'active',
+            createdAt: serverTimestamp(),
+        });
+        setChallengeFormOpen(false);
+        toast({
+            title: 'Challenge Created!',
+            description: `Your new challenge "${data.title}" has been set.`
+        });
+    }
+  };
+  
+  const updateChallengesProgress = async () => {
+    if (!user || challenges.length === 0) return;
+
+    const gamesSnapshot = await collection(db, 'users', user.uid, 'games').get();
+    const completedGamesCount = gamesSnapshot.docs.filter(doc => doc.data().list === 'Recently Played').length;
+
+    const batch = writeBatch(db);
+    let challengesUpdated = false;
+
+    challenges.forEach(challenge => {
+      if (challenge.progress < challenge.goal) {
+        const newProgress = Math.min(challenge.progress + 1, challenge.goal);
+        const challengeRef = doc(db, 'users', user.uid, 'challenges', challenge.id);
+        batch.update(challengeRef, { progress: newProgress });
+        challengesUpdated = true;
+
+        if (newProgress === challenge.goal) {
+          batch.update(challengeRef, { status: 'completed' });
+          toast({
+            title: 'Challenge Complete!',
+            description: `You've completed the challenge: "${challenge.title}"`,
+          });
+        }
+      }
+    });
+
+    if (challengesUpdated) {
+      await batch.commit();
     }
   };
 
@@ -131,6 +204,35 @@ export default function DashboardPage() {
   return (
     <div className="space-y-12">
       <Dashboard games={games} />
+      
+       <div className="space-y-6">
+        <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
+            <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create a New Challenge</DialogTitle>
+                    </DialogHeader>
+                    <ChallengeForm onSave={handleAddChallenge} />
+                </DialogContent>
+            </Dialog>
+        </div>
+        {challenges.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {challenges.map(challenge => (
+                    <ChallengeCard key={challenge.id} challenge={challenge} />
+                ))}
+            </div>
+        ) : (
+            <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
+                <p>No active challenges. Why not create one?</p>
+            </div>
+        )}
+      </div>
+
       <GameListPreview title="Now Playing" games={nowPlaying} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
       <GameListPreview title="Backlog" games={backlog} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
       <GameListPreview title="Wishlist" games={wishlist} deals={deals} onEdit={handleEditGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
