@@ -2,19 +2,15 @@
 'use client';
 
 import * as React from 'react';
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, Import, ArrowDownUp, ArrowDownAZ, ArrowUpZA, Sparkles } from 'lucide-react';
+import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import Link from 'next/link';
 
-import type { Game, Platform, Genre, GameList, SteamDeckCompat } from '@/lib/types';
-import { useAuth } from '@/hooks/use-auth';
-import { db } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
+import type { Game, Platform, GameList } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useDeals } from '@/hooks/use-deals';
+import { useGameLibrary } from '@/hooks/use-game-library';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,16 +50,30 @@ const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently P
 type SortBy = 'default' | 'alpha-asc' | 'alpha-desc';
 
 export default function LibraryPage() {
-  const { user } = useAuth();
   const { preferences, loading: prefsLoading } = useUserPreferences();
-  const { deals, loading: dealsLoading, fetchDeals } = useDeals();
-  const { toast } = useToast();
+  const { deals } = useDeals();
+  const {
+    games,
+    loading: dataLoading,
+    allGenres,
+    handleUpdateGame,
+    handleMoveGame,
+    handleDeleteGame,
+    handleAddGame,
+    handleAddGenre,
+    confirmDeleteGame,
+    setDeletingGame,
+    deletingGame,
+    editingGame,
+    setEditingGame,
+    isEditFormOpen,
+    setEditFormOpen,
+  } = useGameLibrary();
+  
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [games, setGames] = useState<Game[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
@@ -71,37 +81,10 @@ export default function LibraryPage() {
   const [sortBy, setSortBy] = useState<SortBy>('default');
   
   const [isAddFormOpen, setAddFormOpen] = useState(false);
-  const [isEditFormOpen, setEditFormOpen] = useState(false);
-  const [editingGame, setEditingGame] = useState<Game | null>(null);
-  const [deletingGame, setDeletingGame] = useState<Game | null>(null);
-
+  
   const [activeList, setActiveList] = useState<GameList>('Now Playing');
-  const [allGenres, setAllGenres] = useState<string[]>([]);
   
   const playsOnPC = useMemo(() => preferences?.platforms?.includes('PC') || false, [preferences]);
-
-  useEffect(() => {
-    if (user) {
-      setDataLoading(true);
-      const gamesCollection = collection(db, 'users', user.uid, 'games');
-      const unsubscribe = onSnapshot(gamesCollection, snapshot => {
-        const userGames = snapshot.docs.map(
-          doc => ({ id: doc.id, ...doc.data() } as Game)
-        );
-        setGames(userGames);
-        
-        const uniqueGenres = new Set(userGames.flatMap(game => game.genres || []).filter(g => g).map(g => g.trim()));
-        setAllGenres(Array.from(uniqueGenres).sort());
-        
-        setDataLoading(false);
-      });
-      return () => unsubscribe();
-    } else {
-      setGames([]);
-      setAllGenres([]);
-      setDataLoading(false);
-    }
-  }, [user]);
 
   useEffect(() => {
     const list = searchParams.get('list') as GameList | null;
@@ -142,98 +125,11 @@ export default function LibraryPage() {
     updateQueryParam('list', value);
   };
 
-  const handleAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user && preferences) {
-      let gameData: any = { ...newGame, userId: user.uid };
-      if (gameData.platform === 'PC') {
-         try {
-            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
-            const steamDetails = await response.json();
-            if (steamDetails.steamAppId) {
-                gameData.steamAppId = steamDetails.steamAppId;
-            }
-            if (steamDetails.steamDeckCompat) {
-                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
-            }
-        } catch (error) {
-            console.error('Failed to fetch steam details', error);
-        }
-      }
-      await addDoc(collection(db, 'users', user.uid, 'games'), gameData);
-      setAddFormOpen(false);
-    }
-  };
+  const onAddGame = async (newGame: Omit<Game, 'id' | 'userId'>) => {
+    await handleAddGame(newGame);
+    setAddFormOpen(false);
+  }
 
-  const handleEditGame = (game: Game) => {
-    setEditingGame(game);
-    setEditFormOpen(true);
-  };
-
-  const handleUpdateGame = async (updatedGame: Omit<Game, 'id' | 'userId'>) => {
-    if (user && editingGame && preferences) {
-      const gameRef = doc(db, 'users', user.uid, 'games', editingGame.id);
-      let gameData: any = { ...updatedGame };
-       if (gameData.platform === 'PC') {
-         try {
-            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
-            const steamDetails = await response.json();
-            if (steamDetails.steamAppId) {
-                gameData.steamAppId = steamDetails.steamAppId;
-            } else {
-                delete gameData.steamAppId;
-            }
-            if (steamDetails.steamDeckCompat) {
-                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
-            } else {
-                delete gameData.steamDeckCompat;
-            }
-        } catch (error) {
-            console.error('Failed to fetch steam details', error);
-        }
-      }
-      await updateDoc(gameRef, gameData);
-      setEditFormOpen(false);
-      setEditingGame(null);
-      toast({
-        title: 'Game Updated!',
-        description: `${updatedGame.title} has been updated.`,
-      });
-    }
-  };
-
-  const handleMoveGame = async (game: Game, newList: GameList) => {
-    if (user) {
-      const gameRef = doc(db, 'users', user.uid, 'games', game.id);
-      await updateDoc(gameRef, { list: newList });
-      toast({
-        title: 'Game Moved!',
-        description: `${game.title} moved to ${newList}.`,
-      });
-    }
-  };
-
-  const confirmDeleteGame = (game: Game) => {
-    setDeletingGame(game);
-  };
-
-  const handleDeleteGame = async () => {
-    if (user && deletingGame) {
-      await deleteDoc(doc(db, 'users', user.uid, 'games', deletingGame.id));
-      toast({
-        title: 'Game Deleted',
-        description: `${deletingGame.title} has been removed from your library.`,
-        variant: 'destructive'
-      });
-      setDeletingGame(null);
-    }
-  };
-
-  const handleAddGenre = (newGenre: string) => {
-    if (newGenre && !allGenres.map(g => g.toLowerCase()).includes(newGenre.toLowerCase())) {
-        setAllGenres(prev => [...prev, newGenre].sort());
-    }
-  };
-  
   const filteredGames = useMemo(() => {
     return games.filter(game => {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -279,7 +175,7 @@ export default function LibraryPage() {
     return <ArrowDownUp />;
   }, [sortBy]);
   
-  if (prefsLoading) {
+  if (prefsLoading || dataLoading) {
     return <div className="text-center py-10">Loading library...</div>;
   }
 
@@ -306,7 +202,7 @@ export default function LibraryPage() {
                 <DialogHeader>
                   <DialogTitle>Add a New Game</DialogTitle>
                 </DialogHeader>
-                <GameForm onSave={handleAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
+                <GameForm onSave={onAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
               </DialogContent>
             </Dialog>
 
@@ -394,7 +290,7 @@ export default function LibraryPage() {
                             key={game.id}
                             game={game}
                             deal={game.steamAppId ? deals[game.steamAppId] : undefined}
-                            onEdit={handleEditGame} 
+                            onEdit={setEditingGame} 
                             onMove={handleMoveGame} 
                             onDelete={confirmDeleteGame}
                             priority={index === 0}
@@ -425,7 +321,7 @@ export default function LibraryPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteGame}>Delete</AlertDialogAction>
+              <AlertDialogAction onClick={() => handleDeleteGame(deletingGame!)}>Delete</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

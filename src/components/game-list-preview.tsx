@@ -39,7 +39,7 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, 
                 key={game.id} 
                 game={game} 
                 deal={game.steamAppId && deals ? deals[game.steamAppId] : undefined}
-                onEdit={onEdit} 
+                onEdit={() => onEdit(game)}
                 onMove={onMove} 
                 onDelete={onDelete}
                 priority={index === 0 && title === 'Now Playing'}

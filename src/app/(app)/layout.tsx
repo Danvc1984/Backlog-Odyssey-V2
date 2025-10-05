@@ -12,21 +12,20 @@ import {
   SidebarContent,
   SidebarInset,
 } from '@/components/ui/sidebar';
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Game } from '@/lib/types';
 import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
 import { DealsProvider, useDeals } from '@/hooks/use-deals';
+import { GameLibraryProvider, useGameLibrary } from '@/hooks/use-game-library';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useUserProfile();
   const { preferences } = useUserPreferences();
   const { fetchDeals } = useDeals();
+  const { games: allGames } = useGameLibrary();
   const router = useRouter();
   const pathname = usePathname();
-  const [allGames, setAllGames] = React.useState<Game[]>([]);
   const [initialLoadComplete, setInitialLoadComplete] = React.useState(false);
   const dealsFetchedRef = React.useRef(false);
 
@@ -51,21 +50,6 @@ function AppContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, profile, initialLoadComplete, router, pathname]);
   
-  React.useEffect(() => {
-    if (user) {
-      const gamesCollection = collection(db, 'users', user.uid, 'games');
-      const unsubscribe = onSnapshot(gamesCollection, snapshot => {
-        const userGames = snapshot.docs.map(
-          doc => ({ id: doc.id, ...doc.data() } as Game)
-        );
-        setAllGames(userGames);
-      });
-      return () => unsubscribe();
-    } else if (!authLoading) {
-      setAllGames([]);
-    }
-  }, [user, authLoading]);
-
   React.useEffect(() => {
     if (allGames.length > 0 && preferences?.notifyDiscounts && !dealsFetchedRef.current) {
         const wishlistGames = allGames.filter(g => g.list === 'Wishlist' && g.platform === 'PC' && g.steamAppId);
@@ -131,9 +115,11 @@ export default function AppLayout({
   return (
     <UserProfileProvider>
       <UserPreferencesProvider>
-        <DealsProvider>
-          <AppContent>{children}</AppContent>
-        </DealsProvider>
+        <GameLibraryProvider>
+          <DealsProvider>
+            <AppContent>{children}</AppContent>
+          </DealsProvider>
+        </GameLibraryProvider>
       </UserPreferencesProvider>
     </UserProfileProvider>
   )

@@ -32,6 +32,11 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
   const PlatformIcon = platformIcons[game.platform];
   const SteamDeckCompatIcon = game.steamDeckCompat ? steamDeckCompatIcons[game.steamDeckCompat] : null;
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onEdit(game);
+  }
+
   return (
     <motion.div layout>
       <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
@@ -113,7 +118,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               ) : null}
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => onEdit(game)}>
+              <Button size="icon" variant="outline" className="h-7 w-7" onClick={handleEdit}>
                 <Pencil className="h-4 w-4" />
               </Button>
               <DropdownMenu>
