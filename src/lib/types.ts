@@ -20,9 +20,7 @@ export interface Game {
   list: GameList;
   imageUrl: string;
   releaseDate?: string;
-  playtimeMain?: number;
-  playtimeMainExtra?: number;
-  playtimeCompletionist?: number;
+  estimatedPlaytime?: number;
   steamAppId?: number;
   steamDeckCompat?: SteamDeckCompat;
   rating?: number;

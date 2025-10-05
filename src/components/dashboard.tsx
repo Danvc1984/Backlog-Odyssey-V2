@@ -36,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       : 0;
   }, [games]);
 
-  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.playtimeMain || 0), 0), [games]);
+  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
 
   const chartConfig = {
     total: {
