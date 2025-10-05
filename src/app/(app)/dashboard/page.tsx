@@ -217,7 +217,7 @@ export default function DashboardPage() {
                     <DialogHeader>
                         <DialogTitle>Create a New Challenge</DialogTitle>
                     </DialogHeader>
-                    <ChallengeForm onSave={handleAddChallenge} />
+                    <ChallengeForm onSave={handleAddChallenge} allGames={games} />
                 </DialogContent>
             </Dialog>
         </div>
