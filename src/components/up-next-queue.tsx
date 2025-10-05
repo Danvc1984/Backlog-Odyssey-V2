@@ -26,7 +26,7 @@ interface UpNextQueueProps {
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 4200, stopOnInteraction: true })
   );
 
   // Placeholder logic for selecting games
