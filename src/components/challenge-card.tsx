@@ -4,20 +4,22 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Challenge } from '@/lib/types';
-import { Target } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { CheckCircle, Target } from 'lucide-react';
 
 type ChallengeCardProps = {
   challenge: Challenge;
+  isCompleted?: boolean;
 };
 
-const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
+const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, isCompleted = false }) => {
   const progressPercentage = challenge.goal > 0 ? (challenge.progress / challenge.goal) * 100 : 0;
 
   return (
-    <Card>
+    <Card className={cn(isCompleted && 'opacity-60')}>
       <CardHeader>
         <CardTitle className="flex items-center text-lg">
-          <Target className="mr-3 h-5 w-5 text-primary" />
+          {isCompleted ? <CheckCircle className="mr-3 h-5 w-5 text-green-500" /> : <Target className="mr-3 h-5 w-5 text-primary" />}
           {challenge.title}
         </CardTitle>
         <CardDescription>

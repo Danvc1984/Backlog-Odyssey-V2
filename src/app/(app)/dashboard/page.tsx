@@ -1,9 +1,10 @@
 
 'use client';
 import { useMemo, useState } from 'react';
-import type { Game, ChallengeIdea } from '@/lib/types';
+import type { Game, Challenge, ChallengeIdea } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import { useGameLibrary } from '@/hooks/use-game-library';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import GameListPreview from '@/components/game-list-preview';
 import {
@@ -22,12 +23,14 @@ import ChallengeForm from '@/components/challenge-form';
 import ChallengeCard from '@/components/challenge-card';
 import { useDeals } from '@/hooks/use-deals';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Trophy } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 export default function DashboardPage() {
   const {
     games,
-    challenges,
+    activeChallenges,
+    completedChallenges,
     allGenres,
     loading,
     handleUpdateGame,
@@ -92,18 +95,42 @@ export default function DashboardPage() {
                 </DialogContent>
             </Dialog>
         </div>
-        {challenges.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {challenges.map(challenge => (
-                    <ChallengeCard key={challenge.id} challenge={challenge} />
-                ))}
-            </div>
+        {activeChallenges.length > 0 ? (
+            <motion.div layout className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                 <AnimatePresence>
+                    {activeChallenges.map(challenge => (
+                        <motion.div
+                            key={challenge.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.3 } }}
+                        >
+                            <ChallengeCard challenge={challenge} />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </motion.div>
         ) : (
             <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
                 <p>No active challenges. Why not create one?</p>
             </div>
         )}
       </div>
+
+      {completedChallenges.length > 0 && (
+          <div className="space-y-6">
+             <Separator />
+             <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2"><Trophy className="text-yellow-400"/> Completed Challenges</h2>
+            </div>
+             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {completedChallenges.map(challenge => (
+                    <ChallengeCard key={challenge.id} challenge={challenge} isCompleted />
+                ))}
+            </div>
+          </div>
+      )}
 
       <GameListPreview title="Now Playing" games={nowPlaying} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
       <GameListPreview title="Backlog" games={backlog} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />

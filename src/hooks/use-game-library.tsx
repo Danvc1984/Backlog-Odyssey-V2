@@ -1,7 +1,7 @@
 
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
@@ -11,7 +11,8 @@ import type { Game, GameList, Challenge, ChallengeIdea, Genre } from '@/lib/type
 
 interface GameLibraryContextType {
   games: Game[];
-  challenges: Challenge[];
+  activeChallenges: Challenge[];
+  completedChallenges: Challenge[];
   allGenres: Genre[];
   loading: boolean;
   handleAddGame: (newGame: Omit<Game, 'id' | 'userId'>) => Promise<void>;
@@ -69,7 +70,7 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
 
       const unsubscribeChallenges = onSnapshot(challengesCollection, snapshot => {
         const userChallenges = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Challenge));
-        setChallenges(userChallenges.filter(c => c.status === 'active'));
+        setChallenges(userChallenges.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
         setLoading(false);
       });
 
@@ -85,8 +86,12 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  const activeChallenges = useMemo(() => challenges.filter(c => c.status === 'active'), [challenges]);
+  const completedChallenges = useMemo(() => challenges.filter(c => c.status === 'completed'), [challenges]);
+
+
   const updateChallengesProgress = useCallback(async (completedGame: Game) => {
-    if (!user || challenges.length === 0) return;
+    if (!user || activeChallenges.length === 0) return;
   
     const batch = writeBatch(db);
     let challengesUpdated = false;
@@ -102,7 +107,7 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
       return { genres: foundGenres, platforms: foundPlatforms };
     };
 
-    for (const challenge of challenges) {
+    for (const challenge of activeChallenges) {
         if (challenge.progress >= challenge.goal) continue;
 
         const combinedText = `${challenge.title} ${challenge.description}`;
@@ -141,7 +146,7 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     }
-  }, [user, challenges, games, toast]);
+  }, [user, activeChallenges, games, toast]);
 
   const handleAddGame = useCallback(async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user && preferences) {
@@ -257,7 +262,8 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
   return (
     <GameLibraryContext.Provider value={{
       games,
-      challenges,
+      activeChallenges,
+      completedChallenges,
       allGenres,
       loading,
       handleAddGame,
