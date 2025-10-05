@@ -24,6 +24,7 @@ import { useDeals } from '@/hooks/use-deals';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Trophy } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import UpNextQueue from '@/components/up-next-queue';
 
 export default function DashboardPage() {
   const {
@@ -78,6 +79,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-12">
       <Dashboard games={games} />
+
+      <UpNextQueue games={games} onMoveGame={handleMoveGame} />
       
        <div className="space-y-6">
         <div className="flex justify-between items-center">
