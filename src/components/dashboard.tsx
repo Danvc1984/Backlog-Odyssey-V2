@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Game, Genre } from '@/lib/types';
@@ -18,16 +18,18 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   const chartConfig = {
     total: {
       label: 'Games',
-      color: 'hsl(var(--primary))',
+      color: 'hsl(var(--chart-1))',
     },
     playtime: {
         label: 'Playtime (h)',
-        color: 'hsl(var(--accent))',
+        color: 'hsl(var(--chart-2))',
     }
   };
 
+  const ownedGames = useMemo(() => games.filter(g => g.list !== 'Wishlist'), [games]);
+
   const genreData = useMemo(() => {
-    const counts = games.reduce((acc, game) => {
+    const counts = ownedGames.reduce((acc, game) => {
       (game.genres || []).forEach(genre => {
         acc[genre] = (acc[genre] || 0) + 1;
       });
@@ -35,24 +37,21 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
     }, {} as Record<Genre, number>);
 
     return Object.entries(counts)
-      .map(([name, total]) => ({ name, total }))
+      .map(([name, total]) => ({ name, total, fill: `var(--color-${name.replace(/ /g, '-')})` }))
       .sort((a, b) => b.total - a.total);
-  }, [games]);
+  }, [ownedGames]);
 
-  const totalGames = games.length;
+  const totalGames = ownedGames.length;
   
   const completionRate = useMemo(() => {
-    const gamesToConsider = games.filter(g => g.list !== 'Wishlist');
-    const totalGamesToConsider = gamesToConsider.length;
-    return totalGamesToConsider > 0 
-      ? Math.round((games.filter(g => g.list === 'Recently Played').length / totalGamesToConsider) * 100) 
-      : 0;
-  }, [games]);
+    if (totalGames === 0) return 0;
+    return Math.round((ownedGames.filter(g => g.list === 'Recently Played').length / totalGames) * 100);
+  }, [ownedGames, totalGames]);
 
-  const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
+  const totalPlaytime = useMemo(() => ownedGames.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [ownedGames]);
   
   const playtimeByGenreData = useMemo(() => {
-    const data = games.reduce((acc, game) => {
+    const data = ownedGames.reduce((acc, game) => {
         (game.genres || []).forEach(genre => {
             acc[genre] = (acc[genre] || 0) + (game.estimatedPlaytime || 0);
         });
@@ -60,10 +59,21 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
     }, {} as Record<string, number>);
 
     return Object.entries(data)
-        .map(([name, playtime]) => ({ name, playtime: Math.round(playtime) }))
+        .map(([name, playtime]) => ({ name, playtime: Math.round(playtime), fill: `var(--color-${name.replace(/ /g, '-')})` }))
         .sort((a,b) => b.playtime - a.playtime);
-  }, [games]);
+  }, [ownedGames]);
 
+  const genreColorConfig = useMemo(() => {
+    const config: any = {};
+    const chartColors = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
+    genreData.slice(0, 10).forEach((item, index) => {
+      config[item.name.replace(/ /g, '-')] = {
+        label: item.name,
+        color: `hsl(var(--${chartColors[index % chartColors.length]}))`,
+      };
+    });
+    return config;
+  }, [genreData]);
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -73,7 +83,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalGames}</div>
-          <p className="text-xs text-muted-foreground">in your library</p>
+          <p className="text-xs text-muted-foreground">in your library (excluding wishlist)</p>
         </CardContent>
       </Card>
       <Card>
@@ -82,7 +92,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{completionRate}%</div>
-          <p className="text-xs text-muted-foreground">Based on recently played</p>
+          <p className="text-xs text-muted-foreground">Based on owned games</p>
         </CardContent>
       </Card>
       <Card>
@@ -91,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalPlaytime}h</div>
-          <p className="text-xs text-muted-foreground">Estimated main story playtime</p>
+          <p className="text-xs text-muted-foreground">Estimated for owned games</p>
         </CardContent>
       </Card>
       <Card className="md:col-span-2 lg:col-span-1">
@@ -120,13 +130,17 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
           <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20 }}>
+          <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
+            <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
               <CartesianGrid horizontal={false} />
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} />
+              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
               <XAxis type="number" hide />
               <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={4} />
+              <Bar dataKey="playtime" radius={4}>
+                 {playtimeByGenreData.slice(0, 5).map((entry) => (
+                    <Bar key={`cell-${entry.name}`} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -135,19 +149,23 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       <Card className="md:col-span-4">
         <CardHeader>
           <CardTitle>Genre Distribution</CardTitle>
-          <CardDescription>Number of games per genre across your entire library.</CardDescription>
+          <CardDescription>Number of games per genre across your owned library.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+          <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
             <BarChart accessibilityLayer data={genreData.slice(0, 10)} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-              <YAxis />
+              <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
               />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+              <Bar dataKey="total" radius={4}>
+                 {genreData.slice(0, 10).map((entry) => (
+                    <Bar key={`cell-${entry.name}`} fill={entry.fill} />
+                ))}
+              </Bar>
             </BarChart>
           </ChartContainer>
         </CardContent>
