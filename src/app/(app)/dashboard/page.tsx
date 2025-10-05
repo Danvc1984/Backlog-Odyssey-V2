@@ -104,7 +104,7 @@ export default function DashboardPage() {
 
       // Update challenges if a game is 'completed'
       if (newList === 'Recently Played') {
-        await updateChallengesProgress();
+        await updateChallengesProgress(game);
       }
     }
   };
@@ -150,37 +150,44 @@ export default function DashboardPage() {
     }
   };
   
-  const updateChallengesProgress = async () => {
+  const updateChallengesProgress = async (completedGame: Game) => {
     if (!user || challenges.length === 0) return;
-
-    const gamesCollection = collection(db, 'users', user.uid, 'games');
-    const gamesSnapshot = await getDocs(gamesCollection);
-    const completedGamesCount = gamesSnapshot.docs.filter(doc => doc.data().list === 'Recently Played').length;
-
+  
     const batch = writeBatch(db);
     let challengesUpdated = false;
-
+    let progressMadeOn: string | null = null;
+  
     challenges.forEach(challenge => {
       // For now, any completed game contributes to any challenge.
       // This could be expanded to match challenge criteria (e.g. genre, platform)
       if (challenge.progress < challenge.goal) {
         const newProgress = Math.min(challenge.progress + 1, challenge.goal);
         const challengeRef = doc(db, 'users', user.uid, 'challenges', challenge.id);
+        
         batch.update(challengeRef, { progress: newProgress });
         challengesUpdated = true;
-
+        progressMadeOn = challenge.title;
+  
         if (newProgress === challenge.goal) {
           batch.update(challengeRef, { status: 'completed' });
           toast({
             title: 'Challenge Complete!',
             description: `You've completed the challenge: "${challenge.title}"`,
           });
+          // Reset progressMadeOn if it was just completed
+          progressMadeOn = null;
         }
       }
     });
-
+  
     if (challengesUpdated) {
       await batch.commit();
+      if (progressMadeOn) {
+        toast({
+          title: 'Challenge Progress Made!',
+          description: `You're one step closer on "${progressMadeOn}".`,
+        });
+      }
     }
   };
 
