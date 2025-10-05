@@ -72,9 +72,9 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
             return (
               <CarouselItem key={game.id} className="md:basis-1/2 lg:basis-1/3">
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
                   className="p-1 h-full"
                 >
                   <Card className="overflow-hidden h-full flex flex-col group">
