@@ -121,12 +121,12 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={playtimeByListData} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid horizontal={false} />
-              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} />
-              <XAxis type="number" hide />
+            <BarChart accessibilityLayer data={playtimeByListData} margin={{ left: 10, right: 10 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} />
               <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={4} />
+              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={8} />
             </BarChart>
           </ChartContainer>
         </CardContent>
@@ -139,7 +139,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ left: 10 }}>
+            <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20 }}>
               <CartesianGrid horizontal={false} />
               <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} />
               <XAxis type="number" hide />
