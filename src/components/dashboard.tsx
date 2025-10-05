@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Game, Genre } from '@/lib/types';
 import { useMemo } from 'react';
+import BacklogFlow from './backlog-flow';
 
 type DashboardProps = {
   games: Game[];
@@ -50,17 +51,6 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
 
   const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
   
-  const playtimeByListData = useMemo(() => {
-    const data = games.reduce((acc, game) => {
-        if(game.list === 'Now Playing' || game.list === 'Backlog') {
-            acc[game.list] = (acc[game.list] || 0) + (game.estimatedPlaytime || 0);
-        }
-        return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(data).map(([name, playtime]) => ({ name, playtime: Math.round(playtime) }));
-  }, [games]);
-
   const playtimeByGenreData = useMemo(() => {
     const data = games.reduce((acc, game) => {
         (game.genres || []).forEach(genre => {
@@ -116,19 +106,11 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       
        <Card className="md:col-span-2">
         <CardHeader>
-          <CardTitle>Playtime by List</CardTitle>
-          <CardDescription>Estimated hours in your Now Playing and Backlog lists.</CardDescription>
+          <CardTitle>Backlog Flow</CardTitle>
+          <CardDescription>An overview of your gaming journey.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={playtimeByListData} margin={{ left: 10, right: 10 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
-              <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={8} />
-            </BarChart>
-          </ChartContainer>
+        <CardContent className="h-[250px] w-full flex items-center justify-center">
+          <BacklogFlow games={games} />
         </CardContent>
       </Card>
 
