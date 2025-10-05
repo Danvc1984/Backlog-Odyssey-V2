@@ -70,7 +70,10 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
 
       const unsubscribeChallenges = onSnapshot(challengesCollection, snapshot => {
         const userChallenges = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Challenge));
-        setChallenges(userChallenges.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
+        const sortedChallenges = userChallenges
+          .filter(c => c.createdAt) // Ensure createdAt is not null
+          .sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
+        setChallenges(sortedChallenges);
         setLoading(false);
       });
 
