@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -57,11 +58,12 @@ const prompt = ai.definePrompt({
 IMPORTANT: The challenges must be trackable by simply counting how many games are moved to a "completed" list. DO NOT suggest challenges that require external information like "achievements", "endings", "no-kill runs", or any specific in-game objectives. The ideas must be short, punchy, and sound like a real gaming challenge.
 
 Consider the following when generating ideas:
-- Focus on genres with many games in the user's backlog (e.g., "Clear out 3 RPGs from the backlog").
-- Suggest platform-specific challenges (e.g., "Beat a classic on PlayStation").
-- Look at games on the 'Now Playing' list and suggest a related goal.
-- Create variety in the types of challenges.
+- Create a mix of difficulties. Some simple (e.g., "Beat 1 game from your backlog"), some more complex (e.g., "Beat an RPG and an Action game").
 - The goal for each challenge should be a number between 1 and 5.
+- Combine genres or platforms for more interesting challenges (e.g., "The Platform Hopper: Beat one PC game and one PlayStation game").
+- Focus on genres with many games in the user's backlog (e.g., "Clear out 3 RPGs from the backlog").
+- Suggest platform-specific challenges (e.g., "Beat 2 classics on PlayStation").
+- Look at games on the 'Now Playing' list and suggest a related goal.
 
 Game Library:
 {{#each gameLibrary}}
