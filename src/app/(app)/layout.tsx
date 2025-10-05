@@ -12,7 +12,6 @@ import {
   SidebarContent,
   SidebarInset,
 } from '@/components/ui/sidebar';
-import { Game } from '@/lib/types';
 import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-preferences';
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
 import { DealsProvider, useDeals } from '@/hooks/use-deals';
