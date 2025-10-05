@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import type { Game, GameList, Challenge } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import GameListPreview from '@/components/game-list-preview';
 import { useToast } from '@/hooks/use-toast';
@@ -152,7 +152,8 @@ export default function DashboardPage() {
   const updateChallengesProgress = async () => {
     if (!user || challenges.length === 0) return;
 
-    const gamesSnapshot = await collection(db, 'users', user.uid, 'games').get();
+    const gamesCollection = collection(db, 'users', user.uid, 'games');
+    const gamesSnapshot = await getDocs(gamesCollection);
     const completedGamesCount = gamesSnapshot.docs.filter(doc => doc.data().list === 'Recently Played').length;
 
     const batch = writeBatch(db);
