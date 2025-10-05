@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import type { Game, GameList, Challenge, ChallengeIdea } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import GameListPreview from '@/components/game-list-preview';
 import { useToast } from '@/hooks/use-toast';
@@ -157,28 +157,48 @@ export default function DashboardPage() {
     let challengesUpdated = false;
     let progressMadeOn: string | null = null;
   
-    challenges.forEach(challenge => {
-      // For now, any completed game contributes to any challenge.
-      // This could be expanded to match challenge criteria (e.g. genre, platform)
-      if (challenge.progress < challenge.goal) {
-        const newProgress = Math.min(challenge.progress + 1, challenge.goal);
-        const challengeRef = doc(db, 'users', user.uid, 'challenges', challenge.id);
+    // Helper to extract criteria (genres, platforms) from challenge text
+    const getCriteria = (text: string): { genres: string[], platforms: string[] } => {
+      const allGenres = new Set(games.flatMap(game => game.genres || []));
+      const allPlatforms = new Set(games.map(game => game.platform));
+      
+      const foundGenres = [...allGenres].filter(genre => new RegExp(`\\b${genre}\\b`, 'i').test(text));
+      const foundPlatforms = [...allPlatforms].filter(platform => new RegExp(`\\b${platform}\\b`, 'i').test(text));
+      
+      return { genres: foundGenres, platforms: foundPlatforms };
+    };
+
+    for (const challenge of challenges) {
+        if (challenge.progress >= challenge.goal) continue;
+
+        const combinedText = `${challenge.title} ${challenge.description}`;
+        const criteria = getCriteria(combinedText);
+
+        const genreMatch = criteria.genres.length === 0 || criteria.genres.some(cg => completedGame.genres.includes(cg));
+        const platformMatch = criteria.platforms.length === 0 || criteria.platforms.includes(completedGame.platform);
         
-        batch.update(challengeRef, { progress: newProgress });
-        challengesUpdated = true;
-        progressMadeOn = challenge.title;
-  
-        if (newProgress === challenge.goal) {
-          batch.update(challengeRef, { status: 'completed' });
-          toast({
-            title: 'Challenge Complete!',
-            description: `You've completed the challenge: "${challenge.title}"`,
-          });
-          // Reset progressMadeOn if it was just completed
-          progressMadeOn = null;
+        // If there are no specific criteria, any game counts. Otherwise, check match.
+        const isMatch = (criteria.genres.length === 0 && criteria.platforms.length === 0) || (genreMatch && platformMatch);
+
+        if (isMatch) {
+            const newProgress = Math.min(challenge.progress + 1, challenge.goal);
+            const challengeRef = doc(db, 'users', user.uid, 'challenges', challenge.id);
+            
+            batch.update(challengeRef, { progress: newProgress });
+            challengesUpdated = true;
+            progressMadeOn = challenge.title;
+    
+            if (newProgress === challenge.goal) {
+              batch.update(challengeRef, { status: 'completed' });
+              toast({
+                title: 'Challenge Complete!',
+                description: `You've completed the challenge: "${challenge.title}"`,
+              });
+              // Reset progressMadeOn if it was just completed
+              progressMadeOn = null;
+            }
         }
-      }
-    });
+    }
   
     if (challengesUpdated) {
       await batch.commit();
