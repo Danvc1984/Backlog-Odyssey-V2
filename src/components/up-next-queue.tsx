@@ -26,7 +26,7 @@ interface UpNextQueueProps {
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
   const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
+    Autoplay({ delay: 3000, stopOnInteraction: true })
   );
 
   // Placeholder logic for selecting games
@@ -54,7 +54,7 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Sparkles className="w-8 h-8 text-primary" />
-        <h2 className="text-3xl font-bold tracking-tight">Up Next Queue</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Up Next</h2>
       </div>
       <Carousel
         plugins={[plugin.current]}
@@ -72,9 +72,9 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
             return (
               <CarouselItem key={game.id} className="md:basis-1/2 lg:basis-1/3">
                 <motion.div
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: index * 0.2, ease: "easeOut" }}
                   className="p-1 h-full"
                 >
                   <Card className="overflow-hidden h-full flex flex-col group">
