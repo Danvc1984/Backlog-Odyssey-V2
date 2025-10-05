@@ -3,7 +3,7 @@
 
 import React, { useMemo } from 'react';
 import { Game } from '@/lib/types';
-import { Cog, Package, PackageCheck } from 'lucide-react';
+import { Cog, Layers, Trophy } from 'lucide-react';
 import { Card } from './ui/card';
 
 type BacklogFlowProps = {
@@ -38,7 +38,7 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
       
       {/* Top Section: Backlog */}
       <div className="z-10 flex flex-col items-center text-center pt-4">
-        <Package className="w-8 h-8 text-primary" />
+        <Layers className="w-8 h-8 text-primary" />
         <span className="text-2xl font-bold">{counts.backlog}</span>
         <span className="text-xs text-muted-foreground">Backlog</span>
       </div>
@@ -52,7 +52,7 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
 
       {/* Bottom Section: Recently Played */}
       <div className="z-10 flex flex-col items-center text-center pb-4">
-         <PackageCheck className="w-8 h-8 text-green-500" />
+         <Trophy className="w-8 h-8 text-green-500" />
         <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
         <span className="text-xs text-muted-foreground">Completed</span>
       </div>
