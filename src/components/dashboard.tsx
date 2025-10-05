@@ -2,9 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Game, Genre } from '@/lib/types';
 import { useMemo } from 'react';
 
@@ -13,6 +13,18 @@ type DashboardProps = {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ games }) => {
+  
+  const chartConfig = {
+    total: {
+      label: 'Games',
+      color: 'hsl(var(--primary))',
+    },
+    playtime: {
+        label: 'Playtime (h)',
+        color: 'hsl(var(--accent))',
+    }
+  };
+
   const genreData = useMemo(() => {
     const counts = games.reduce((acc, game) => {
       (game.genres || []).forEach(genre => {
@@ -37,13 +49,31 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   }, [games]);
 
   const totalPlaytime = useMemo(() => games.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [games]);
+  
+  const playtimeByListData = useMemo(() => {
+    const data = games.reduce((acc, game) => {
+        if(game.list === 'Now Playing' || game.list === 'Backlog') {
+            acc[game.list] = (acc[game.list] || 0) + (game.estimatedPlaytime || 0);
+        }
+        return acc;
+    }, {} as Record<string, number>);
 
-  const chartConfig = {
-    total: {
-      label: 'Games',
-      color: 'hsl(var(--primary))',
-    },
-  };
+    return Object.entries(data).map(([name, playtime]) => ({ name, playtime: Math.round(playtime) }));
+  }, [games]);
+
+  const playtimeByGenreData = useMemo(() => {
+    const data = games.reduce((acc, game) => {
+        (game.genres || []).forEach(genre => {
+            acc[genre] = (acc[genre] || 0) + (game.estimatedPlaytime || 0);
+        });
+        return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(data)
+        .map(([name, playtime]) => ({ name, playtime: Math.round(playtime) }))
+        .sort((a,b) => b.playtime - a.playtime);
+  }, [games]);
+
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -83,14 +113,51 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
           <p className="text-xs text-muted-foreground">{genreData[0]?.total || 0} games in this genre</p>
         </CardContent>
       </Card>
-
-      <Card className="md:col-span-2 lg:col-span-4">
+      
+       <Card className="md:col-span-2">
         <CardHeader>
-          <CardTitle>Genre Distribution</CardTitle>
+          <CardTitle>Playtime by List</CardTitle>
+          <CardDescription>Estimated hours in your Now Playing and Backlog lists.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={genreData.slice(0, 10)} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+            <BarChart accessibilityLayer data={playtimeByListData} layout="vertical" margin={{ left: 10 }}>
+              <CartesianGrid horizontal={false} />
+              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} />
+              <XAxis type="number" hide />
+              <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={4} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+       <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle>Playtime by Genre</CardTitle>
+          <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+            <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ left: 10 }}>
+              <CartesianGrid horizontal={false} />
+              <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} />
+              <XAxis type="number" hide />
+              <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+              <Bar dataKey="playtime" fill="var(--color-playtime)" radius={4} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <Card className="md:col-span-4">
+        <CardHeader>
+          <CardTitle>Genre Distribution</CardTitle>
+          <CardDescription>Number of games per genre across your entire library.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[250px] w-full">
+            <BarChart accessibilityLayer data={genreData.slice(0, 10)} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
               <CartesianGrid vertical={false} />
               <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} />
               <YAxis />
