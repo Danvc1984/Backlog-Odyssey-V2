@@ -114,7 +114,7 @@ export default function DashboardPage() {
                 <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2"><Trophy className="text-yellow-400"/> Completed Challenges</h2>
             </div>
              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {completedChallenges.map(challenge => (
+                {completedChallenges.slice(0, 3).map(challenge => (
                     <ChallengeCard key={challenge.id} challenge={challenge} isCompleted />
                 ))}
             </div>
