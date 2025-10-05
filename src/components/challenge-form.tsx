@@ -6,7 +6,7 @@ import { Wand2, Loader2, Lightbulb } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Game, ChallengeIdea } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
 
 type ChallengeFormProps = {
   onSave: (data: ChallengeIdea) => void;
@@ -39,12 +39,16 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({ onSave, allGames }) => {
 
   return (
     <div className="space-y-6 py-4">
-        {!isLoadingIdeas && ideas.length === 0 && (
-             <Button type="button" variant="outline" className="w-full" onClick={handleGetIdeas} disabled={isLoadingIdeas}>
-                <Wand2 className="mr-2 h-4 w-4" />
-                Suggest Ideas With AI
-            </Button>
-        )}
+        <Button 
+            type="button" 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleGetIdeas} 
+            disabled={isLoadingIdeas}
+        >
+            <Wand2 className="mr-2 h-4 w-4" />
+            {ideas.length > 0 ? 'Suggest Different Ideas' : 'Suggest Ideas With AI'}
+        </Button>
        
         {isLoadingIdeas && (
             <div className="flex justify-center items-center h-48 flex-col gap-4">
@@ -53,7 +57,7 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({ onSave, allGames }) => {
             </div>
         )}
 
-        {ideas.length > 0 && (
+        {ideas.length > 0 && !isLoadingIdeas && (
         <div className="space-y-4">
             <h4 className="text-sm font-medium text-center text-muted-foreground">Select a challenge to begin:</h4>
             <div className="flex flex-col gap-3">
@@ -73,9 +77,6 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({ onSave, allGames }) => {
                 </Card>
             ))}
             </div>
-            <Button type="button" variant="link" className="w-full" onClick={handleGetIdeas} disabled={isLoadingIdeas}>
-                Suggest different ideas
-            </Button>
         </div>
         )}
     </div>
