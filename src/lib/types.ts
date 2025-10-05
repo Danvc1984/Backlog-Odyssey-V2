@@ -56,8 +56,15 @@ export interface Challenge {
   id: string;
   userId: string;
   title: string;
+  description: string;
   goal: number;
   progress: number;
   status: 'active' | 'completed';
   createdAt: any;
+}
+
+export interface ChallengeIdea {
+  title: string;
+  description: string;
+  goal: number;
 }

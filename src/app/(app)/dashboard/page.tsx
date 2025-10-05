@@ -1,7 +1,7 @@
 
 'use client';
 import { useMemo, useState, useEffect } from 'react';
-import type { Game, GameList, Challenge } from '@/lib/types';
+import type { Game, GameList, Challenge, ChallengeIdea } from '@/lib/types';
 import Dashboard from '@/components/dashboard';
 import { useAuth } from '@/hooks/use-auth';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, serverTimestamp, writeBatch, getDocs } from 'firebase/firestore';
@@ -131,11 +131,12 @@ export default function DashboardPage() {
     }
   };
 
-  const handleAddChallenge = async (data: { title: string, goal: number }) => {
+  const handleAddChallenge = async (data: ChallengeIdea) => {
     if (user) {
         await addDoc(collection(db, 'users', user.uid, 'challenges'), {
             userId: user.uid,
             title: data.title,
+            description: data.description,
             goal: data.goal,
             progress: 0,
             status: 'active',
@@ -160,6 +161,8 @@ export default function DashboardPage() {
     let challengesUpdated = false;
 
     challenges.forEach(challenge => {
+      // For now, any completed game contributes to any challenge.
+      // This could be expanded to match challenge criteria (e.g. genre, platform)
       if (challenge.progress < challenge.goal) {
         const newProgress = Math.min(challenge.progress + 1, challenge.goal);
         const challengeRef = doc(db, 'users', user.uid, 'challenges', challenge.id);

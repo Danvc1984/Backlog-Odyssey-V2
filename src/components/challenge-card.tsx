@@ -21,7 +21,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
           {challenge.title}
         </CardTitle>
         <CardDescription>
-          Goal: Complete {challenge.goal} game(s)
+          {challenge.description}
         </CardDescription>
       </CardHeader>
       <CardContent>
