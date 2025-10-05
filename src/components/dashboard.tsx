@@ -45,7 +45,10 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   
   const completionRate = useMemo(() => {
     if (totalGames === 0) return 0;
-    return Math.round((ownedGames.filter(g => g.list === 'Recently Played').length / totalGames) * 100);
+    const completedCount = ownedGames.filter(g => g.list === 'Recently Played').length;
+    const relevantTotal = ownedGames.filter(g => g.list !== 'Wishlist').length;
+    if (relevantTotal === 0) return 0;
+    return Math.round((completedCount / relevantTotal) * 100);
   }, [ownedGames, totalGames]);
 
   const totalPlaytime = useMemo(() => ownedGames.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [ownedGames]);
@@ -79,11 +82,11 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Games</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Owned Games</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalGames}</div>
-          <p className="text-xs text-muted-foreground">in your library (excluding wishlist)</p>
+          <p className="text-xs text-muted-foreground">in your active library</p>
         </CardContent>
       </Card>
       <Card>
