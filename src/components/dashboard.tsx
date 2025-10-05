@@ -148,31 +148,6 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
           </ChartContainer>
         </CardContent>
       </Card>
-
-      <Card className="md:col-span-4">
-        <CardHeader>
-          <CardTitle>Genre Distribution</CardTitle>
-          <CardDescription>Number of games per genre across your owned library.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={genreData.slice(0, 10)} margin={{ top: 5, right: 5, bottom: 5, left: -20 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickLine={false} tickMargin={10} axisLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-              />
-              <Bar dataKey="total" radius={4}>
-                 {genreData.slice(0, 10).map((entry) => (
-                    <Bar key={`cell-${entry.name}`} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 };
