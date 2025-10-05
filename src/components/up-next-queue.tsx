@@ -1,9 +1,10 @@
 
 'use client';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, PlayCircle } from 'lucide-react';
 import Image from 'next/image';
+import Autoplay from 'embla-carousel-autoplay';
 
 import type { Game, GameList } from '@/lib/types';
 import {
@@ -24,6 +25,10 @@ interface UpNextQueueProps {
 }
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   // Placeholder logic for selecting games
   const upNextGames = useMemo(() => {
     const backlogGames = games.filter(g => g.list === 'Backlog');
@@ -52,11 +57,14 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
         <h2 className="text-3xl font-bold tracking-tight">Up Next Queue</h2>
       </div>
       <Carousel
+        plugins={[plugin.current]}
         opts={{
           align: 'start',
           loop: true,
         }}
         className="w-full"
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
       >
         <CarouselContent>
           {upNextGames.map((game, index) => {
