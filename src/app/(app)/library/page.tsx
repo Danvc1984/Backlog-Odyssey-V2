@@ -42,7 +42,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import GameCard from '@/components/game-card';
 import GameForm from '@/components/game-form';
 import BatchAddGames from '@/components/batch-add-games';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { SteamIcon } from '@/components/icons';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
@@ -180,152 +179,150 @@ export default function LibraryPage() {
   }
 
   return (
-    <TooltipProvider>
-      <div>
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {playsOnPC && (
-              <Button variant="outline" onClick={() => router.push('/profile')}>
-                <SteamIcon className="mr-2 h-4 w-4" />
-                Import from Steam
-              </Button>
-            )}
-            <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
-            <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Game
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Add a New Game</DialogTitle>
-                </DialogHeader>
-                <GameForm onSave={onAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
-              </DialogContent>
-            </Dialog>
-
-            <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Game</DialogTitle>
-                </DialogHeader>
-                <GameForm 
-                  onSave={handleUpdateGame} 
-                  allGenres={allGenres} 
-                  onAddGenre={handleAddGenre}
-                  gameToEdit={editingGame} 
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search games..."
-              className="pl-10"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-4">
-            <Button variant="outline" size="icon" onClick={handleSortToggle}>
-              {sortIcon}
+    <div>
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-primary">My Library</h2>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {playsOnPC && (
+            <Button variant="outline" onClick={() => router.push('/profile')}>
+              <SteamIcon className="mr-2 h-4 w-4" />
+              Import from Steam
             </Button>
-            <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Filter by Platform" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Platforms</SelectItem>
-                {sortedPlatforms.map(p => (
-                  <SelectItem key={p} value={p}>{p}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={genreFilter} onValueChange={handleGenreFilterChange}>
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Filter by Genre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Genres</SelectItem>
-                {allGenres.map((g,i) => (
-                  <SelectItem key={`${g}-${i}`} value={g}>{g}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          )}
+          <BatchAddGames onAddGenre={handleAddGenre} defaultList={activeList} />
+          <Dialog open={isAddFormOpen} onOpenChange={setAddFormOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Game
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add a New Game</DialogTitle>
+              </DialogHeader>
+              <GameForm onSave={onAddGame} defaultList={activeList} allGenres={allGenres} onAddGenre={handleAddGenre} />
+            </DialogContent>
+          </Dialog>
 
-        <Tabs value={activeList} onValueChange={(value) => handleActiveListChange(value as GameList)} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-            {gameLists.map(list => (
-              <TabsTrigger key={list} value={list}>{list}</TabsTrigger>
-            ))}
-          </TabsList>
-          {gameLists.map(list => (
-            <TabsContent key={list} value={list}>
-               {dataLoading ? (
-                <motion.p 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-muted-foreground col-span-full text-center py-10"
-                >
-                  Loading games...
-                </motion.p>
-               ) : (
-                <motion.div
-                  key={activeList}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
-                  <AnimatePresence>
-                    {gamesByList[list].length > 0 ? (
-                      gamesByList[list].map((game, index) => (
-                          <GameCard 
-                            key={game.id}
-                            game={game}
-                            deal={game.steamAppId ? deals[game.steamAppId] : undefined}
-                            onEdit={setEditingGame} 
-                            onMove={handleMoveGame} 
-                            onDelete={confirmDeleteGame}
-                            priority={index === 0}
-                          />
-                      ))
-                    ) : (
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-muted-foreground col-span-full text-center py-10"
-                      >
-                        No games in this list.
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-               )}
-            </TabsContent>
-          ))}
-        </Tabs>
-        <AlertDialog open={!!deletingGame} onOpenChange={() => setDeletingGame(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete "{deletingGame?.title}" from your library.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDeleteGame(deletingGame!)}>Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Edit Game</DialogTitle>
+              </DialogHeader>
+              <GameForm 
+                onSave={handleUpdateGame} 
+                allGenres={allGenres} 
+                onAddGenre={handleAddGenre}
+                gameToEdit={editingGame} 
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
-    </TooltipProvider>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search games..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-4">
+          <Button variant="outline" size="icon" onClick={handleSortToggle}>
+            {sortIcon}
+          </Button>
+          <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Filter by Platform" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Platforms</SelectItem>
+              {sortedPlatforms.map(p => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={genreFilter} onValueChange={handleGenreFilterChange}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Filter by Genre" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Genres</SelectItem>
+              {allGenres.map((g,i) => (
+                <SelectItem key={`${g}-${i}`} value={g}>{g}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Tabs value={activeList} onValueChange={(value) => handleActiveListChange(value as GameList)} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+          {gameLists.map(list => (
+            <TabsTrigger key={list} value={list}>{list}</TabsTrigger>
+          ))}
+        </TabsList>
+        {gameLists.map(list => (
+          <TabsContent key={list} value={list}>
+              {dataLoading ? (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-muted-foreground col-span-full text-center py-10"
+              >
+                Loading games...
+              </motion.p>
+              ) : (
+              <motion.div
+                key={activeList}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+                <AnimatePresence>
+                  {gamesByList[list].length > 0 ? (
+                    gamesByList[list].map((game, index) => (
+                        <GameCard 
+                          key={game.id}
+                          game={game}
+                          deal={game.steamAppId ? deals[game.steamAppId] : undefined}
+                          onEdit={setEditingGame} 
+                          onMove={handleMoveGame} 
+                          onDelete={confirmDeleteGame}
+                          priority={index === 0}
+                        />
+                    ))
+                  ) : (
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-muted-foreground col-span-full text-center py-10"
+                    >
+                      No games in this list.
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+              )}
+          </TabsContent>
+        ))}
+      </Tabs>
+      <AlertDialog open={!!deletingGame} onOpenChange={() => setDeletingGame(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete "{deletingGame?.title}" from your library.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleDeleteGame(deletingGame!)}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
