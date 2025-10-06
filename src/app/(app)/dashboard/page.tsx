@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Trophy } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import UpNextQueue from '@/components/up-next-queue';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default function DashboardPage() {
   const {
@@ -77,86 +78,88 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-12">
-      <Dashboard games={games} />
+    <TooltipProvider>
+      <div className="space-y-12">
+        <Dashboard games={games} />
 
-      <UpNextQueue games={games} onMoveGame={handleMoveGame} />
-      
-       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
-            <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Create a New Challenge</DialogTitle>
-                    </DialogHeader>
-                    <ChallengeForm onSave={onAddChallenge} allGames={games} />
-                </DialogContent>
-            </Dialog>
+        <UpNextQueue games={games} onMoveGame={handleMoveGame} />
+        
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
+              <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
+                  <DialogTrigger asChild>
+                      <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                      <DialogHeader>
+                          <DialogTitle>Create a New Challenge</DialogTitle>
+                      </DialogHeader>
+                      <ChallengeForm onSave={onAddChallenge} allGames={games} />
+                  </DialogContent>
+              </Dialog>
+          </div>
+          {activeChallenges.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {activeChallenges.map(challenge => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} />
+                  ))}
+              </div>
+          ) : (
+              <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
+                  <p>No active challenges. Why not create one?</p>
+              </div>
+          )}
         </div>
-        {activeChallenges.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {activeChallenges.map(challenge => (
-                    <ChallengeCard key={challenge.id} challenge={challenge} />
-                ))}
-            </div>
-        ) : (
-            <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
-                <p>No active challenges. Why not create one?</p>
+
+        {completedChallenges.length > 0 && (
+            <div className="space-y-6">
+              <Separator />
+              <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2"><Trophy className="text-yellow-400"/> Completed Challenges</h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {completedChallenges.slice(0, 3).map(challenge => (
+                      <ChallengeCard key={challenge.id} challenge={challenge} isCompleted />
+                  ))}
+              </div>
             </div>
         )}
+
+        <GameListPreview title="Now Playing" games={nowPlaying} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
+        <GameListPreview title="Backlog" games={backlog} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
+        <GameListPreview title="Wishlist" games={wishlist} deals={deals} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
+        <GameListPreview title="Recently Played" games={recentlyPlayed} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
+
+        <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Game</DialogTitle>
+            </DialogHeader>
+            <GameForm 
+              onSave={handleUpdateGame} 
+              allGenres={allGenres} 
+              onAddGenre={handleAddGenre}
+              gameToEdit={editingGame} 
+            />
+          </DialogContent>
+        </Dialog>
+        
+        <AlertDialog open={!!deletingGame} onOpenChange={() => setDeletingGame(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete "{deletingGame?.title}" from your library.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDeleteGame(deletingGame!)}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-
-      {completedChallenges.length > 0 && (
-          <div className="space-y-6">
-             <Separator />
-             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2"><Trophy className="text-yellow-400"/> Completed Challenges</h2>
-            </div>
-             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {completedChallenges.slice(0, 3).map(challenge => (
-                    <ChallengeCard key={challenge.id} challenge={challenge} isCompleted />
-                ))}
-            </div>
-          </div>
-      )}
-
-      <GameListPreview title="Now Playing" games={nowPlaying} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
-      <GameListPreview title="Backlog" games={backlog} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
-      <GameListPreview title="Wishlist" games={wishlist} deals={deals} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
-      <GameListPreview title="Recently Played" games={recentlyPlayed} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
-
-      <Dialog open={isEditFormOpen} onOpenChange={setEditFormOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Game</DialogTitle>
-          </DialogHeader>
-          <GameForm 
-            onSave={handleUpdateGame} 
-            allGenres={allGenres} 
-            onAddGenre={handleAddGenre}
-            gameToEdit={editingGame} 
-          />
-        </DialogContent>
-      </Dialog>
-      
-      <AlertDialog open={!!deletingGame} onOpenChange={() => setDeletingGame(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete "{deletingGame?.title}" from your library.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingGame(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleDeleteGame(deletingGame!)}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    </TooltipProvider>
   );
 }

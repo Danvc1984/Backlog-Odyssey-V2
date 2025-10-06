@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/lib/utils';
 import type { Deal } from '@/hooks/use-deals';
 
@@ -39,133 +39,131 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
 
   return (
     <motion.div layout>
-      <TooltipProvider>
-        <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105 overflow-hidden">
-          <div className="p-0 relative aspect-video rounded-t-lg">
-            {game.imageUrl ? (
-              <Image
-                src={game.imageUrl}
-                alt={game.title}
-                fill
-                priority={priority}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            ) : (
-              <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
-                <ImageOff className="w-16 h-16 text-muted-foreground" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-4">
-                <CardTitle className="text-lg font-bold text-white shadow-black [text-shadow:0_2px_4px_var(--tw-shadow-color)] line-clamp-2">
-                  {game.title}
-                </CardTitle>
+      <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105 overflow-hidden">
+        <div className="p-0 relative aspect-video rounded-t-lg">
+          {game.imageUrl ? (
+            <Image
+              src={game.imageUrl}
+              alt={game.title}
+              fill
+              priority={priority}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
+              <ImageOff className="w-16 h-16 text-muted-foreground" />
             </div>
-            {deal && (
-              <div className="absolute top-2 left-2">
-                <Badge 
-                  className={cn(
-                    'text-white shadow-lg flex items-center gap-1 border-none',
-                    deal.discountPercent < 40 && 'bg-green-500 hover:bg-green-500',
-                    deal.discountPercent >= 40 && deal.discountPercent < 80 && 'bg-green-600 hover:bg-green-600',
-                    deal.discountPercent >= 80 && 'bg-green-700 hover:bg-green-700'
-                  )}
-                >
-                  {deal.discountPercent >= 80 && <Sparkles className="h-3 w-3" />}
-                  -{deal.discountPercent}%
-                </Badge>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute bottom-0 left-0 p-4">
+              <CardTitle className="text-lg font-bold text-white shadow-black [text-shadow:0_2px_4px_var(--tw-shadow-color)] line-clamp-2">
+                {game.title}
+              </CardTitle>
+          </div>
+          {deal && (
+            <div className="absolute top-2 left-2">
+              <Badge 
+                className={cn(
+                  'text-white shadow-lg flex items-center gap-1 border-none',
+                  deal.discountPercent < 40 && 'bg-green-500 hover:bg-green-500',
+                  deal.discountPercent >= 40 && deal.discountPercent < 80 && 'bg-green-600 hover:bg-green-600',
+                  deal.discountPercent >= 80 && 'bg-green-700 hover:bg-green-700'
+                )}
+              >
+                {deal.discountPercent >= 80 && <Sparkles className="h-3 w-3" />}
+                -{deal.discountPercent}%
+              </Badge>
+            </div>
+          )}
+          <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
+            {(game.rating && game.rating > 0) || (game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat) ? (
+              <div className="flex items-center gap-2 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
+                {game.rating && game.rating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                  </div>
+                )}
+                {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <SteamDeckCompatIcon className={cn("h-4 w-4", {
+                          'text-green-400': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
+                          'text-yellow-400': ['silver', 'bronze'].includes(game.steamDeckCompat),
+                          'text-destructive': game.steamDeckCompat === 'borked',
+                          'text-muted-foreground': game.steamDeckCompat === 'unknown'
+                      })} />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
               </div>
-            )}
-            <div className="absolute top-2 right-2 flex flex-col items-end gap-2">
-              {(game.rating && game.rating > 0) || (game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat) ? (
-                <div className="flex items-center gap-2 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
-                  {game.rating && game.rating > 0 && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
-                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    </div>
-                  )}
-                  {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <SteamDeckCompatIcon className={cn("h-4 w-4", {
-                            'text-green-400': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
-                            'text-yellow-400': ['silver', 'bronze'].includes(game.steamDeckCompat),
-                            'text-destructive': game.steamDeckCompat === 'borked',
-                            'text-muted-foreground': game.steamDeckCompat === 'unknown'
-                        })} />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
+            ) : null}
+          </div>
+        </div>
+        <CardContent className="p-4 flex-grow space-y-2">
+          <div className="flex justify-between items-center text-xs text-muted-foreground">
+            <div className="space-y-1">
+              {game.releaseDate && (
+                <div className="flex items-center">
+                  <Calendar className="h-3 w-3 mr-1.5" />
+                  {format(new Date(game.releaseDate), 'MMM yyyy')}
+                </div>
+              )}
+              {game.estimatedPlaytime ? (
+                <div className="flex items-center">
+                  <Clock className="h-3 w-3 mr-1.5" />
+                  {game.estimatedPlaytime}h
                 </div>
               ) : null}
             </div>
-          </div>
-          <CardContent className="p-4 flex-grow space-y-2">
-            <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <div className="space-y-1">
-                {game.releaseDate && (
-                  <div className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1.5" />
-                    {format(new Date(game.releaseDate), 'MMM yyyy')}
-                  </div>
-                )}
-                {game.estimatedPlaytime ? (
-                  <div className="flex items-center">
-                    <Clock className="h-3 w-3 mr-1.5" />
-                    {game.estimatedPlaytime}h
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <Button size="icon" variant="outline" className="h-7 w-7" onClick={handleEdit}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" className="h-7 w-7 bg-primary/80 hover:bg-primary text-primary-foreground">
-                      <FolderKanban className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {gameLists.filter(l => l !== game.list).map(list => (
-                      <DropdownMenuItem key={list} onClick={() => onMove(game, list)}>
-                        Move to {list}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-red-500" onClick={() => onDelete(game)}>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <Button size="icon" variant="outline" className="h-7 w-7" onClick={handleEdit}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" className="h-7 w-7 bg-primary/80 hover:bg-primary text-primary-foreground">
+                    <FolderKanban className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {gameLists.filter(l => l !== game.list).map(list => (
+                    <DropdownMenuItem key={list} onClick={() => onMove(game, list)}>
+                      Move to {list}
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-500" onClick={() => onDelete(game)}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <div className='flex flex-wrap gap-2 pt-2'>
-              <Link href={`/library?platform=${game.platform}`}>
-                <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
-                  {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
-                  {game.platform}
-                </Badge>
-              </Link>
-              {(game.genres || []).map(genre => {
-                return (
-                  <Link href={`/library?genre=${genre}`} key={genre}>
-                    <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">
-                      {genre}
-                    </Badge>
-                  </Link>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </TooltipProvider>
+          </div>
+          <div className='flex flex-wrap gap-2 pt-2'>
+            <Link href={`/library?platform=${game.platform}`}>
+              <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
+                {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
+                {game.platform}
+              </Badge>
+            </Link>
+            {(game.genres || []).map(genre => {
+              return (
+                <Link href={`/library?genre=${genre}`} key={genre}>
+                  <Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">
+                    {genre}
+                  </Badge>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };
