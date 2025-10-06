@@ -39,7 +39,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
 
   return (
     <motion.div layout>
-      <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105 overflow-hidden">
+      <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
         <div className="p-0 relative aspect-video rounded-t-lg">
           {game.imageUrl ? (
             <Image
@@ -48,14 +48,14 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               fill
               priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-t-lg"
             />
           ) : (
             <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
               <ImageOff className="w-16 h-16 text-muted-foreground" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent rounded-t-lg" />
           <div className="absolute bottom-0 left-0 p-4">
               <CardTitle className="text-lg font-bold text-white shadow-black [text-shadow:0_2px_4px_var(--tw-shadow-color)] line-clamp-2">
                 {game.title}
