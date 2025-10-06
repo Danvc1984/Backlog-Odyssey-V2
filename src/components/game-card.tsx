@@ -1,7 +1,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
 import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
@@ -38,8 +38,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
   }
 
   return (
-    <motion.div layout className="relative">
-       <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
+    <motion.div layout className="relative group">
+       <Card className="h-full flex flex-col transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/20 border-transparent group-hover:scale-105">
         <div className="p-0 relative aspect-video rounded-t-lg overflow-hidden">
           {game.imageUrl ? (
             <Image
@@ -48,7 +48,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               fill
               priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-t-lg"
+              className="object-cover rounded-t-lg"
             />
           ) : (
             <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
@@ -137,7 +137,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
           </div>
         </CardContent>
       </Card>
-      <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-10">
+      <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-10 transition-transform duration-300 group-hover:-translate-y-1">
         <div className="flex items-center gap-2 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
           {game.rating && game.rating > 0 && (
             <div className="flex items-center gap-1">
