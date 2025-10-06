@@ -39,8 +39,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
 
   return (
     <motion.div layout>
-      <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105">
-        <div className="p-0 relative aspect-[3/4] rounded-t-lg">
+      <Card className="h-full group flex flex-col transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 border-transparent hover:scale-105 overflow-hidden">
+        <div className="p-0 relative aspect-video rounded-t-lg">
           {game.imageUrl ? (
             <Image
               src={game.imageUrl}
@@ -48,13 +48,19 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               fill
               priority={priority}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-              className="object-cover transition-transform duration-300 rounded-t-lg"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full bg-card flex items-center justify-center rounded-t-lg">
               <ImageOff className="w-16 h-16 text-muted-foreground" />
             </div>
           )}
+           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+           <div className="absolute bottom-0 left-0 p-4">
+              <CardTitle className="text-lg font-bold text-white shadow-black [text-shadow:0_2px_4px_var(--tw-shadow-color)] line-clamp-2">
+                {game.title}
+              </CardTitle>
+           </div>
           {deal && (
             <div className="absolute top-2 left-2">
               <Badge 
@@ -99,9 +105,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
           </div>
         </div>
         <CardContent className="p-4 flex-grow space-y-2">
-          <CardTitle className="text-base font-medium leading-tight line-clamp-2">
-            {game.title}
-          </CardTitle>
           <div className="flex justify-between items-center text-xs text-muted-foreground">
             <div className="space-y-1">
               {game.releaseDate && (
@@ -142,9 +145,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               </DropdownMenu>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="p-4 pt-0 flex justify-between items-center">
-          <div className='flex flex-wrap gap-2'>
+           <div className='flex flex-wrap gap-2 pt-2'>
             <Link href={`/library?platform=${game.platform}`}>
               <Badge variant="secondary" className="flex items-center gap-1 cursor-pointer hover:bg-primary/20">
                 {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
@@ -161,7 +162,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
               );
             })}
           </div>
-        </CardFooter>
+        </CardContent>
       </Card>
     </motion.div>
   );
