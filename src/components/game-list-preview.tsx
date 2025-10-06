@@ -18,6 +18,8 @@ type GameListPreviewProps = {
 };
 
 const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, onEdit, onMove, onDelete }) => {
+  const isWishlist = title === 'Wishlist';
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -36,7 +38,7 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, 
             <GameCard 
               key={game.id} 
               game={game} 
-              deal={game.steamAppId && deals ? deals[game.steamAppId] : undefined}
+              deal={isWishlist && game.steamAppId && deals ? deals[game.steamAppId] : undefined}
               onEdit={() => onEdit(game)}
               onMove={onMove} 
               onDelete={onDelete}

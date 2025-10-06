@@ -289,7 +289,7 @@ export default function LibraryPage() {
                           <GameCard 
                             key={game.id}
                             game={game}
-                            deal={game.steamAppId ? deals[game.steamAppId] : undefined}
+                            deal={list === 'Wishlist' && game.steamAppId ? deals[game.steamAppId] : undefined}
                             onEdit={setEditingGame} 
                             onMove={handleMoveGame} 
                             onDelete={confirmDeleteGame}
