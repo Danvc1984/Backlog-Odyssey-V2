@@ -42,16 +42,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ estimatedPlaytime: null }, { status: 404 });
     }
     const gameId = games[0].id;
+    console.log(gameId);
 
     // Step 2: Query time-to-beat using the game ID
-    const timeResponse = await fetch('https://api.igdb.com/v4/time_to_beats', {
+    const timeResponse = await fetch('https://api.igdb.com/v4/game_time_to_beats', {
         method: 'POST',
         headers: {
             'Client-ID': clientId,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
         },
-        body: `fields normally; where game = ${gameId};`
+        body: `fields normally; where game_id = ${gameId};`
     });
 
     if (!timeResponse.ok) {
