@@ -169,12 +169,8 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
         }
       }
       await addDoc(collection(db, 'users', user.uid, 'games'), gameData);
-      toast({
-        title: 'Game Added!',
-        description: `${newGame.title} has been added to your library.`,
-      });
     }
-  }, [user, preferences, toast]);
+  }, [user, preferences]);
 
   const handleUpdateGame = useCallback(async (updatedGame: Omit<Game, 'id' | 'userId'>) => {
     if (user && editingGame && preferences) {

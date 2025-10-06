@@ -202,6 +202,19 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         const gameGenres = game.genres?.map(g => g.name as Genre) || [];
         gameGenres.forEach(onAddGenre);
 
+        let estimatedPlaytime = game.playtime || 0;
+        try {
+            const timeResponse = await fetch(`/api/get-time-to-beat?title=${encodeURIComponent(game.name)}`);
+            if (timeResponse.ok) {
+                const timeData = await timeResponse.json();
+                if (timeData.estimatedPlaytime !== null) {
+                    estimatedPlaytime = timeData.estimatedPlaytime;
+                }
+            }
+        } catch (error) {
+            console.warn(`Could not fetch time-to-beat for ${game.name}:`, error);
+        }
+
         const newGame: Omit<Game, 'id'> = {
           userId: user.uid,
           title: game.name,
@@ -210,7 +223,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           list: targetList,
           imageUrl: game.background_image || '',
           releaseDate: game.released,
-          estimatedPlaytime: game.playtime || 0,
+          estimatedPlaytime,
         };
 
         if (newGame.platform === 'PC') {

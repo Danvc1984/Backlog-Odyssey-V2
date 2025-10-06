@@ -8,6 +8,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import axios from 'axios';
 import type { Game, UserPreferences } from '@/lib/types';
 import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
+import { getIGDBAccessToken } from '@/lib/igdbAuth';
 
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
@@ -100,6 +101,36 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
     }
 }
 
+async function getIgdbPlaytime(gameName: string): Promise<number | null> {
+    try {
+        const token = await getIGDBAccessToken();
+        const clientId = process.env.IGDB_CLIENT_ID;
+        if (!clientId) return null;
+
+        const searchResponse = await fetch('https://api.igdb.com/v4/games', {
+            method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
+            body: `search "${gameName}"; fields id; limit 1;`
+        });
+        const games = await searchResponse.json();
+        if (!games || games.length === 0) return null;
+
+        const timeResponse = await fetch('https://api.igdb.com/v4/time_to_beats', {
+            method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
+            body: `fields normally; where game = ${games[0].id};`
+        });
+        const timeData = await timeResponse.json();
+
+        if (timeData && timeData.length > 0 && timeData[0].normally) {
+            return Math.round(timeData[0].normally / 3600);
+        }
+        return null;
+    } catch (error) {
+        console.warn(`Could not get IGDB playtime for ${gameName}`, error);
+        return null;
+    }
+}
+
+
 export async function POST(req: NextRequest) {
     const adminApp = getAdminApp();
     const auth = getAuth(adminApp);
@@ -173,7 +204,9 @@ export async function POST(req: NextRequest) {
             if (playsOnSteamDeck && rawgDetails) {
                 steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
             }
-            return { steamGame, rawgDetails, steamDeckCompat };
+            const igdbPlaytime = await getIgdbPlaytime(steamGame.name);
+
+            return { steamGame, rawgDetails, steamDeckCompat, igdbPlaytime };
         });
         
         const results = await Promise.all(gamePromises);
@@ -181,7 +214,7 @@ export async function POST(req: NextRequest) {
         let importedCount = 0;
         let failedCount = 0;
 
-        for (const { steamGame, rawgDetails, steamDeckCompat } of results) {
+        for (const { steamGame, rawgDetails, steamDeckCompat, igdbPlaytime } of results) {
             if (rawgDetails) {
                 const gameDocRef = gamesCollectionRef.doc();
                 
@@ -193,7 +226,7 @@ export async function POST(req: NextRequest) {
                     list: 'Backlog',
                     imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
                     releaseDate: rawgDetails.released,
-                    estimatedPlaytime: rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || 0,
+                    estimatedPlaytime: igdbPlaytime ?? rawgDetails.playtime ?? Math.round(steamGame.playtime_forever / 60) ?? 0,
                     steamAppId: steamGame.appid,
                     steamDeckCompat: steamDeckCompat,
                 };

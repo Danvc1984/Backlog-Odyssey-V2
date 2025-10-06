@@ -133,7 +133,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, searchGames]);
 
-  const handleSelectGame = (game: any) => {
+  const handleSelectGame = async (game: any) => {
     form.setValue('title', game.name);
     
     const favoritePlatform = preferences?.favoritePlatform;
@@ -161,7 +161,10 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     }
 
     if (game.released) form.setValue('releaseDate', game.released);
+    
+    // Set initial playtime from RAWG, then try to update with IGDB
     if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
+
     if (game.background_image) {
       setSelectedGameImageUrl(game.background_image);
     } else {
@@ -169,6 +172,19 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     }
     setSearchTerm('');
     setSearchResults([]);
+
+    // Fetch more accurate playtime from IGDB
+    try {
+        const response = await fetch(`/api/get-time-to-beat?title=${encodeURIComponent(game.name)}`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.estimatedPlaytime !== null) {
+                form.setValue('estimatedPlaytime', data.estimatedPlaytime);
+            }
+        }
+    } catch (error) {
+        console.warn(`Could not fetch time-to-beat for ${game.name}:`, error);
+    }
   };
 
   async function onSubmit(data: GameFormValues) {
