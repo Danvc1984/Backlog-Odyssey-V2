@@ -188,13 +188,16 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   };
 
   async function onSubmit(data: GameFormValues) {
-    const newGame = { 
+    const newGame: Omit<Game, 'id' | 'userId'> = { 
       ...data,
       imageUrl: selectedGameImageUrl || '',
-      rating: data.rating === 0 ? undefined : data.rating
     };
+
+    if (data.rating === 0) {
+      delete newGame.rating;
+    }
     
-    onSave(newGame as Omit<Game, 'id' | 'userId'>);
+    onSave(newGame);
     if(!gameToEdit) {
       toast({
         title: 'Game Added!',
