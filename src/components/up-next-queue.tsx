@@ -26,7 +26,7 @@ interface UpNextQueueProps {
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
   const plugin = React.useRef(
-    Autoplay({ delay: 4200, stopOnInteraction: true })
+    Autoplay({ delay: 3000, stopOnInteraction: true })
   );
 
   // Placeholder logic for selecting games
@@ -74,11 +74,11 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.2, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: index * 0.2, ease: "circOut" }}
                   className="p-1 h-full"
                 >
-                  <Card className="overflow-hidden h-full flex flex-col group">
-                    <div className="relative aspect-video">
+                  <Card className="h-full flex flex-col group">
+                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
                       {game.imageUrl ? (
                         <Image
                           src={game.imageUrl}
