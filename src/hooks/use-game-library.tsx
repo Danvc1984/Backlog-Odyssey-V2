@@ -161,13 +161,19 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
 
       if (gameData.platform === 'PC') {
          try {
-            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
-            const steamDetails = await response.json();
-            if (steamDetails.steamAppId) {
-                gameData.steamAppId = steamDetails.steamAppId;
-            }
-            if (steamDetails.steamDeckCompat) {
-                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
+            const response = await fetch('/api/steam/get-batch-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    titles: [gameData.title],
+                    checkCompat: preferences.playsOnSteamDeck
+                })
+            });
+            const steamData = await response.json();
+            if (response.ok && steamData.details[gameData.title]) {
+                const steamDetails = steamData.details[gameData.title];
+                if (steamDetails.steamAppId) gameData.steamAppId = steamDetails.steamAppId;
+                if (steamDetails.steamDeckCompat) gameData.steamDeckCompat = steamDetails.steamDeckCompat;
             }
         } catch (error) {
             console.error('Failed to fetch steam details', error);
@@ -185,29 +191,36 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
       if (gameData.rating === 0 || !gameData.rating) {
         delete gameData.rating;
       }
-      if (!gameData.playtimeNormally) {
-        delete gameData.playtimeNormally;
-      }
-      if (!gameData.playtimeCompletely) {
-        delete gameData.playtimeCompletely;
-      }
-
-       if (gameData.platform === 'PC') {
+      if (!gameData.playtimeNormally) delete gameData.playtimeNormally;
+      if (!gameData.playtimeCompletely) delete gameData.playtimeCompletely;
+      
+      // Assume steamAppId and compat are managed. If platform changes from PC, they should be cleared.
+      if (gameData.platform !== 'PC') {
+        delete gameData.steamAppId;
+        delete gameData.steamDeckCompat;
+      } else {
          try {
-            const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
-            const steamDetails = await response.json();
-            if (steamDetails.steamAppId) {
-                gameData.steamAppId = steamDetails.steamAppId;
-            } else {
-                delete gameData.steamAppId;
-            }
-            if (steamDetails.steamDeckCompat) {
-                gameData.steamDeckCompat = steamDetails.steamDeckCompat;
-            } else {
-                delete gameData.steamDeckCompat;
-            }
+            const response = await fetch('/api/steam/get-batch-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    titles: [gameData.title],
+                    checkCompat: preferences.playsOnSteamDeck
+                })
+            });
+             const steamData = await response.json();
+             if (response.ok && steamData.details[gameData.title]) {
+                const steamDetails = steamData.details[gameData.title];
+                gameData.steamAppId = steamDetails.steamAppId || null;
+                gameData.steamDeckCompat = steamDetails.steamDeckCompat || null;
+             } else {
+                gameData.steamAppId = null;
+                gameData.steamDeckCompat = null;
+             }
         } catch (error) {
-            console.error('Failed to fetch steam details', error);
+            console.error('Failed to fetch steam details on update', error);
+            gameData.steamAppId = null;
+            gameData.steamDeckCompat = null;
         }
       }
       await updateDoc(gameRef, gameData);
@@ -307,5 +320,3 @@ export const useGameLibrary = () => {
   }
   return context;
 };
-
-    

@@ -184,9 +184,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       const batch = writeBatch(db);
       const gamesCollectionRef = collection(db, 'users', user.uid, 'games');
 
-      // Fetch playtimes in a single batch
       const gameTitles = selectedGames.map(g => g.name);
-      console.log('Client-side: Attempting to fetch batch playtimes.', { titles: gameTitles }); // ADDED LOG
 
       const timeResponse = await fetch('/api/get-batch-time-to-beat', {
           method: 'POST',
@@ -201,8 +199,36 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       } else {
           console.warn('Could not fetch batch playtimes, proceeding without them.');
       }
+      
+      const pcGames = selectedGames.filter(game => {
+          const gamePlatforms = game.platforms?.map(p => p.platform.name as Platform) || [];
+          return gamePlatforms.includes('PC');
+      });
 
-      const gameProcessingPromises = selectedGames.map(async (game) => {
+      let steamDetailsMap: Record<string, { steamAppId?: number, steamDeckCompat?: SteamDeckCompat }> = {};
+
+      if (pcGames.length > 0) {
+        try {
+            const steamResponse = await fetch('/api/steam/get-batch-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    titles: pcGames.map(g => g.name),
+                    checkCompat: preferences.playsOnSteamDeck
+                })
+            });
+            const steamData = await steamResponse.json();
+            if (steamResponse.ok) {
+                steamDetailsMap = steamData.details;
+            } else {
+                console.warn('Could not fetch batch Steam details.');
+            }
+        } catch (error) {
+            console.error('Failed to fetch batch steam details', error);
+        }
+      }
+      
+      for (const game of selectedGames) {
         const gamePlatforms = game.platforms?.map(p => p.platform.name as Platform) || [];
         const userPlatforms = preferences.platforms || [];
         let platformToSet: Platform | undefined;
@@ -234,36 +260,21 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           playtimeCompletely: igdbTimes?.playtimeCompletely,
         };
         
-        if (!newGame.playtimeNormally) {
-          delete newGame.playtimeNormally;
-        }
-        if (!newGame.playtimeCompletely) {
-          delete newGame.playtimeCompletely; // This line was the original suspect, but we are re-investigating
-        }
-
+        if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
+        if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
 
         if (newGame.platform === 'PC') {
-            try {
-                const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(newGame.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
-                const steamDetails = await response.json();
-                if (steamDetails.steamAppId) {
-                    newGame.steamAppId = steamDetails.steamAppId;
-                }
-                if (steamDetails.steamDeckCompat) {
-                    newGame.steamDeckCompat = steamDetails.steamDeckCompat;
-                }
-            } catch (error) {
-                console.error(`Failed to fetch steam details for ${newGame.title}`, error);
+            const steamDetails = steamDetailsMap[newGame.title];
+            if (steamDetails?.steamAppId) {
+                newGame.steamAppId = steamDetails.steamAppId;
+            }
+            if (steamDetails?.steamDeckCompat) {
+                newGame.steamDeckCompat = steamDetails.steamDeckCompat;
             }
         }
-        return newGame;
-      });
-
-      const processedGames = await Promise.all(gameProcessingPromises);
-
-      for (const gameData of processedGames) {
+        
         const docRef = doc(gamesCollectionRef);
-        batch.set(docRef, gameData);
+        batch.set(docRef, newGame);
       }
 
       await batch.commit();
@@ -273,7 +284,6 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         description: `${selectedGames.length} games have been added to your ${targetList} list.`,
       });
 
-      // Reset state
       setSearchTerm('');
       setSearchResults([]);
       setSelectedGames([]);
@@ -288,7 +298,6 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
   
    const handleOpenChange = (open: boolean) => {
     if (!open) {
-      // Reset state when closing
       setSearchTerm('');
       setSearchResults([]);
       setSelectedGames([]);
@@ -436,6 +445,3 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
 };
 
 export default BatchAddGames;
-
-    
-    
