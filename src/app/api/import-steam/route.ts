@@ -1,4 +1,3 @@
-
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -101,7 +100,7 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
     }
 }
 
-async function getIgdbPlaytime(gameName: string): Promise<number | null> {
+async function getIgdbPlaytime(gameName: string): Promise<{ normally: number; completely: number } | null> {
     try {
         const token = await getIGDBAccessToken();
         const clientId = process.env.IGDB_CLIENT_ID;
@@ -109,19 +108,22 @@ async function getIgdbPlaytime(gameName: string): Promise<number | null> {
 
         const searchResponse = await fetch('https://api.igdb.com/v4/games', {
             method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
-            body: `search "${gameName}"; fields id; limit 1;`
+            body: `search "${gameName.replace(/"/g, '\\"')}"; fields id; limit 1;`
         });
         const games = await searchResponse.json();
         if (!games || games.length === 0) return null;
 
         const timeResponse = await fetch('https://api.igdb.com/v4/time_to_beats', {
             method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
-            body: `fields normally; where game = ${games[0].id};`
+            body: `fields normally, completely; where game = ${games[0].id};`
         });
         const timeData = await timeResponse.json();
 
-        if (timeData && timeData.length > 0 && timeData[0].normally) {
-            return Math.round(timeData[0].normally / 3600);
+        if (timeData && timeData.length > 0) {
+            return {
+                normally: timeData[0].normally ? Math.round(timeData[0].normally / 3600) : 0,
+                completely: timeData[0].completely ? Math.round(timeData[0].completely / 3600) : 0
+            };
         }
         return null;
     } catch (error) {
@@ -226,10 +228,15 @@ export async function POST(req: NextRequest) {
                     list: 'Backlog',
                     imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
                     releaseDate: rawgDetails.released,
-                    estimatedPlaytime: igdbPlaytime ?? rawgDetails.playtime ?? Math.round(steamGame.playtime_forever / 60) ?? 0,
+                    playtimeNormally: igdbPlaytime?.normally ?? rawgDetails.playtime ?? Math.round(steamGame.playtime_forever / 60) ?? 0,
+                    playtimeCompletely: igdbPlaytime?.completely,
                     steamAppId: steamGame.appid,
                     steamDeckCompat: steamDeckCompat,
                 };
+                
+                if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
+                if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
+
                 batch.set(gameDocRef, newGame);
                 importedCount++;
             } else {

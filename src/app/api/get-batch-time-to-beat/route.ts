@@ -25,13 +25,9 @@ export async function POST(req: NextRequest) {
         fields id;
         limit 1;
       };
-      query game_time_to_beats "ttb_${index}" {
-        fields normally, completely;
-        where game = @game_${index}[0].id;
-      };
     `).join('');
 
-    const response = await fetch('https://api.igdb.com/v4/multiquery', {
+    const gameSearchResponse = await fetch('https://api.igdb.com/v4/multiquery', {
       method: 'POST',
       headers: {
         'Client-ID': clientId,
@@ -41,18 +37,55 @@ export async function POST(req: NextRequest) {
       body: query
     });
 
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('IGDB multiquery failed:', errorBody);
-        return NextResponse.json({ message: `IGDB multiquery failed. Status: ${response.status}`}, { status: response.status });
+    if (!gameSearchResponse.ok) {
+        const errorBody = await gameSearchResponse.text();
+        console.error('IGDB multiquery for game search failed:', errorBody);
+        return NextResponse.json({ message: `IGDB multiquery for game search failed. Status: ${gameSearchResponse.status}`}, { status: gameSearchResponse.status });
     }
     
-    const results = await response.json();
+    const gameResults = await gameSearchResponse.json();
     
+    const gameIds: { title: string, id: number }[] = [];
+    titles.forEach((title, index) => {
+        const gameResult = gameResults.find((r: any) => r.name === `game_${index}`);
+        if (gameResult && gameResult.result.length > 0) {
+            gameIds.push({ title, id: gameResult.result[0].id });
+        }
+    });
+    
+    if (gameIds.length === 0) {
+      return NextResponse.json({ playtimes: {} });
+    }
+
+    const ttbQuery = gameIds.map(({ id }, index) => `
+      query time_to_beats "ttb_${index}" {
+        fields normally, completely;
+        where game = ${id};
+      };
+    `).join('');
+    
+    const ttbResponse = await fetch('https://api.igdb.com/v4/multiquery', {
+        method: 'POST',
+        headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+        },
+        body: ttbQuery
+    });
+
+    if (!ttbResponse.ok) {
+        const errorBody = await ttbResponse.text();
+        console.error('IGDB multiquery for ttb failed:', errorBody);
+        return NextResponse.json({ message: `IGDB multiquery for ttb failed. Status: ${ttbResponse.status}`}, { status: ttbResponse.status });
+    }
+
+    const ttbResults = await ttbResponse.json();
+
     const playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
 
-    titles.forEach((title, index) => {
-      const ttbResult = results.find((r: any) => r.name === `ttb_${index}`);
+    gameIds.forEach(({ title }, index) => {
+      const ttbResult = ttbResults.find((r: any) => r.name === `ttb_${index}`);
       if (ttbResult && ttbResult.result.length > 0) {
         const timeData = ttbResult.result[0];
         playtimes[title] = {
@@ -64,8 +97,266 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ playtimes });
 
-  } catch (err: any) {
-    console.error(`[IGDB Multiquery Error] ${err.message}`);
-    return NextResponse.json({ message: err.message || 'Internal server error' }, { status: 500 });
-  }
+  } catch (err: any) " />
+  <change>
+    <file>src/app/api/import-steam/route.ts</file>
+    <content><![CDATA[
+'use server';
+
+import { NextRequest, NextResponse } from 'next/server';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
+import axios from 'axios';
+import type { Game, UserPreferences } from '@/lib/types';
+import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
+import { getIGDBAccessToken } from '@/lib/igdbAuth';
+
+const STEAM_API_KEY = process.env.STEAM_API_KEY;
+const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
+
+// Helper function to initialize Firebase Admin SDK within this route
+function getAdminApp(): App {
+    if (getApps().length) {
+        return getApps()[0];
+    }
+
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccount) {
+        throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
+    }
+
+    const serviceAccountJson = JSON.parse(
+        Buffer.from(serviceAccount, 'base64').toString('utf-8')
+    );
+
+    return initializeApp({
+        credential: cert(serviceAccountJson),
+        projectId: 'studio-8063658966-c0f00',
+    });
+}
+
+
+async function resolveVanityURL(vanityId: string): Promise<string> {
+    if (!vanityId) {
+        throw new Error('Steam ID or Vanity URL is required.');
+    }
+    if (/^\d{17}$/.test(vanityId)) {
+        return vanityId;
+    }
+
+    let vanityName = vanityId;
+    if (vanityId.includes('steamcommunity.com/id/')) {
+        vanityName = vanityId.substring(vanityId.indexOf('steamcommunity.com/id/') + 'steamcommunity.com/id/'.length).split('/')[0];
+    } else if (vanityId.includes('steamcommunity.com/profiles/')) {
+         const potentialId = vanityId.substring(vanityId.indexOf('steamcommunity.com/profiles/') + 'steamcommunity.com/profiles/'.length).split('/')[0];
+         if (/^\d{17}$/.test(potentialId)) {
+            return potentialId;
+         }
+    }
+    
+    try {
+        const response = await axios.get(`https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${STEAM_API_KEY}&vanityurl=${vanityName}`);
+        if (response.data.response.success === 1) {
+            return response.data.response.steamid;
+        } else {
+            throw new Error('Could not resolve Steam vanity URL. Is your profile public and the URL correct?');
+        }
+    } catch (error: any) {
+        console.error(`Error resolving vanity URL: ${error.message}`);
+        throw new Error(`Could not resolve Steam vanity URL: ${vanityId}. Is your profile public and the URL correct?`);
+    }
+}
+
+async function getOwnedGames(steamId64: string): Promise<any[]> {
+    try {
+        const response = await axios.get(`http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${STEAM_API_KEY}&steamid=${steamId64}&format=json&include_appinfo=true`);
+        if (response.data.response && response.data.response.games) {
+            return response.data.response.games;
+        }
+        if (response.data.response && Object.keys(response.data.response).length === 0) {
+            throw new Error(`Could not fetch owned games. The Steam ID may be incorrect or the user's profile is private.`);
+        }
+        return [];
+    } catch (error: any) {
+        console.error(`Error fetching owned games: ${error.message}`);
+        throw new Error(error.message || 'Could not fetch owned games from Steam.');
+    }
+}
+
+async function getRawgGameDetails(gameName: string): Promise<any> {
+    try {
+        const response = await axios.get('https://api.rawg.io/api/games', {
+            params: { key: RAWG_API_KEY, search: gameName, page_size: 1 },
+        });
+        if (response.data.results.length > 0) {
+            return response.data.results[0];
+        }
+        return null;
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+            if (error.response.status === 401) {
+                throw new Error('Invalid RAWG API Key.');
+            }
+        }
+        return null;
+    }
+}
+
+async function getIgdbPlaytime(gameName: string): Promise<{ normally: number; completely: number } | null> {
+    try {
+        const token = await getIGDBAccessToken();
+        const clientId = process.env.IGDB_CLIENT_ID;
+        if (!clientId) return null;
+
+        const searchResponse = await fetch('https://api.igdb.com/v4/games', {
+            method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
+            body: `search "${gameName.replace(/"/g, '\\"')}"; fields id; limit 1;`
+        });
+        const games = await searchResponse.json();
+        if (!games || games.length === 0) return null;
+
+        const timeResponse = await fetch('https://api.igdb.com/v4/time_to_beats', {
+            method: 'POST', headers: { 'Client-ID': clientId, 'Authorization': `Bearer ${token}` },
+            body: `fields normally, completely; where game = ${games[0].id};`
+        });
+        const timeData = await timeResponse.json();
+
+        if (timeData && timeData.length > 0) {
+            return {
+                normally: timeData[0].normally ? Math.round(timeData[0].normally / 3600) : 0,
+                completely: timeData[0].completely ? Math.round(timeData[0].completely / 3600) : 0
+            };
+        }
+        return null;
+    } catch (error) {
+        console.warn(`Could not get IGDB playtime for ${gameName}`, error);
+        return null;
+    }
+}
+
+
+export async function POST(req: NextRequest) {
+    const adminApp = getAdminApp();
+    const auth = getAuth(adminApp);
+    const db = getFirestore(adminApp);
+
+    const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
+    if (!authToken) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    let uid: string;
+    try {
+        const decodedToken = await auth.verifyIdToken(authToken);
+        uid = decodedToken.uid;
+    } catch (error) {
+        console.error('Error verifying auth token:', error);
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { steamId, importMode } = await req.json();
+
+    if (!STEAM_API_KEY) {
+        return NextResponse.json({ message: 'Steam API Key is not configured on the server.' }, { status: 500 });
+    }
+    if (!RAWG_API_KEY) {
+        return NextResponse.json({ message: 'RAWG API Key is not configured on the server.' }, { status: 500 });
+    }
+    
+    try {
+        const steamId64 = await resolveVanityURL(steamId);
+        
+        const userProfileRef = db.collection('users').doc(uid);
+        const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
+        
+        const prefDocSnap = await prefDocRef.get();
+        const preferences = (prefDocSnap.data() as UserPreferences) || {};
+        const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
+        
+        await userProfileRef.update({ steamId: steamId64 });
+
+        if (playsOnSteamDeck && !preferences.playsOnSteamDeck) {
+          await prefDocRef.set({ playsOnSteamDeck: true }, { merge: true });
+        }
+        
+        let steamGames = await getOwnedGames(steamId64);
+        const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
+
+        if (importMode === 'new') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('steamAppId', '!=', null).get();
+            const existingSteamAppIds = new Set(existingGamesSnapshot.docs.map(doc => doc.data().steamAppId));
+            steamGames = steamGames.filter(steamGame => !existingSteamAppIds.has(steamGame.appid));
+        } else if (importMode === 'full') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
+            const deleteBatch = db.batch();
+            existingGamesSnapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
+            await deleteBatch.commit();
+        }
+
+        if (steamGames.length === 0) {
+            return NextResponse.json({ 
+                message: 'No new games to import.', 
+                importedCount: 0,
+                failedCount: 0,
+            });
+        }
+        
+        const batch = db.batch();
+        const gamePromises = steamGames.map(async (steamGame) => {
+            const rawgDetails = await getRawgGameDetails(steamGame.name);
+            let steamDeckCompat: SteamDeckCompat = 'unknown';
+            if (playsOnSteamDeck && rawgDetails) {
+                steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
+            }
+            const igdbPlaytime = await getIgdbPlaytime(steamGame.name);
+
+            return { steamGame, rawgDetails, steamDeckCompat, igdbPlaytime };
+        });
+        
+        const results = await Promise.all(gamePromises);
+
+        let importedCount = 0;
+        let failedCount = 0;
+
+        for (const { steamGame, rawgDetails, steamDeckCompat, igdbPlaytime } of results) {
+            if (rawgDetails) {
+                const gameDocRef = gamesCollectionRef.doc();
+                
+                const newGame: Omit<Game, 'id'> = {
+                    userId: uid,
+                    title: rawgDetails.name || steamGame.name,
+                    platform: 'PC',
+                    genres: rawgDetails.genres?.map((g: any) => g.name) || [],
+                    list: 'Backlog',
+                    imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
+                    releaseDate: rawgDetails.released,
+                    playtimeNormally: igdbPlaytime?.normally ?? rawgDetails.playtime ?? Math.round(steamGame.playtime_forever / 60) ?? 0,
+                    playtimeCompletely: igdbPlaytime?.completely,
+                    steamAppId: steamGame.appid,
+                    steamDeckCompat: steamDeckCompat,
+                };
+                
+                if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
+                if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
+
+                batch.set(gameDocRef, newGame);
+                importedCount++;
+            } else {
+                failedCount++;
+            }
+        }
+
+        await batch.commit();
+
+        return NextResponse.json({ 
+            message: 'Import successful', 
+            importedCount,
+            failedCount,
+        });
+
+    } catch (error: any) {
+        console.error('Steam import process failed:', error);
+        return NextResponse.json({ message: error.message || 'An unknown error occurred during import.' }, { status: 500 });
+    }
 }
