@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import { getSteamDeckCompat, SteamDeckCompat } from '../utils';
+import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 
 // Helper to split array into chunks
 function chunkArray<T>(arr: T[], size: number): T[][] {
