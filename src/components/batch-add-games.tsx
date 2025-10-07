@@ -184,6 +184,22 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       const batch = writeBatch(db);
       const gamesCollectionRef = collection(db, 'users', user.uid, 'games');
 
+      // Fetch playtimes in a single batch
+      const gameTitles = selectedGames.map(g => g.name);
+      const timeResponse = await fetch('/api/get-batch-time-to-beat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titles: gameTitles })
+      });
+      
+      let playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+      if (timeResponse.ok) {
+          const timeData = await timeResponse.json();
+          playtimes = timeData.playtimes;
+      } else {
+          console.warn('Could not fetch batch playtimes, proceeding without them.');
+      }
+
       const gameProcessingPromises = selectedGames.map(async (game) => {
         const gamePlatforms = game.platforms?.map(p => p.platform.name as Platform) || [];
         const userPlatforms = preferences.platforms || [];
@@ -202,6 +218,8 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         const gameGenres = game.genres?.map(g => g.name as Genre) || [];
         gameGenres.forEach(onAddGenre);
 
+        const igdbTimes = playtimes[game.name];
+
         const newGame: Omit<Game, 'id'> = {
           userId: user.uid,
           title: game.name,
@@ -210,23 +228,9 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           list: targetList,
           imageUrl: game.background_image || '',
           releaseDate: game.released,
-          playtimeNormally: game.playtime || undefined,
+          playtimeNormally: igdbTimes?.playtimeNormally ?? game.playtime,
+          playtimeCompletely: igdbTimes?.playtimeCompletely,
         };
-
-        try {
-            const timeResponse = await fetch(`/api/get-time-to-beat?title=${encodeURIComponent(game.name)}`);
-            if (timeResponse.ok) {
-                const timeData = await timeResponse.json();
-                if (timeData.playtimeNormally) {
-                    newGame.playtimeNormally = timeData.playtimeNormally;
-                }
-                if (timeData.playtimeCompletely) {
-                    newGame.playtimeCompletely = timeData.playtimeCompletely;
-                }
-            }
-        } catch (error) {
-            console.warn(`Could not fetch time-to-beat for ${game.name}:`, error);
-        }
         
         if (!newGame.playtimeNormally) {
           delete newGame.playtimeNormally;
@@ -272,7 +276,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       setSearchResults([]);
       setSelectedGames([]);
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding games in batch:', error);
       toast({ title: 'Error', description: 'Could not add games. Please try again.', variant: 'destructive' });
     } finally {
