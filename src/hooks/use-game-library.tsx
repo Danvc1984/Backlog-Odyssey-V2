@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
@@ -154,6 +155,10 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
   const handleAddGame = useCallback(async (newGame: Omit<Game, 'id' | 'userId'>) => {
     if (user && preferences) {
       let gameData: any = { ...newGame, userId: user.uid };
+
+      if (!gameData.playtimeNormally) delete gameData.playtimeNormally;
+      if (!gameData.playtimeCompletely) delete gameData.playtimeCompletely;
+
       if (gameData.platform === 'PC') {
          try {
             const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
@@ -176,6 +181,17 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
     if (user && editingGame && preferences) {
       const gameRef = doc(db, 'users', user.uid, 'games', editingGame.id);
       let gameData: any = { ...updatedGame };
+
+      if (gameData.rating === 0 || !gameData.rating) {
+        delete gameData.rating;
+      }
+      if (!gameData.playtimeNormally) {
+        delete gameData.playtimeNormally;
+      }
+      if (!gameData.playtimeCompletely) {
+        delete gameData.playtimeCompletely;
+      }
+
        if (gameData.platform === 'PC') {
          try {
             const response = await fetch(`/api/get-steam-details?title=${encodeURIComponent(gameData.title)}&checkCompat=${preferences.playsOnSteamDeck}`);
@@ -291,3 +307,5 @@ export const useGameLibrary = () => {
   }
   return context;
 };
+
+    
