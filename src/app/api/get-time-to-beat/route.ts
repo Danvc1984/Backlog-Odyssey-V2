@@ -39,20 +39,20 @@ export async function GET(req: NextRequest) {
     
     const games = await searchResponse.json();
     if (!games || games.length === 0) {
-      return NextResponse.json({ estimatedPlaytime: null }, { status: 404 });
+      return NextResponse.json({ playtimeNormally: null, playtimeCompletely: null }, { status: 404 });
     }
     const gameId = games[0].id;
     console.log(gameId);
 
     // Step 2: Query time-to-beat using the game ID
-    const timeResponse = await fetch('https://api.igdb.com/v4/game_time_to_beats', {
+    const timeResponse = await fetch('https://api.igdb.com/v4/time_to_beats', {
         method: 'POST',
         headers: {
             'Client-ID': clientId,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
         },
-        body: `fields normally; where game_id = ${gameId};`
+        body: `fields normally, completely; where game = ${gameId};`
     });
 
     if (!timeResponse.ok) {
@@ -63,12 +63,19 @@ export async function GET(req: NextRequest) {
 
     const timeData = await timeResponse.json();
     
-    if (timeData && timeData.length > 0 && timeData[0].normally) {
-        const playtimeInHours = Math.round(timeData[0].normally / 3600);
-        return NextResponse.json({ estimatedPlaytime: playtimeInHours });
+    let playtimeNormally: number | null = null;
+    let playtimeCompletely: number | null = null;
+
+    if (timeData && timeData.length > 0) {
+      if (timeData[0].normally) {
+        playtimeNormally = Math.round(timeData[0].normally / 3600);
+      }
+      if (timeData[0].completely) {
+        playtimeCompletely = Math.round(timeData[0].completely / 3600);
+      }
     }
 
-    return NextResponse.json({ estimatedPlaytime: null });
+    return NextResponse.json({ playtimeNormally, playtimeCompletely });
 
   } catch (err: any) {
     console.error(`[IGDB API Error] ${err.message}`);

@@ -41,7 +41,8 @@ const gameSchema = z.object({
   genres: z.array(z.string()).min(1, 'Please select at least one genre.'),
   list: z.enum(["Wishlist", "Backlog", "Now Playing", "Recently Played"]),
   releaseDate: z.string().optional(),
-  estimatedPlaytime: z.coerce.number().optional(),
+  playtimeNormally: z.coerce.number().optional(),
+  playtimeCompletely: z.coerce.number().optional(),
   rating: z.coerce.number().min(0).max(5).optional(),
 });
 
@@ -74,7 +75,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       genres: gameToEdit?.genres || [],
       list: gameToEdit?.list || defaultList,
       releaseDate: gameToEdit?.releaseDate || '',
-      estimatedPlaytime: gameToEdit?.estimatedPlaytime || 0,
+      playtimeNormally: gameToEdit?.playtimeNormally || 0,
+      playtimeCompletely: gameToEdit?.playtimeCompletely || 0,
       rating: gameToEdit?.rating || 0,
     },
   });
@@ -87,7 +89,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         genres: gameToEdit.genres,
         list: gameToEdit.list,
         releaseDate: gameToEdit.releaseDate,
-        estimatedPlaytime: gameToEdit.estimatedPlaytime,
+        playtimeNormally: gameToEdit.playtimeNormally,
+        playtimeCompletely: gameToEdit.playtimeCompletely,
         rating: gameToEdit.rating,
       });
       setSelectedGameImageUrl(gameToEdit.imageUrl);
@@ -98,7 +101,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         genres: [],
         list: defaultList,
         releaseDate: '',
-        estimatedPlaytime: 0,
+        playtimeNormally: 0,
+        playtimeCompletely: 0,
         rating: 0,
       });
       setSelectedGameImageUrl(null);
@@ -163,7 +167,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     if (game.released) form.setValue('releaseDate', game.released);
     
     // Set initial playtime from RAWG, then try to update with IGDB
-    if (game.playtime) form.setValue('estimatedPlaytime', game.playtime);
+    if (game.playtime) form.setValue('playtimeNormally', game.playtime);
 
     if (game.background_image) {
       setSelectedGameImageUrl(game.background_image);
@@ -178,8 +182,11 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         const response = await fetch(`/api/get-time-to-beat?title=${encodeURIComponent(game.name)}`);
         if (response.ok) {
             const data = await response.json();
-            if (data.estimatedPlaytime !== null) {
-                form.setValue('estimatedPlaytime', data.estimatedPlaytime);
+            if (data.playtimeNormally !== null) {
+                form.setValue('playtimeNormally', data.playtimeNormally);
+            }
+            if (data.playtimeCompletely !== null) {
+                form.setValue('playtimeCompletely', data.playtimeCompletely);
             }
         }
     } catch (error) {
@@ -193,7 +200,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       imageUrl: selectedGameImageUrl || '',
     };
 
-    if (data.rating === 0) {
+    if (data.rating === 0 || !data.rating) {
       delete newGame.rating;
     }
     
@@ -203,7 +210,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         title: 'Game Added!',
         description: `${data.title} has been added to your library.`,
       });
-      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', estimatedPlaytime: 0, rating: 0 });
+      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', playtimeNormally: 0, playtimeCompletely: 0, rating: 0 });
       setSelectedGameImageUrl(null);
     }
   }
@@ -376,7 +383,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
           />
           <FormField
             control={form.control}
-            name="estimatedPlaytime"
+            name="playtimeNormally"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Est. Playtime (hrs)</FormLabel>
