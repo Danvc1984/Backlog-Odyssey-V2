@@ -166,27 +166,27 @@ export async function POST(req: NextRequest) {
             });
         }
         
-        // Step 1: Get RAWG details for all games, which includes the IGDB ID
+        // Step 1: Get RAWG details for all games
         const gameDetailsPromises = steamGames.map(sg => getRawgGameDetails(sg.name).then(details => ({ steamGame: sg, rawgDetails: details })));
         const gameDetailsResults = await Promise.all(gameDetailsPromises);
         
-        const validGameDetails = gameDetailsResults.filter(res => res.rawgDetails && res.rawgDetails.id);
-        const igdbIds = validGameDetails.map(res => res.rawgDetails.id);
+        const validGameDetails = gameDetailsResults.filter(res => res.rawgDetails);
+        const gameTitles = validGameDetails.map(res => res.rawgDetails.name);
 
-        // Step 2: Fetch playtimes from our new dedicated endpoint using IGDB IDs
+        // Step 2: Fetch playtimes from our new dedicated endpoint
         let playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
-        if (igdbIds.length > 0) {
+        if (gameTitles.length > 0) {
             try {
                 const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: igdbIds })
+                    body: JSON.stringify({ titles: gameTitles })
                 });
                 if (timeResponse.ok) {
                     const timeData = await timeResponse.json();
                     playtimes = timeData.playtimes;
                 } else {
-                    console.warn('Could not fetch batch playtimes for Steam import, proceeding without them.');
+                    console.error('Could not fetch batch playtimes for Steam import, proceeding without them.');
                 }
             } catch (error) {
                 console.error('Error fetching batch playtimes for Steam import:', error);
@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
             const gameDocRef = gamesCollectionRef.doc();
             
             const title = rawgDetails.name || steamGame.name;
-            const igdbTimes = playtimes[rawgDetails.id];
+            const igdbTimes = playtimes[title];
             
             const newGame: Omit<Game, 'id'> = {
                 userId: uid,
@@ -228,11 +228,10 @@ export async function POST(req: NextRequest) {
                 steamDeckCompat: steamDeckCompat,
             };
 
-            // Backwards compatibility for playtime.
             if (!newGame.playtimeNormally) {
                 newGame.playtimeNormally = rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || undefined;
             }
-
+            
             if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
             if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
 
