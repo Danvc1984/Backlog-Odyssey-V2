@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
                     }
                 }
             } catch (error: any) {
-                if (axios.isAxiosError(error) && error.response?.status === 429) {
+                if (axios.isAxiosError(error) && (error.response?.status === 429 || error.response?.status === 503)) {
                      console.warn(`Steam API rate limit hit for title: "${title}".`);
                 } else {
                     console.error(`Error fetching Steam App ID for "${title}":`, error.message);
