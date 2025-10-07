@@ -186,6 +186,8 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
 
       // Fetch playtimes in a single batch
       const gameTitles = selectedGames.map(g => g.name);
+      console.log('Client-side: Attempting to fetch batch playtimes.', { titles: gameTitles }); // ADDED LOG
+
       const timeResponse = await fetch('/api/get-batch-time-to-beat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -236,7 +238,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
           delete newGame.playtimeNormally;
         }
         if (!newGame.playtimeCompletely) {
-          delete newGame.playtimeCompletely;
+          delete newGame.playtimeCompletely; // This line was the original suspect, but we are re-investigating
         }
 
 
