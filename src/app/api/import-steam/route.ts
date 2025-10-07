@@ -173,20 +173,38 @@ export async function POST(req: NextRequest) {
         const validGameDetails = gameDetailsResults.filter(res => res.rawgDetails);
         const gameTitles = validGameDetails.map(res => res.rawgDetails.name);
 
-        // Step 2: Fetch playtimes from our new dedicated endpoint
-        let playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
-        if (gameTitles.length > 0) {
+        let titleToIgdbId: Record<string, number> = {};
+        try {
+            const idResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-igdb-ids`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titles: gameTitles })
+            });
+            if (idResponse.ok) {
+                const idData = await idResponse.json();
+                titleToIgdbId = idData.titleToIdMap;
+            } else {
+                console.error('Could not fetch IGDB IDs for Steam import.');
+            }
+        } catch (error) {
+            console.error('Error fetching IGDB IDs for Steam import:', error);
+        }
+
+        let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+        const igdbIds = Object.values(titleToIgdbId);
+
+        if (igdbIds.length > 0) {
             try {
                 const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ titles: gameTitles })
+                    body: JSON.stringify({ ids: igdbIds })
                 });
                 if (timeResponse.ok) {
                     const timeData = await timeResponse.json();
-                    playtimes = timeData.playtimes;
+                    igdbIdToPlaytime = timeData.playtimes;
                 } else {
-                    console.error('Could not fetch batch playtimes for Steam import, proceeding without them.');
+                    console.error('Could not fetch batch playtimes for Steam import.');
                 }
             } catch (error) {
                 console.error('Error fetching batch playtimes for Steam import:', error);
@@ -212,7 +230,8 @@ export async function POST(req: NextRequest) {
             const gameDocRef = gamesCollectionRef.doc();
             
             const title = rawgDetails.name || steamGame.name;
-            const igdbTimes = playtimes[title];
+            const igdbId = titleToIgdbId[title];
+            const igdbTimes = igdbId ? igdbIdToPlaytime[igdbId] : undefined;
             
             const newGame: Omit<Game, 'id'> = {
                 userId: uid,
