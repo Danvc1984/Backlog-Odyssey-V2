@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         const searchQuery = chunk.map(title => `
             query games "search_${sanitizeTitleForQuery(title)}" {
                 search "${title.replace(/"/g, '\"')}";
-                fields name, id;
+                fields id, name;
                 limit 1;
             };
         `).join('');
@@ -70,12 +70,13 @@ export async function POST(req: NextRequest) {
         
         const searchResults = await searchResponse.json();
 
-        searchResults.forEach((result: any, index: number) => {
-            const originalTitle = chunk[index];
-            if (result.result.length > 0) {
+        // Correctly map results back to original titles
+        chunk.forEach((originalTitle) => {
+            const queryName = `search_${sanitizeTitleForQuery(originalTitle)}`;
+            const result = searchResults.find((r: any) => r.name === queryName);
+
+            if (result && result.result.length > 0) {
                 const gameId = result.result[0].id;
-                // Use the exact title from IGDB if it's a close match, otherwise use original.
-                const returnedTitle = result.result[0].name;
                 titleToIdMap[originalTitle] = gameId;
             }
         });
