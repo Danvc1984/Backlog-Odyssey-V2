@@ -17,6 +17,7 @@ const MULTIQUERY_DELAY_MS = 1000;
 
 export async function POST(req: NextRequest) {
   const { ids } = await req.json();
+  console.log('[get-batch-playtimes] Received IDs:', ids);
 
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return NextResponse.json({ message: 'Missing or invalid game IDs' }, { status: 400 });
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
         };
       `).join('');
 
+      console.log(`[get-batch-playtimes] IGDB multiquery (chunk ${i+1}/${ttbIdChunks.length}):`, ttbQuery);
+      
       const ttbResponse = await fetch(MULTIQUERY_URL, {
         method: 'POST',
         headers: IGDB_HEADERS,
@@ -57,7 +60,7 @@ export async function POST(req: NextRequest) {
 
       if (!ttbResponse.ok) {
         const errorBody = await ttbResponse.text();
-        console.error('IGDB multiquery for ttb failed:', errorBody);
+        console.error('[get-batch-playtimes] IGDB multiquery for ttb failed:', errorBody);
         throw new Error(`IGDB multiquery for ttb failed. Status: ${ttbResponse.status}. Body: ${errorBody}`);
       }
 
@@ -84,10 +87,11 @@ export async function POST(req: NextRequest) {
         }
     });
 
+    console.log('[get-batch-playtimes] Returning playtimes map:', playtimes);
     return NextResponse.json({ playtimes });
 
   } catch (err: any) {
-    console.error(`[Steam Import Batch Time to Beat API Error] ${err.message}`);
+    console.error(`[get-batch-playtimes API Error] ${err.message}`);
     return NextResponse.json({ message: err.message || 'Internal server error' }, { status: 500 });
   }
 }

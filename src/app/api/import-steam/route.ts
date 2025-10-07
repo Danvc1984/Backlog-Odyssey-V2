@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -175,6 +176,7 @@ export async function POST(req: NextRequest) {
 
         let titleToIgdbId: Record<string, number> = {};
         try {
+            console.log('[Steam Import] Fetching IGDB IDs for titles:', gameTitles);
             const idResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-igdb-ids`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -183,6 +185,7 @@ export async function POST(req: NextRequest) {
             if (idResponse.ok) {
                 const idData = await idResponse.json();
                 titleToIgdbId = idData.titleToIdMap;
+                console.log('[Steam Import] Received IGDB ID map:', titleToIgdbId);
             } else {
                 console.error('Could not fetch IGDB IDs for Steam import.');
             }
@@ -195,6 +198,7 @@ export async function POST(req: NextRequest) {
 
         if (igdbIds.length > 0) {
             try {
+                console.log('[Steam Import] Fetching playtimes for IGDB IDs:', igdbIds);
                 const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -203,6 +207,7 @@ export async function POST(req: NextRequest) {
                 if (timeResponse.ok) {
                     const timeData = await timeResponse.json();
                     igdbIdToPlaytime = timeData.playtimes;
+                    console.log('[Steam Import] Received playtimes map:', igdbIdToPlaytime);
                 } else {
                     console.error('Could not fetch batch playtimes for Steam import.');
                 }

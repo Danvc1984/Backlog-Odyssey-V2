@@ -20,6 +20,7 @@ const sanitizeTitleForQuery = (title: string) => title.replace(/[^a-zA-Z0-9]/g, 
 
 export async function POST(req: NextRequest) {
   const { titles } = await req.json();
+  console.log('[get-igdb-ids] Received titles:', titles);
 
   if (!titles || !Array.isArray(titles) || titles.length === 0) {
     return NextResponse.json({ message: 'Missing or invalid game titles' }, { status: 400 });
@@ -52,6 +53,8 @@ export async function POST(req: NextRequest) {
                 limit 1;
             };
         `).join('');
+        
+        console.log(`[get-igdb-ids] IGDB multiquery (chunk ${i+1}/${titleChunks.length}):`, searchQuery);
 
         const searchResponse = await fetch(MULTIQUERY_URL, {
             method: 'POST',
@@ -61,7 +64,7 @@ export async function POST(req: NextRequest) {
 
         if (!searchResponse.ok) {
             const errorBody = await searchResponse.text();
-            console.error('IGDB multiquery for game search failed:', errorBody);
+            console.error('[get-igdb-ids] IGDB multiquery for game search failed:', errorBody);
             throw new Error(`IGDB multiquery for game search failed. Status: ${searchResponse.status}. Body: ${errorBody}`);
         }
         
@@ -82,10 +85,11 @@ export async function POST(req: NextRequest) {
         }
     }
 
+    console.log('[get-igdb-ids] Returning titleToIdMap:', titleToIdMap);
     return NextResponse.json({ titleToIdMap });
 
   } catch (err: any) {
-    console.error(`[IGDB Get IDs API Error] ${err.message}`);
+    console.error(`[get-igdb-ids API Error] ${err.message}`);
     return NextResponse.json({ message: err.message || 'Internal server error' }, { status: 500 });
   }
 }
