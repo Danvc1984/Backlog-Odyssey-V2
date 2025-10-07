@@ -166,77 +166,78 @@ export async function POST(req: NextRequest) {
             });
         }
         
-        // Fetch playtimes from IGDB in a single batch request
-        const gameTitles = steamGames.map(sg => sg.name);
-        let playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+        // Step 1: Get RAWG details for all games, which includes the IGDB ID
+        const gameDetailsPromises = steamGames.map(sg => getRawgGameDetails(sg.name).then(details => ({ steamGame: sg, rawgDetails: details })));
+        const gameDetailsResults = await Promise.all(gameDetailsPromises);
         
-        try {
-            const timeResponse = await fetch(`${req.nextUrl.origin}/api/get-batch-time-to-beat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titles: gameTitles })
-            });
-            if (timeResponse.ok) {
-                const timeData = await timeResponse.json();
-                playtimes = timeData.playtimes;
-            } else {
-                console.warn('Could not fetch batch playtimes for Steam import, proceeding without them.');
-            }
-        } catch (error) {
-            console.error('Error fetching batch playtimes for Steam import:', error);
-        }
+        const validGameDetails = gameDetailsResults.filter(res => res.rawgDetails && res.rawgDetails.id);
+        const igdbIds = validGameDetails.map(res => res.rawgDetails.id);
 
+        // Step 2: Fetch playtimes from our new dedicated endpoint using IGDB IDs
+        let playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+        if (igdbIds.length > 0) {
+            try {
+                const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: igdbIds })
+                });
+                if (timeResponse.ok) {
+                    const timeData = await timeResponse.json();
+                    playtimes = timeData.playtimes;
+                } else {
+                    console.warn('Could not fetch batch playtimes for Steam import, proceeding without them.');
+                }
+            } catch (error) {
+                console.error('Error fetching batch playtimes for Steam import:', error);
+            }
+        }
+        
+        // Step 3: Fetch Steam Deck compatibility and prepare batch write
         const batch = db.batch();
-        const gamePromises = steamGames.map(async (steamGame) => {
-            const rawgDetails = await getRawgGameDetails(steamGame.name);
+        const finalGamePromises = validGameDetails.map(async ({ steamGame, rawgDetails }) => {
             let steamDeckCompat: SteamDeckCompat = 'unknown';
-            if (playsOnSteamDeck && rawgDetails) {
+            if (playsOnSteamDeck && steamGame.appid) {
                 steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
             }
             return { steamGame, rawgDetails, steamDeckCompat };
         });
-        
-        const results = await Promise.all(gamePromises);
+
+        const finalResults = await Promise.all(finalGamePromises);
 
         let importedCount = 0;
-        let failedCount = 0;
+        let failedCount = gameDetailsResults.length - validGameDetails.length;
 
-        for (const { steamGame, rawgDetails, steamDeckCompat } of results) {
-            if (rawgDetails) {
-                const gameDocRef = gamesCollectionRef.doc();
-                
-                const title = rawgDetails.name || steamGame.name;
-                const igdbTimes = playtimes[title];
-                
-                const newGame: Omit<Game, 'id'> = {
-                    userId: uid,
-                    title: title,
-                    platform: 'PC',
-                    genres: rawgDetails.genres?.map((g: any) => g.name) || [],
-                    list: 'Backlog',
-                    imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
-                    releaseDate: rawgDetails.released,
-                    playtimeNormally: igdbTimes?.playtimeNormally ?? null,
-                    playtimeCompletely: igdbTimes?.playtimeCompletely ?? null,
-                    steamAppId: steamGame.appid,
-                    steamDeckCompat: steamDeckCompat,
-                };
-                
-                // For backwards compatibility, also add RAWG playtime if IGDB is not available
-                if (newGame.playtimeNormally === null) {
-                    newGame.estimatedPlaytime = rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || 0;
-                } else {
-                    newGame.estimatedPlaytime = newGame.playtimeNormally;
-                }
+        for (const { steamGame, rawgDetails, steamDeckCompat } of finalResults) {
+            const gameDocRef = gamesCollectionRef.doc();
+            
+            const title = rawgDetails.name || steamGame.name;
+            const igdbTimes = playtimes[rawgDetails.id];
+            
+            const newGame: Omit<Game, 'id'> = {
+                userId: uid,
+                title: title,
+                platform: 'PC',
+                genres: rawgDetails.genres?.map((g: any) => g.name) || [],
+                list: 'Backlog',
+                imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
+                releaseDate: rawgDetails.released,
+                playtimeNormally: igdbTimes?.playtimeNormally,
+                playtimeCompletely: igdbTimes?.playtimeCompletely,
+                steamAppId: steamGame.appid,
+                steamDeckCompat: steamDeckCompat,
+            };
 
-                if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
-                if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
-
-                batch.set(gameDocRef, newGame);
-                importedCount++;
-            } else {
-                failedCount++;
+            // Backwards compatibility for playtime.
+            if (!newGame.playtimeNormally) {
+                newGame.playtimeNormally = rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || undefined;
             }
+
+            if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
+            if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
+
+            batch.set(gameDocRef, newGame);
+            importedCount++;
         }
 
         await batch.commit();
