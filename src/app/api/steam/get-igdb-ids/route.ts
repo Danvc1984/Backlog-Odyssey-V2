@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         const searchQuery = chunk.map(title => `
             query games "search_${sanitizeTitleForQuery(title)}" {
                 search "${title.replace(/"/g, '\"')}";
-                fields name;
+                fields name, id;
                 limit 1;
             };
         `).join('');
