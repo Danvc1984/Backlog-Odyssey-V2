@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     try {
         const steamId64 = await resolveVanityURL(steamId);
         
-        const userProfileRef = db.collection('users').doc(uid);
+        const userProfileRef = doc(db, 'users', uid);
         const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
         
         const prefDocSnap = await prefDocRef.get();
@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
         const validGameDetails = gameDetailsResults.filter(res => res.rawgDetails);
         const gameTitles = validGameDetails.map(res => res.rawgDetails.name);
 
-        let titleToIgdbId: Record<string, number> = {};
+        let titleToIdMap: Record<string, number> = {};
         try {
             console.log('[Steam Import] Fetching IGDB IDs for titles:', gameTitles);
             const idResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-igdb-ids`, {
@@ -182,8 +182,8 @@ export async function POST(req: NextRequest) {
             });
             if (idResponse.ok) {
                 const idData = await idResponse.json();
-                titleToIgdbId = idData.titleToIdMap;
-                console.log('[Steam Import] Received IGDB ID map:', titleToIgdbId);
+                titleToIdMap = idData.titleToIdMap;
+                console.log('[Steam Import] Received IGDB ID map:', titleToIdMap);
             } else {
                 console.error('[Steam Import] Could not fetch IGDB IDs for Steam import. Status:', idResponse.status);
             }
@@ -194,11 +194,11 @@ export async function POST(req: NextRequest) {
         let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
         
         const processableGameDetails = validGameDetails.filter(
-            detail => detail.rawgDetails && titleToIgdbId[detail.rawgDetails.name]
+            detail => detail.rawgDetails && titleToIdMap[detail.rawgDetails.name]
         );
         
         const uniqueIgdbIds = [...new Set(
-            processableGameDetails.map(detail => titleToIgdbId[detail.rawgDetails.name])
+            processableGameDetails.map(detail => titleToIdMap[detail.rawgDetails.name])
         )];
         
         console.log('[Steam Import] Fetching playtimes for IGDB IDs:', uniqueIgdbIds);
@@ -210,11 +210,19 @@ export async function POST(req: NextRequest) {
                     body: JSON.stringify({ ids: uniqueIgdbIds })
                 });
                 if (timeResponse.ok) {
-                    const timeData = await timeResponse.json();
-                    igdbIdToPlaytime = timeData.playtimes;
-                    console.log('[Steam Import] Received playtimes map:', igdbIdToPlaytime);
+                    try {
+                        const timeData = await timeResponse.json();
+                        igdbIdToPlaytime = timeData.playtimes;
+                        console.log('[Steam Import] Received playtimes map:', igdbIdToPlaytime);
+                    } catch (e) {
+                        console.error('[Steam Import] Failed to parse JSON from playtimes response.', e);
+                        const textResponse = await timeResponse.text();
+                        console.error('[Steam Import] Playtimes response text:', textResponse);
+                    }
                 } else {
                     console.error('[Steam Import] Could not fetch batch playtimes for Steam import. Status:', timeResponse.status);
+                    const errorText = await timeResponse.text();
+                    console.error('[Steam Import] Batch playtimes error response text:', errorText);
                 }
             } catch (error) {
                 console.error('[Steam Import] Error fetching batch playtimes for Steam import:', error);
@@ -239,7 +247,7 @@ export async function POST(req: NextRequest) {
             const gameDocRef = gamesCollectionRef.doc();
             
             const title = rawgDetails.name;
-            const igdbId = titleToIgdbId[title];
+            const igdbId = titleToIdMap[title];
             const igdbTimes = igdbId ? igdbIdToPlaytime[igdbId] : undefined;
             
             const newGame: Omit<Game, 'id'> = {
@@ -274,7 +282,7 @@ export async function POST(req: NextRequest) {
         
         console.log('[Steam Import] Success:', message);
         return NextResponse.json({ 
-            message, 
+            message,
             importedCount,
             failedCount,
         });

@@ -18,8 +18,12 @@ const MULTIQUERY_DELAY_MS = 1000;
 export async function POST(req: NextRequest) {
   const { ids } = await req.json();
 
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+  if (!ids || !Array.isArray(ids)) {
     return NextResponse.json({ message: 'Missing or invalid game IDs' }, { status: 400 });
+  }
+
+  if (ids.length === 0) {
+    return NextResponse.json({ playtimes: {} });
   }
 
   try {
@@ -58,13 +62,16 @@ export async function POST(req: NextRequest) {
         body: ttbQuery
       });
 
+      const responseText = await ttbResponse.text();
+      console.log('[get-batch-playtimes] Raw IGDB ttb response:', responseText);
+
       if (!ttbResponse.ok) {
-        const errorBody = await ttbResponse.text();
-        console.error('[get-batch-playtimes] IGDB multiquery for ttb failed:', errorBody);
-        throw new Error(`IGDB multiquery for ttb failed. Status: ${ttbResponse.status}. Body: ${errorBody}`);
+        console.error('[get-batch-playtimes] IGDB multiquery for ttb failed:', responseText);
+        throw new Error(`IGDB multiquery for ttb failed. Status: ${ttbResponse.status}. Body: ${responseText}`);
       }
 
-      const chunkTtbResults = await ttbResponse.json();
+      // Trim whitespace/BOM before parsing JSON
+      const chunkTtbResults = JSON.parse(responseText.trim());
       allTtbResults.push(...chunkTtbResults);
 
       if (i < ttbIdChunks.length - 1) {

@@ -161,7 +161,10 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         body: JSON.stringify({ steamId: currentSteamId, importMode }),
       });
 
-      const result = await response.json();
+      const responseText = await response.text();
+      console.log('[Client] Raw /api/import-steam response:', responseText);
+      
+      const result = JSON.parse(responseText);
 
       if (!response.ok) {
         throw new Error(result.message || 'Failed to import Steam library.');
