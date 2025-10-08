@@ -279,11 +279,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
               <Search className="absolute top-9 right-3 h-4 w-4 text-muted-foreground" />
             </div>
           </PopoverAnchor>
-          <PopoverContent 
+          <PopoverContent
             className="w-[var(--radix-popover-trigger-width)] p-0"
-            onMouseDown={(e) => {
-              e.preventDefault();
-            }}
           >
             <ScrollArea className="h-64">
               <div className="flex flex-col gap-1 p-1">
@@ -293,6 +290,9 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                     variant="ghost"
                     type="button"
                     className="flex items-center justify-start gap-2 h-auto p-2"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                    }}
                     onClick={() => handleSelectGame(game)}
                   >
                     {game.background_image ? <Image
@@ -498,7 +498,3 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
-
-    
-
-    
