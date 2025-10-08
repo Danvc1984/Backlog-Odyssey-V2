@@ -29,11 +29,13 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import type { Game, GameList, Platform, Genre } from '@/lib/types';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
 import { Calendar } from './ui/calendar';
+import { ScrollArea } from './ui/scroll-area';
+
 
 const gameSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -250,9 +252,9 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-        <Popover open={searchTerm.length > 0 && searchResults.length > 0}>
-          <PopoverTrigger asChild>
-            <div className="relative">
+        <Popover open={searchTerm.length > 2 && searchResults.length > 0}>
+          <PopoverAnchor asChild>
+             <div className="relative">
                <FormField
                 control={form.control}
                 name="title"
@@ -267,6 +269,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                           field.onChange(e);
                           setSearchTerm(e.target.value);
                         }}
+                         autoComplete="off"
                       />
                     </FormControl>
                     <FormMessage />
@@ -275,28 +278,30 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
               />
               <Search className="absolute top-9 right-3 h-4 w-4 text-muted-foreground" />
             </div>
-          </PopoverTrigger>
+          </PopoverAnchor>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-            <div className="flex flex-col gap-1">
-              {searchResults.map((game) => (
-                <Button
-                  key={game.id}
-                  variant="ghost"
-                  type="button"
-                  className="flex items-center justify-start gap-2 h-auto p-2"
-                  onClick={() => handleSelectGame(game)}
-                >
-                  {game.background_image ? <Image
-                    src={game.background_image}
-                    alt={game.name}
-                    width={40}
-                    height={53}
-                    className="object-cover rounded-sm aspect-[3/4]"
-                  /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
-                  <span className="text-sm font-medium text-left">{game.name}</span>
-                </Button>
-              ))}
-            </div>
+            <ScrollArea className="h-auto max-h-64">
+              <div className="flex flex-col gap-1 p-1">
+                {searchResults.map((game) => (
+                  <Button
+                    key={game.id}
+                    variant="ghost"
+                    type="button"
+                    className="flex items-center justify-start gap-2 h-auto p-2"
+                    onClick={() => handleSelectGame(game)}
+                  >
+                    {game.background_image ? <Image
+                      src={game.background_image}
+                      alt={game.name}
+                      width={40}
+                      height={53}
+                      className="object-cover rounded-sm aspect-[3/4]"
+                    /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
+                    <span className="text-sm font-medium text-left">{game.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
           </PopoverContent>
         </Popover>
         
@@ -488,3 +493,5 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
