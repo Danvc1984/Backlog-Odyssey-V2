@@ -10,7 +10,7 @@ import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
-export const maxDuration = 300; // 5 minutes
+export const maxDuration = 400; // 5 minutes
 
 // Helper function to initialize Firebase Admin SDK within this route
 function getAdminApp(): App {
