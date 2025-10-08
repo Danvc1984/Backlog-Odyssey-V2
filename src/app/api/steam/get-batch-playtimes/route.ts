@@ -17,7 +17,6 @@ const MULTIQUERY_DELAY_MS = 1000;
 
 export async function POST(req: NextRequest) {
   const { ids } = await req.json();
-  console.log('[get-batch-playtimes] Received IDs:', ids);
 
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return NextResponse.json({ message: 'Missing or invalid game IDs' }, { status: 400 });
@@ -43,14 +42,15 @@ export async function POST(req: NextRequest) {
 
     for (let i = 0; i < ttbIdChunks.length; i++) {
       const idChunk = ttbIdChunks[i];
-      const ttbQuery = idChunk.map((id) => `
-        query game_time_to_beats "ttb_${id}" {
-          fields normally, completely;
-          where game = ${id};
-        };
-      `).join('');
+      const validIdChunk = idChunk.filter(id => id && typeof id === 'number' && id > 0);
 
-      console.log(`[get-batch-playtimes] IGDB multiquery (chunk ${i+1}/${ttbIdChunks.length}):`, ttbQuery);
+      if (validIdChunk.length === 0) {
+        continue;
+      }
+
+      const ttbQuery = validIdChunk.map(
+        (id) => `query game_time_to_beats "ttb_${id}" { fields normally, completely; where game_id = ${id}; };`
+      ).join('\n');
       
       const ttbResponse = await fetch(MULTIQUERY_URL, {
         method: 'POST',
@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
     const playtimes: Record<string, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
     
     ids.forEach((id) => {
+        if (!id) return;
         const ttbResult = allTtbResults.find((r: any) => r.name === `ttb_${id}`);
         if (ttbResult && ttbResult.result.length > 0) {
           const timeData = ttbResult.result[0];
@@ -87,7 +88,6 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    console.log('[get-batch-playtimes] Returning playtimes map:', playtimes);
     return NextResponse.json({ playtimes });
 
   } catch (err: any) {

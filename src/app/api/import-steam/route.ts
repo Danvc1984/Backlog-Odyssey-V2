@@ -167,7 +167,6 @@ export async function POST(req: NextRequest) {
             });
         }
         
-        // Step 1: Get RAWG details for all games
         const gameDetailsPromises = steamGames.map(sg => getRawgGameDetails(sg.name).then(details => ({ steamGame: sg, rawgDetails: details })));
         const gameDetailsResults = await Promise.all(gameDetailsPromises);
         
@@ -176,7 +175,6 @@ export async function POST(req: NextRequest) {
 
         let titleToIgdbId: Record<string, number> = {};
         try {
-            console.log('[Steam Import] Fetching IGDB IDs for titles:', gameTitles);
             const idResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-igdb-ids`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -185,7 +183,6 @@ export async function POST(req: NextRequest) {
             if (idResponse.ok) {
                 const idData = await idResponse.json();
                 titleToIgdbId = idData.titleToIdMap;
-                console.log('[Steam Import] Received IGDB ID map:', titleToIgdbId);
             } else {
                 console.error('Could not fetch IGDB IDs for Steam import.');
             }
@@ -193,21 +190,26 @@ export async function POST(req: NextRequest) {
             console.error('Error fetching IGDB IDs for Steam import:', error);
         }
 
-        let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
-        const igdbIds = Object.values(titleToIgdbId);
+        const processableGameDetails = validGameDetails.filter(
+            detail => detail.rawgDetails && titleToIgdbId[detail.rawgDetails.name]
+        );
 
-        if (igdbIds.length > 0) {
+        let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+        
+        const uniqueIgdbIds = [...new Set(
+            processableGameDetails.map(detail => titleToIgdbId[detail.rawgDetails.name])
+        )];
+
+        if (uniqueIgdbIds.length > 0) {
             try {
-                console.log('[Steam Import] Fetching playtimes for IGDB IDs:', igdbIds);
                 const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: igdbIds })
+                    body: JSON.stringify({ ids: uniqueIgdbIds })
                 });
                 if (timeResponse.ok) {
                     const timeData = await timeResponse.json();
                     igdbIdToPlaytime = timeData.playtimes;
-                    console.log('[Steam Import] Received playtimes map:', igdbIdToPlaytime);
                 } else {
                     console.error('Could not fetch batch playtimes for Steam import.');
                 }
@@ -216,9 +218,8 @@ export async function POST(req: NextRequest) {
             }
         }
         
-        // Step 3: Fetch Steam Deck compatibility and prepare batch write
         const batch = db.batch();
-        const finalGamePromises = validGameDetails.map(async ({ steamGame, rawgDetails }) => {
+        const finalGamePromises = processableGameDetails.map(async ({ steamGame, rawgDetails }) => {
             let steamDeckCompat: SteamDeckCompat = 'unknown';
             if (playsOnSteamDeck && steamGame.appid) {
                 steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
@@ -229,12 +230,12 @@ export async function POST(req: NextRequest) {
         const finalResults = await Promise.all(finalGamePromises);
 
         let importedCount = 0;
-        let failedCount = gameDetailsResults.length - validGameDetails.length;
+        let failedCount = gameDetailsResults.length - finalResults.length;
 
         for (const { steamGame, rawgDetails, steamDeckCompat } of finalResults) {
             const gameDocRef = gamesCollectionRef.doc();
             
-            const title = rawgDetails.name || steamGame.name;
+            const title = rawgDetails.name;
             const igdbId = titleToIgdbId[title];
             const igdbTimes = igdbId ? igdbIdToPlaytime[igdbId] : undefined;
             
@@ -246,8 +247,8 @@ export async function POST(req: NextRequest) {
                 list: 'Backlog',
                 imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
                 releaseDate: rawgDetails.released,
-                playtimeNormally: igdbTimes?.playtimeNormally,
-                playtimeCompletely: igdbTimes?.playtimeCompletely,
+                playtimeNormally: igdbTimes?.playtimeNormally ?? undefined,
+                playtimeCompletely: igdbTimes?.playtimeCompletely ?? undefined,
                 steamAppId: steamGame.appid,
                 steamDeckCompat: steamDeckCompat,
             };
@@ -265,8 +266,10 @@ export async function POST(req: NextRequest) {
 
         await batch.commit();
 
+        const message = `Import complete. Successfully imported ${importedCount} games. Failed to find matching data for ${failedCount} games.`;
+
         return NextResponse.json({ 
-            message: 'Import successful', 
+            message, 
             importedCount,
             failedCount,
         });

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getIGDBAccessToken } from '@/lib/igdbAuth';
+import { IGDBGame } from '@/lib/igdb';
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const result: T[][] = [];
@@ -12,15 +13,11 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
   return result;
 }
 
-const SEARCH_MULTIQUERY_BATCH_SIZE = 10;
-const MULTIQUERY_DELAY_MS = 1000;
-
-// Helper to sanitize titles for use in IGDB query names
-const sanitizeTitleForQuery = (title: string) => title.replace(/[^a-zA-Z0-9]/g, '');
+const SEARCH_BATCH_SIZE = 4;
+const SEARCH_BATCH_DELAY_MS = 1000;
 
 export async function POST(req: NextRequest) {
   const { titles } = await req.json();
-  console.log('[get-igdb-ids] Received titles:', titles);
 
   if (!titles || !Array.isArray(titles) || titles.length === 0) {
     return NextResponse.json({ message: 'Missing or invalid game titles' }, { status: 400 });
@@ -39,54 +36,52 @@ export async function POST(req: NextRequest) {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     };
-    const MULTIQUERY_URL = 'https://api.igdb.com/v4/multiquery';
+    const IGDB_SEARCH_URL = 'https://api.igdb.com/v4/games';
     
     const titleToIdMap: Record<string, number> = {};
-    const titleChunks = chunkArray(titles, SEARCH_MULTIQUERY_BATCH_SIZE);
+    const titleChunks = chunkArray(titles, SEARCH_BATCH_SIZE);
     
     for (let i = 0; i < titleChunks.length; i++) {
         const chunk = titleChunks[i];
-        const searchQuery = chunk.map(title => `
-            query games "search_${sanitizeTitleForQuery(title)}" {
-                search "${title.replace(/"/g, '\"')}";
-                fields id, name;
-                limit 1;
-            };
-        `).join('');
         
-        console.log(`[get-igdb-ids] IGDB multiquery (chunk ${i+1}/${titleChunks.length}):`, searchQuery);
+        const searchPromises = chunk.map(async (title) => {
+            const searchBody = `search "${title.replace(/"/g, '\"')}"; fields id, name; limit 1;`;
+            try {
+                const searchResponse = await fetch(IGDB_SEARCH_URL, {
+                    method: 'POST',
+                    headers: IGDB_HEADERS,
+                    body: searchBody,
+                });
 
-        const searchResponse = await fetch(MULTIQUERY_URL, {
-            method: 'POST',
-            headers: IGDB_HEADERS,
-            body: searchQuery
-        });
+                if (!searchResponse.ok) {
+                    return { title, id: null };
+                }
 
-        if (!searchResponse.ok) {
-            const errorBody = await searchResponse.text();
-            console.error('[get-igdb-ids] IGDB multiquery for game search failed:', errorBody);
-            throw new Error(`IGDB multiquery for game search failed. Status: ${searchResponse.status}. Body: ${errorBody}`);
-        }
-        
-        const searchResults = await searchResponse.json();
-
-        // Correctly map results back to original titles
-        chunk.forEach((originalTitle) => {
-            const queryName = `search_${sanitizeTitleForQuery(originalTitle)}`;
-            const result = searchResults.find((r: any) => r.name === queryName);
-
-            if (result && result.result.length > 0) {
-                const gameId = result.result[0].id;
-                titleToIdMap[originalTitle] = gameId;
+                const searchResult: IGDBGame[] = await searchResponse.json();
+                if (searchResult.length > 0) {
+                    return { title, id: searchResult[0].id };
+                } else {
+                    return { title, id: null };
+                }
+            } catch (error: any) {
+                console.error(`[get-igdb-ids] Error fetching IGDB ID for "${title}":`, error.message);
+                return { title, id: null };
             }
         });
-        
+
+        const chunkResults = await Promise.all(searchPromises);
+
+        chunkResults.forEach(({ title, id }) => {
+            if (id !== null) {
+                titleToIdMap[title] = id;
+            }
+        });
+
         if (i < titleChunks.length - 1) {
-            await new Promise(r => setTimeout(r, MULTIQUERY_DELAY_MS));
+            await new Promise(r => setTimeout(r, SEARCH_BATCH_DELAY_MS));
         }
     }
 
-    console.log('[get-igdb-ids] Returning titleToIdMap:', titleToIdMap);
     return NextResponse.json({ titleToIdMap });
 
   } catch (err: any) {
