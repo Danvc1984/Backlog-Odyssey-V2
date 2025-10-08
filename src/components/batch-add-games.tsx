@@ -52,6 +52,14 @@ type BatchAddGamesProps = {
   defaultList: GameList;
 };
 
+const mapRawgPlatform = (rawgPlatform: string): Platform | 'Other' => {
+  if (rawgPlatform === 'PC') return 'PC';
+  if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
+  if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
+  if (/^Nintendo Switch/.test(rawgPlatform)) return 'Nintendo Switch';
+  return 'Other';
+};
+
 const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }) => {
   const { user } = useAuth();
   const { preferences } = useUserPreferences();
@@ -229,14 +237,18 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
       }
       
       for (const game of selectedGames) {
-        const gamePlatforms = game.platforms?.map(p => p.platform.name as Platform) || [];
         const userPlatforms = preferences.platforms || [];
+        const favoritePlatform = preferences.favoritePlatform;
+        
+        const rawgPlatformNames: string[] = game.platforms?.map((p: any) => p.platform.name) || [];
+        const mappedPlatforms: Platform[] = rawgPlatformNames.map(mapRawgPlatform).filter(p => p !== 'Other') as Platform[];
+
         let platformToSet: Platform | undefined;
 
-        if (preferences.favoritePlatform && gamePlatforms.includes(preferences.favoritePlatform)) {
-          platformToSet = preferences.favoritePlatform;
+        if (favoritePlatform && mappedPlatforms.includes(favoritePlatform)) {
+          platformToSet = favoritePlatform;
         } else {
-          platformToSet = gamePlatforms.find(p => userPlatforms.includes(p));
+          platformToSet = mappedPlatforms.find(p => userPlatforms.includes(p));
         }
 
         if (!platformToSet) {

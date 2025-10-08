@@ -58,6 +58,14 @@ type GameFormProps = {
 
 const API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
+const mapRawgPlatform = (rawgPlatform: string): Platform | 'Other' => {
+  if (rawgPlatform === 'PC') return 'PC';
+  if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
+  if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
+  if (/^Nintendo Switch/.test(rawgPlatform)) return 'Nintendo Switch';
+  return 'Other';
+};
+
 const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', allGenres, onAddGenre, gameToEdit }) => {
   const { toast } = useToast();
   const { preferences } = useUserPreferences();
@@ -142,21 +150,26 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     
     const favoritePlatform = preferences?.favoritePlatform;
     const userPlatforms = preferences?.platforms || [];
-    const gamePlatforms = game.platforms?.map((p: any) => p.platform.name as Platform) || [];
     
+    const rawgPlatformNames: string[] = game.platforms?.map((p: any) => p.platform.name) || [];
+    const mappedPlatforms: Platform[] = rawgPlatformNames.map(mapRawgPlatform).filter(p => p !== 'Other') as Platform[];
+
     let platformToSet: Platform | undefined;
 
-    if (favoritePlatform && gamePlatforms.includes(favoritePlatform)) {
+    // 1. Prefer favorite platform if it's available for the game
+    if (favoritePlatform && mappedPlatforms.includes(favoritePlatform)) {
       platformToSet = favoritePlatform;
     } else {
-      platformToSet = gamePlatforms.find((p: Platform) => userPlatforms.includes(p));
+      // 2. Find the first available platform that the user owns
+      platformToSet = mappedPlatforms.find(p => userPlatforms.includes(p));
     }
     
-    if (platformToSet) {
-      form.setValue('platform', platformToSet);
-    } else if (userPlatforms.includes('Others/ROMs')) {
-      form.setValue('platform', 'Others/ROMs');
+    // 3. Fallback to 'Others/ROMs'
+    if (!platformToSet) {
+      platformToSet = 'Others/ROMs';
     }
+
+    form.setValue('platform', platformToSet);
 
     const gameGenres = game.genres?.map((g: any) => g.name) as Genre[] || [];
     if (gameGenres.length > 0) {
