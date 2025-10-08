@@ -149,8 +149,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
             <Tooltip>
               <TooltipTrigger>
                 <SteamDeckCompatIcon className={cn("h-4 w-4", {
-                    'text-green-400': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat),
-                    'text-yellow-400': ['silver', 'bronze'].includes(game.steamDeckCompat),
+                    'text-green-400': ['native', 'platinum', 'gold'].includes(game.steamDeckCompat as string),
+                    'text-yellow-400': ['silver', 'bronze'].includes(game.steamDeckCompat as string),
                     'text-destructive': game.steamDeckCompat === 'borked',
                     'text-muted-foreground': game.steamDeckCompat === 'unknown'
                 })} />
