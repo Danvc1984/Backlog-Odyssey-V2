@@ -87,7 +87,8 @@ async function getRawgGameDetails(gameName: string): Promise<any> {
             params: { key: RAWG_API_KEY, search: gameName, page_size: 1 },
         });
         if (response.data.results.length > 0) {
-            return response.data.results[0];
+            const exactMatch = response.data.results.find((g: any) => g.name.toLowerCase() === gameName.toLowerCase());
+            return exactMatch || response.data.results[0];
         }
         return null;
     } catch (error: any) {
@@ -256,6 +257,7 @@ export async function POST(req: NextRequest) {
                 steamDeckCompat: steamDeckCompat,
             };
 
+            // Fallback to RAWG playtime or Steam playtime if IGDB fails
             if (!newGame.playtimeNormally) {
                 newGame.playtimeNormally = rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || undefined;
             }
