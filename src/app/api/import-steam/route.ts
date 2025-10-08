@@ -1,4 +1,6 @@
 
+'use server';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest) {
     try {
         const steamId64 = await resolveVanityURL(steamId);
         
-        const userProfileRef = doc(db, 'users', uid);
+        const userProfileRef = db.collection('users').doc(uid);
         const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
         
         const prefDocSnap = await prefDocRef.get();
