@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
+import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA, Percent } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import type { Game, Platform, GameList } from '@/lib/types';
@@ -26,7 +26,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -44,6 +43,8 @@ import GameForm from '@/components/game-form';
 import BatchAddGames from '@/components/batch-add-games';
 import { SteamIcon } from '@/components/icons';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
@@ -79,6 +80,7 @@ export default function LibraryPage() {
   const [platformFilter, setPlatformFilter] = useState<Platform | 'all'>('all');
   const [genreFilter, setGenreFilter] = useState<string | 'all'>('all');
   const [sortBy, setSortBy] = useState<SortBy>('default');
+  const [showDealsOnly, setShowDealsOnly] = useState(false);
   
   const [isAddFormOpen, setAddFormOpen] = useState(false);
   
@@ -122,6 +124,7 @@ export default function LibraryPage() {
 
   const handleActiveListChange = (value: GameList) => {
     setActiveList(value);
+    setShowDealsOnly(false); // Reset deals filter when changing lists
     updateQueryParam('list', value);
   };
 
@@ -135,9 +138,15 @@ export default function LibraryPage() {
       const matchesSearch = game.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = platformFilter === 'all' || game.platform === platformFilter;
       const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
-      return matchesSearch && matchesPlatform && matchesGenre;
+      
+      let matchesDeals = true;
+      if (activeList === 'Wishlist' && showDealsOnly) {
+          matchesDeals = !!(game.steamAppId && deals[game.steamAppId]);
+      }
+
+      return matchesSearch && matchesPlatform && matchesGenre && matchesDeals;
     });
-  }, [games, searchTerm, platformFilter, genreFilter]);
+  }, [games, searchTerm, platformFilter, genreFilter, activeList, showDealsOnly, deals]);
 
   const gamesByList = useMemo(() => {
     return gameLists.reduce((acc, list) => {
@@ -231,12 +240,12 @@ export default function LibraryPage() {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Button variant="outline" size="icon" onClick={handleSortToggle}>
               {sortIcon}
             </Button>
             <Select value={platformFilter} onValueChange={handlePlatformFilterChange}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by Platform" />
               </SelectTrigger>
               <SelectContent>
@@ -247,7 +256,7 @@ export default function LibraryPage() {
               </SelectContent>
             </Select>
             <Select value={genreFilter} onValueChange={handleGenreFilterChange}>
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by Genre" />
               </SelectTrigger>
               <SelectContent>
@@ -257,6 +266,17 @@ export default function LibraryPage() {
                 ))}
               </SelectContent>
             </Select>
+             {activeList === 'Wishlist' && playsOnPC && (
+                <div className="flex items-center space-x-2">
+                    <Percent className="h-4 w-4 text-muted-foreground" />
+                    <Switch
+                        id="deals-only"
+                        checked={showDealsOnly}
+                        onCheckedChange={setShowDealsOnly}
+                    />
+                    <Label htmlFor="deals-only">Show Deals Only</Label>
+                </div>
+            )}
           </div>
         </div>
 
@@ -302,7 +322,7 @@ export default function LibraryPage() {
                         animate={{ opacity: 1 }}
                         className="text-muted-foreground col-span-full text-center py-10"
                       >
-                        No games in this list.
+                        {showDealsOnly ? "No games with deals found." : "No games in this list."}
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -329,3 +349,5 @@ export default function LibraryPage() {
     </TooltipProvider>
   );
 }
+
+    
