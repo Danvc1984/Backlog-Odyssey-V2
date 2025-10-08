@@ -54,11 +54,11 @@ type BatchAddGamesProps = {
 };
 
 const mapRawgPlatform = (rawgPlatform: string): Platform | 'Other' => {
-  if (rawgPlatform === 'PC') return 'PC';
-  if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
-  if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
-  if (/^Nintendo Switch( 2)?$/.test(rawgPlatform)) return 'Nintendo Switch';
-  return 'Others/ROMs';
+    if (rawgPlatform === 'PC') return 'PC';
+    if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
+    if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
+    if (/^Nintendo Switch( 2)?$/.test(rawgPlatform)) return 'Nintendo Switch';
+    return 'Others/ROMs';
 };
 
 const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }) => {
@@ -353,7 +353,12 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
                     </div>
                     <ScrollArea className="h-60 w-full rounded-md border">
                         <div className="p-4">
-                        {isSearching && <p className="text-center text-muted-foreground">Searching...</p>}
+                        {isSearching && (
+                            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                <Loader2 className="h-8 w-8 animate-spin" />
+                                <p>Searching...</p>
+                            </div>
+                        )}
                         {!isSearching && searchResults.length === 0 && (
                             <p className="text-center text-muted-foreground">
                             {searchTerm.length < 3 ? 'Enter at least 3 characters to search' : 'No results found.'}
@@ -449,6 +454,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancel</Button>
           <Button onClick={handleBatchAdd} disabled={isAdding || isSearching || selectedGames.length === 0}>
+            {isAdding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isAdding ? `Adding ${selectedGames.length} games...` : `Add ${selectedGames.length} Game(s)`}
           </Button>
         </DialogFooter>
