@@ -37,7 +37,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
     onEdit(game);
   }
 
-  const hasTopRightInfo = (game.rating && game.rating > 0) || (game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon);
+  const showSteamDeckCompat = preferences?.playsOnSteamDeck && game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon;
+  const hasTopRightInfo = (game.rating && game.rating > 0) || showSteamDeckCompat;
 
   const showDealBadge = deal && preferences?.notifyDiscounts;
 
@@ -163,7 +164,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                         </TooltipContent>
                     </Tooltip>
                 )}
-                {game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon && (
+                {showSteamDeckCompat && (
                     <Tooltip>
                     <TooltipTrigger>
                         <SteamDeckCompatIcon className={cn("h-4 w-4", {
@@ -174,7 +175,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                         })} />
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>{steamDeckCompatTooltips[game.steamDeckCompat]}</p>
+                        <p>{steamDeckCompatTooltips[game.steamDeckCompat!]}</p>
                     </TooltipContent>
                     </Tooltip>
                 )}
