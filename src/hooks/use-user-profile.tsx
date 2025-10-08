@@ -1,6 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from './use-auth';
 import { UserProfile } from '@/lib/types';
@@ -8,11 +8,13 @@ import { UserProfile } from '@/lib/types';
 interface UserProfileContextType {
   profile: UserProfile | null;
   loading: boolean;
+  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
 }
 
 const UserProfileContext = createContext<UserProfileContextType>({
   profile: null,
   loading: true,
+  updateProfile: async () => {},
 });
 
 export const useUserProfile = () => useContext(UserProfileContext);
@@ -50,8 +52,15 @@ export const UserProfileProvider = ({ children }: { children: React.ReactNode })
     }
   }, [user, authLoading]);
 
+  const updateProfile = useCallback(async (data: Partial<UserProfile>) => {
+    if (user) {
+        const profileDocRef = doc(db, 'users', user.uid);
+        await updateDoc(profileDocRef, data);
+    }
+  }, [user]);
+
   return (
-    <UserProfileContext.Provider value={{ profile, loading }}>
+    <UserProfileContext.Provider value={{ profile, loading, updateProfile }}>
       {children}
     </UserProfileContext.Provider>
   );

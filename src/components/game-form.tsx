@@ -395,19 +395,21 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             )}
           />
         </div>
-        <FormField
-            control={form.control}
-            name="playtimeCompletely"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Completionist Playtime (hrs)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="e.g. 100" {...field} value={field.value || ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {preferences?.trackCompletionistPlaytime && (
+          <FormField
+              control={form.control}
+              name="playtimeCompletely"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Completionist Playtime (hrs)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g. 100" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        )}
          <FormField
           control={form.control}
           name="rating"

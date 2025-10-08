@@ -44,6 +44,7 @@ export interface UserPreferences {
   favoritePlatform: Platform;
   notifyDiscounts?: boolean;
   playsOnSteamDeck?: boolean;
+  trackCompletionistPlaytime?: boolean;
 }
 
 export interface UserProfile {

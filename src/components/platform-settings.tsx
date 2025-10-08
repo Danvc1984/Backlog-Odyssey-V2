@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
 import {
@@ -40,6 +40,7 @@ const platformSettingsSchema = z.object({
   favoritePlatform: z.string({ required_error: 'Please select a favorite platform.' }),
   notifyDiscounts: z.boolean().optional(),
   playsOnSteamDeck: z.boolean().optional(),
+  trackCompletionistPlaytime: z.boolean().optional(),
 }).refine(data => [...data.platforms, 'Others/ROMs'].includes(data.favoritePlatform), {
   message: 'Favorite platform must be one of the selected platforms.',
   path: ['favoritePlatform'],
@@ -55,7 +56,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const router = useRouter();
   const { user, getAuthToken } = useAuth();
   const { preferences, savePreferences, loading: prefsLoading } = useUserPreferences();
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile, loading: profileLoading, updateProfile } = useUserProfile();
   const { toast } = useToast();
   
   const [isUpdating, setIsUpdating] = useState(false);
@@ -68,10 +69,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const form = useForm<PlatformSettingsFormValues>({
     resolver: zodResolver(platformSettingsSchema),
     defaultValues: {
-      platforms: preferences?.platforms || [],
-      favoritePlatform: preferences?.favoritePlatform || '',
-      notifyDiscounts: preferences?.notifyDiscounts || false,
-      playsOnSteamDeck: preferences?.playsOnSteamDeck || false,
+      platforms: [],
+      favoritePlatform: '',
+      notifyDiscounts: false,
+      playsOnSteamDeck: false,
+      trackCompletionistPlaytime: false,
     },
   });
   
@@ -84,13 +86,16 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   useEffect(() => {
     if (preferences) {
       form.reset({
-        platforms: preferences.platforms,
-        favoritePlatform: preferences.favoritePlatform,
-        notifyDiscounts: preferences.notifyDiscounts,
-        playsOnSteamDeck: preferences.playsOnSteamDeck,
+        platforms: preferences.platforms || [],
+        favoritePlatform: preferences.favoritePlatform || '',
+        notifyDiscounts: preferences.notifyDiscounts || false,
+        playsOnSteamDeck: preferences.playsOnSteamDeck || false,
+        trackCompletionistPlaytime: preferences.trackCompletionistPlaytime || false,
       });
     }
   }, [preferences, form]);
+
+  const [importStatus, setImportStatus] = useState<'idle' | 'pending' | 'complete' | 'failed'>('idle');
 
   // Listen for import status to show pending message on this page
   useEffect(() => {
@@ -100,12 +105,12 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.status === 'pending') {
-                setIsImporting(true);
-            } else {
-                setIsImporting(false);
+                setImportStatus('pending');
+            } else if (data.status === 'acknowledged' || data.status === 'completed' || data.status === 'failed') {
+                setImportStatus('idle');
             }
         } else {
-            setIsImporting(false);
+            setImportStatus('idle');
         }
     });
 
@@ -119,6 +124,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   useEffect(() => {
     if (!playsOnPC) {
       form.setValue('playsOnSteamDeck', false);
+      form.setValue('notifyDiscounts', false);
     }
   }, [playsOnPC, form]);
 
@@ -126,20 +132,18 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     if (!user) return;
     
     setIsUpdating(true);
-    const finalPreferences = {
+    const finalPreferences: UserPreferences = {
       ...data,
       platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
-    }
-    await savePreferences(finalPreferences as UserPreferences);
+    };
+    await savePreferences(finalPreferences);
     
     if (steamVanityId && steamVanityId !== profile?.steamId) {
-      const userProfileRef = doc(db, 'users', user.uid);
-      await updateDoc(userProfileRef, { steamId: steamVanityId });
+       await updateProfile({ steamId: steamVanityId });
     }
 
     if (isOnboarding && !profile?.onboardingComplete) {
-      const userProfileRef = doc(db, 'users', user.uid);
-      await updateDoc(userProfileRef, { onboardingComplete: true });
+      await updateProfile({ onboardingComplete: true });
     }
     setIsUpdating(false);
   }
@@ -204,12 +208,13 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
     } catch (error: any) {
       toast({ title: 'Import Failed', description: error.message, variant: 'destructive' });
-      setIsImporting(false);
       // Reset pending status on failure
       if (user) {
         const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
-        await setDoc(notificationDocRef, { status: 'failed' }, { merge: true });
+        await setDoc(notificationDocRef, { status: 'failed', message: error.message }, { merge: true });
       }
+    } finally {
+      setIsImporting(false);
     }
   }
 
@@ -229,7 +234,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
       toast({
         title: 'Update Complete',
-        description: 'Steam Deck compatibility status has been updated for your PC games.',
+        description: 'Steam Deck compatibility status has been updated for all your PC games.',
       });
     } catch (error: any) {
       toast({ title: 'Update Failed', description: error.message, variant: 'destructive' });
@@ -371,9 +376,9 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
               <Separator />
 
               <div className="space-y-4">
-                <FormField
+                  <FormField
                     control={form.control}
-                    name="notifyDiscounts"
+                    name="trackCompletionistPlaytime"
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
@@ -384,15 +389,40 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel>
-                            Notify me about discounts for games on my Wishlist.
+                            Track "Completionist" Playtime
                           </FormLabel>
+                          <FormDescription>
+                            Show fields for 100% completion playtime estimates.
+                          </FormDescription>
                         </div>
                       </FormItem>
                     )}
                   />
-
+                  
                   {playsOnPC && (
                     <>
+                      <FormField
+                          control={form.control}
+                          name="notifyDiscounts"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  Notify me about discounts for games on my Wishlist.
+                                </FormLabel>
+                                <FormDescription>
+                                  Checks for Steam deals on your PC wishlist games.
+                                </FormDescription>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
                       <FormField
                         control={form.control}
                         name="playsOnSteamDeck"
@@ -445,7 +475,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                 {isImporting && (
+                 {importStatus === 'pending' && (
                   <Alert className="mb-4">
                     <Info className="h-4 w-4" />
                     <AlertTitle>Import in Progress</AlertTitle>
@@ -461,16 +491,16 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                     placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
                     value={steamVanityId}
                     onChange={(e) => setSteamVanityId(e.target.value)}
-                    disabled={isImporting}
+                    disabled={importStatus === 'pending' || isImporting}
                   />
                 </div>
               </CardContent>
                <CardFooter className="justify-end">
                  <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
                   <AlertDialogTrigger asChild>
-                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
+                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId || importStatus === 'pending'} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
                       <SteamIcon className="mr-2 h-5 w-5" />
-                      {isImporting ? 'Importing...' : 'Import Steam Library'}
+                      {importStatus === 'pending' ? 'Importing...' : 'Import Steam Library'}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -495,7 +525,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
             </Card>
           )}
 
-          <Button type="submit" disabled={prefsLoading || isUpdating || isImporting}>
+          <Button type="submit" disabled={prefsLoading || isUpdating || isImporting || importStatus === 'pending'}>
             {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
           </Button>
         </form>

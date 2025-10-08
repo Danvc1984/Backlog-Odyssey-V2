@@ -7,6 +7,7 @@ import type { Game, GameList } from '@/lib/types';
 import type { Deal } from '@/hooks/use-deals';
 import GameCard from '@/components/game-card';
 import { Button } from '@/components/ui/button';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 type GameListPreviewProps = {
   title: GameList | 'Now Playing' | 'Backlog' | 'Wishlist' | 'Recently Played';
@@ -19,6 +20,7 @@ type GameListPreviewProps = {
 
 const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, onEdit, onMove, onDelete }) => {
   const isWishlist = title === 'Wishlist';
+  const { preferences } = useUserPreferences();
 
   return (
     <div>
@@ -38,7 +40,7 @@ const GameListPreview: React.FC<GameListPreviewProps> = ({ title, games, deals, 
             <GameCard 
               key={game.id} 
               game={game} 
-              deal={isWishlist && game.steamAppId && deals ? deals[game.steamAppId] : undefined}
+              deal={isWishlist && game.steamAppId && deals && preferences?.notifyDiscounts ? deals[game.steamAppId] : undefined}
               onEdit={() => onEdit(game)}
               onMove={onMove} 
               onDelete={onDelete}

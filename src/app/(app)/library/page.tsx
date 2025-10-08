@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA, Percent } from 'lucide-react';
+import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import type { Game, Platform, GameList } from '@/lib/types';
@@ -142,13 +142,13 @@ export default function LibraryPage() {
       const matchesGenre = genreFilter === 'all' || (game.genres && game.genres.includes(genreFilter));
       
       let matchesDeals = true;
-      if (activeList === 'Wishlist' && showDealsOnly) {
+      if (activeList === 'Wishlist' && showDealsOnly && preferences?.notifyDiscounts) {
           matchesDeals = !!(game.steamAppId && deals[game.steamAppId]);
       }
 
       return matchesSearch && matchesPlatform && matchesGenre && matchesDeals;
     });
-  }, [games, searchTerm, platformFilter, genreFilter, activeList, showDealsOnly, deals]);
+  }, [games, searchTerm, platformFilter, genreFilter, activeList, showDealsOnly, deals, preferences]);
 
   const gamesByList = useMemo(() => {
     return gameLists.reduce((acc, list) => {
@@ -268,7 +268,7 @@ export default function LibraryPage() {
                 ))}
               </SelectContent>
             </Select>
-             {activeList === 'Wishlist' && playsOnPC && (
+             {activeList === 'Wishlist' && playsOnPC && preferences?.notifyDiscounts && (
                 <div className="flex items-center space-x-2">
                     <Switch
                         id="deals-only"

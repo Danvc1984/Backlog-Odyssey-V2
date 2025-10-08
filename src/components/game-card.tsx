@@ -37,7 +37,9 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
     onEdit(game);
   }
 
-  const hasTopRightInfo = (game.rating && game.rating > 0) || (game.platform === 'PC' && game.steamDeckCompat);
+  const hasTopRightInfo = (game.rating && game.rating > 0) || (game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon);
+
+  const showDealBadge = deal && preferences?.notifyDiscounts;
 
   return (
     <motion.div layout className="relative group">
@@ -63,7 +65,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                 {game.title}
               </CardTitle>
           </div>
-          {deal && (
+          {showDealBadge && (
             <div className="absolute top-2 left-2">
               <Badge 
                 className={cn(
@@ -94,10 +96,12 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                    Story: {game.playtimeNormally}h
                 </div>
               )}
-               <div className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1.5" />
-                  Completionist: {game.playtimeCompletely ? `${game.playtimeCompletely}h` : 'Not Listed'}
-                </div>
+               {preferences?.trackCompletionistPlaytime && (
+                  <div className="flex items-center">
+                    <Clock className="h-3 w-3 mr-1.5" />
+                    Completionist: {game.playtimeCompletely ? `${game.playtimeCompletely}h` : 'Not Listed'}
+                  </div>
+               )}
             </div>
             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">
               <Button size="icon" variant="outline" className="h-7 w-7" onClick={handleEdit}>

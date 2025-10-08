@@ -16,7 +16,7 @@ import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-pr
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
 import { DealsProvider, useDeals } from '@/hooks/use-deals';
 import { GameLibraryProvider, useGameLibrary } from '@/hooks/use-game-library';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -80,7 +80,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
                     duration: 10000,
                  });
                  // Acknowledge the notification to prevent it from showing again
-                 updateDoc(notificationDocRef, { status: 'acknowledged' }).catch(console.error);
+                 setDoc(notificationDocRef, { status: 'acknowledged' }, { merge: true }).catch(console.error);
             }
         }
     });
