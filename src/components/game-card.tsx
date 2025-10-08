@@ -91,12 +91,10 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                   {format(new Date(game.releaseDate), 'MMM yyyy')}
                 </div>
               )}
-               {game.playtimeNormally && (
                 <div className="flex items-center">
                   <BookOpen className="h-3 w-3 mr-1.5" />
-                   Story: {game.playtimeNormally}h
+                   Story: {game.playtimeNormally ? `${game.playtimeNormally}h` : 'Not Listed'}
                 </div>
-              )}
                {preferences?.trackCompletionistPlaytime && (
                   <div className="flex items-center">
                     <Clock className="h-3 w-3 mr-1.5" />
