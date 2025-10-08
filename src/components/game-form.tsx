@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { Search, Image as ImageIcon, Calendar as CalendarIcon, Star } from 'lucide-react';
 import { format } from 'date-fns';
@@ -75,6 +75,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   const [selectedGameImageUrl, setSelectedGameImageUrl] = useState<string | null>(null);
   const [newGenre, setNewGenre] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<GameFormValues>({
     resolver: zodResolver(gameSchema),
@@ -139,6 +140,18 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       setSearchResults([]);
     }
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSearchResults([]);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [searchContainerRef]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -248,7 +261,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-        <div className="relative">
+        <div className="relative" ref={searchContainerRef}>
           <FormField
             control={form.control}
             name="title"
