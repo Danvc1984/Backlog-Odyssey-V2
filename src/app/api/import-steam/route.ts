@@ -1,6 +1,4 @@
 
-'use server';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
@@ -12,6 +10,7 @@ import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
+export const maxDuration = 120; // 2 minutes
 // Helper function to initialize Firebase Admin SDK within this route
 function getAdminApp(): App {
     if (getApps().length) {
@@ -132,7 +131,7 @@ export async function POST(req: NextRequest) {
     try {
         const steamId64 = await resolveVanityURL(steamId);
         
-        const userProfileRef = db.collection('users').doc(uid);
+        const userProfileRef = doc(db, 'users', uid);
         const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
         
         const prefDocSnap = await prefDocRef.get();
@@ -285,5 +284,3 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: error.message || 'An unknown error occurred during import.' }, { status: 500 });
     }
 }
-
-    
