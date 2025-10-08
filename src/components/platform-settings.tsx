@@ -92,32 +92,25 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     }
   }, [preferences, form]);
 
-  // Listen for import notifications from Firestore
+  // Listen for import status to show pending message on this page
   useEffect(() => {
     if (!user) return;
     const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
     const unsubscribe = onSnapshot(notificationDocRef, (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
-            // We check the status to avoid showing toasts on page load for old notifications
-            if (data.status === 'completed' || data.status === 'failed') {
-                 toast({
-                    title: data.status === 'completed' ? 'Steam Import Complete' : 'Steam Import Failed',
-                    description: data.message,
-                    variant: data.status === 'failed' ? 'destructive' : 'default',
-                    duration: 10000,
-                 });
-                 setIsImporting(false);
-                 // Optionally clear the notification after showing it
-                 updateDoc(notificationDocRef, { status: 'acknowledged' });
-            } else if (data.status === 'pending') {
+            if (data.status === 'pending') {
                 setIsImporting(true);
+            } else {
+                setIsImporting(false);
             }
+        } else {
+            setIsImporting(false);
         }
     });
 
     return () => unsubscribe();
-  }, [user, toast]);
+  }, [user]);
 
   const selectedPlatforms = form.watch('platforms');
   const playsOnPC = useMemo(() => selectedPlatforms?.includes('PC') || false, [selectedPlatforms]);
@@ -184,7 +177,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
       if (user) {
         const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
-        await setDoc(notificationDocRef, { status: 'pending' });
+        // Set the status to pending to trigger the listener
+        await setDoc(notificationDocRef, { status: 'pending', timestamp: new Date() });
       }
 
       const response = await fetch('/api/import-steam', {
@@ -211,6 +205,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     } catch (error: any) {
       toast({ title: 'Import Failed', description: error.message, variant: 'destructive' });
       setIsImporting(false);
+      // Reset pending status on failure
+      if (user) {
+        const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
+        await setDoc(notificationDocRef, { status: 'failed' }, { merge: true });
+      }
     }
   }
 
@@ -504,7 +503,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
-
-    
-
-    

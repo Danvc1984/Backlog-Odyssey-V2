@@ -16,6 +16,9 @@ import { UserPreferencesProvider, useUserPreferences } from '@/hooks/use-user-pr
 import { UserProfileProvider, useUserProfile } from '@/hooks/use-user-profile';
 import { DealsProvider, useDeals } from '@/hooks/use-deals';
 import { GameLibraryProvider, useGameLibrary } from '@/hooks/use-game-library';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -23,6 +26,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { preferences } = useUserPreferences();
   const { fetchDeals } = useDeals();
   const { games: allGames } = useGameLibrary();
+  const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
   const [initialLoadComplete, setInitialLoadComplete] = React.useState(false);
@@ -60,6 +64,29 @@ function AppContent({ children }: { children: React.ReactNode }) {
         }
     }
   }, [allGames, preferences, fetchDeals]);
+
+  // Global listener for Steam Import notifications
+  React.useEffect(() => {
+    if (!user) return;
+    const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
+    const unsubscribe = onSnapshot(notificationDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.status === 'completed' || data.status === 'failed') {
+                 toast({
+                    title: data.status === 'completed' ? 'Steam Import Complete' : 'Steam Import Failed',
+                    description: data.message,
+                    variant: data.status === 'failed' ? 'destructive' : 'default',
+                    duration: 10000,
+                 });
+                 // Acknowledge the notification to prevent it from showing again
+                 updateDoc(notificationDocRef, { status: 'acknowledged' }).catch(console.error);
+            }
+        }
+    });
+
+    return () => unsubscribe();
+  }, [user, toast]);
   
   if (!initialLoadComplete) {
     return (
