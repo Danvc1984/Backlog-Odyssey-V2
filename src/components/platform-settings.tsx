@@ -124,7 +124,6 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   useEffect(() => {
     if (!playsOnPC) {
       form.setValue('playsOnSteamDeck', false);
-      // We don't reset notifyDiscounts here to avoid the bug where it gets unchecked on load.
     }
   }, [playsOnPC, form]);
 
@@ -134,6 +133,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     setIsUpdating(true);
     
     const finalPreferences: UserPreferences = {
+      ...preferences,
       ...data,
       platforms: [...new Set([...data.platforms, 'Others/ROMs'])],
       // If PC is not selected, ensure PC-specific options are false
@@ -149,7 +149,17 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     if (isOnboarding && !profile?.onboardingComplete) {
       await updateProfile({ onboardingComplete: true });
     }
+    
+    toast({
+      title: 'Preferences Saved',
+      description: 'Your platform and profile settings have been updated.',
+    });
+
     setIsUpdating(false);
+
+    if(isOnboarding) {
+      router.push('/dashboard');
+    }
   }
   
   const handleSteamImport = async (importMode: 'full' | 'new') => {
@@ -165,7 +175,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       return;
     }
     
-    await onSubmit(form.getValues());
+    // Save any pending changes before importing
+    await savePreferences(form.getValues());
+    if(steamVanityId !== profile?.steamId) {
+       await updateProfile({ steamId: steamVanityId });
+    }
     
     const currentSteamId = form.getValues().platforms.includes('PC') ? steamVanityId : '';
 
@@ -246,18 +260,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       setIsUpdatingCompat(false);
     }
   }
-
-  const handleSaveAndContinue = async (data: PlatformSettingsFormValues) => {
-    await onSubmit(data);
-    toast({
-      title: 'Preferences Saved',
-      description: 'Your platform and profile settings have been updated.',
-    });
-    if (isOnboarding) {
-      router.push('/dashboard');
-    }
-  }
-
+  
   const sortedFavoritePlatforms = useMemo(() => {
     if (!selectedPlatforms) return [];
     const uniquePlatforms = Array.from(new Set([...selectedPlatforms, "Others/ROMs"]));
@@ -270,166 +273,143 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
 
 
   return (
-    <div className='space-y-6'>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSaveAndContinue)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Platform Preferences</CardTitle>
-              <CardDescription>
-                Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform Preferences</CardTitle>
+            <CardDescription>
+              Select the gaming platforms you use and pick your favorite. This will help us tailor your experience.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <FormField
+              control={form.control}
+              name="platforms"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel className="text-base">Your Platforms</FormLabel>
+                    <FormDescription>
+                      Select all the platforms you currently play on.
+                    </FormDescription>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {USER_SELECTABLE_PLATFORMS.map((platform) => (
+                      <FormField
+                        key={platform}
+                        control={form.control}
+                        name="platforms"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={platform}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(platform)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, platform])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== platform
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {platform}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={true}
+                            disabled={true}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal text-muted-foreground">
+                          Others/ROMs
+                        </FormLabel>
+                      </FormItem>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {selectedPlatforms && selectedPlatforms.length > 0 && (
               <FormField
                 control={form.control}
-                name="platforms"
-                render={() => (
-                  <FormItem>
-                    <div className="mb-4">
-                      <FormLabel className="text-base">Your Platforms</FormLabel>
-                      <FormDescription>
-                        Select all the platforms you currently play on.
-                      </FormDescription>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      {USER_SELECTABLE_PLATFORMS.map((platform) => (
-                        <FormField
-                          key={platform}
-                          control={form.control}
-                          name="platforms"
-                          render={({ field }) => {
-                            return (
-                              <FormItem
-                                key={platform}
-                                className="flex flex-row items-start space-x-3 space-y-0"
-                              >
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(platform)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...field.value, platform])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                              (value) => value !== platform
-                                            )
-                                          )
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                  {platform}
-                                </FormLabel>
-                              </FormItem>
-                            )
-                          }}
-                        />
-                      ))}
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                name="favoritePlatform"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Favorite Platform</FormLabel>
+                    <FormDescription>
+                      This will be the default platform when adding new games.
+                    </FormDescription>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        {sortedFavoritePlatforms.map((platform) => (
+                          <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <Checkbox
-                              checked={true}
-                              disabled={true}
-                            />
+                            <RadioGroupItem value={platform} />
                           </FormControl>
-                          <FormLabel className="font-normal text-muted-foreground">
-                            Others/ROMs
+                          <FormLabel className="font-normal">
+                            {platform}
                           </FormLabel>
                         </FormItem>
-                    </div>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            )}
+            
+            <Separator />
 
-              {selectedPlatforms && selectedPlatforms.length > 0 && (
+            <div className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="favoritePlatform"
+                  name="trackCompletionistPlaytime"
                   render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Favorite Platform</FormLabel>
-                      <FormDescription>
-                        This will be the default platform when adding new games.
-                      </FormDescription>
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex flex-col space-y-1"
-                        >
-                          {sortedFavoritePlatforms.map((platform) => (
-                            <FormItem key={platform} className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value={platform} />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {platform}
-                            </FormLabel>
-                          </FormItem>
-                          ))}
-                        </RadioGroup>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
                       </FormControl>
-                      <FormMessage />
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Track "Completionist" Playtime
+                        </FormLabel>
+                        <FormDescription>
+                          Show fields for 100% completion playtime estimates.
+                        </FormDescription>
+                      </div>
                     </FormItem>
                   )}
                 />
-              )}
-              
-              <Separator />
-
-              <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="trackCompletionistPlaytime"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Track "Completionist" Playtime
-                          </FormLabel>
-                          <FormDescription>
-                            Show fields for 100% completion playtime estimates.
-                          </FormDescription>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {playsOnPC && (
-                    <>
-                      <FormField
-                          control={form.control}
-                          name="notifyDiscounts"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <div className="space-y-1 leading-none">
-                                <FormLabel>
-                                  Notify me about discounts for games on my Wishlist.
-                                </FormLabel>
-                                <FormDescription>
-                                  Checks for Steam deals on your PC wishlist games.
-                                </FormDescription>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                      <FormField
+                
+                {playsOnPC && (
+                  <>
+                    <FormField
                         control={form.control}
-                        name="playsOnSteamDeck"
+                        name="notifyDiscounts"
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                             <FormControl>
@@ -440,44 +420,64 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                             </FormControl>
                             <div className="space-y-1 leading-none">
                               <FormLabel>
-                                I play on a Steam Deck.
+                                Notify me about discounts for games on my Wishlist.
                               </FormLabel>
                               <FormDescription>
-                                This helps us recommend Steam Deck compatible games.
+                                Checks for Steam deals on your PC wishlist games.
                               </FormDescription>
                             </div>
                           </FormItem>
                         )}
                       />
-                      {playsOnSteamDeck && (
-                        <div className="pl-4">
-                          <Button 
-                            type="button" 
-                            variant="outline"
-                            onClick={handleUpdateCompat}
-                            disabled={isUpdatingCompat}
-                          >
-                            {isUpdatingCompat ? 'Updating...' : 'Update Compatibility Status'}
-                          </Button>
-                          <FormDescription className="mt-2">
-                              Check for the latest Steam Deck compatibility status for all your PC games.
-                          </FormDescription>
-                        </div>
+                    <FormField
+                      control={form.control}
+                      name="playsOnSteamDeck"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              I play on a Steam Deck.
+                            </FormLabel>
+                            <FormDescription>
+                              This helps us recommend Steam Deck compatible games.
+                            </FormDescription>
+                          </div>
+                        </FormItem>
                       )}
-                    </>
-                  )}
-              </div>
-            </CardContent>
-             <CardFooter>
-              <Button type="submit" disabled={prefsLoading || isUpdating || isImporting || importStatus === 'pending'}>
-                {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
-              </Button>
-            </CardFooter>
-          </Card>
-        </form>
-      </Form>
+                    />
+                    {playsOnSteamDeck && (
+                      <div className="pl-4">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={handleUpdateCompat}
+                          disabled={isUpdatingCompat}
+                        >
+                          {isUpdatingCompat ? 'Updating...' : 'Update Compatibility Status'}
+                        </Button>
+                        <FormDescription className="mt-2">
+                            Check for the latest Steam Deck compatibility status for all your PC games.
+                        </FormDescription>
+                      </div>
+                    )}
+                  </>
+                )}
+            </div>
+          </CardContent>
+           <CardFooter>
+            <Button type="submit" disabled={prefsLoading || isUpdating || isImporting || importStatus === 'pending'}>
+              {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
+            </Button>
+          </CardFooter>
+        </Card>
 
-      {playsOnPC && (
+        {playsOnPC && (
         <Card>
           <CardHeader>
             <CardTitle>Steam Integration</CardTitle>
@@ -501,7 +501,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 id='steamId'
                 placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
                 value={steamVanityId}
-                onChange={(e) => setSteamVanityId(e.target.value)}
+                onChange={(e) => setSteamVanityId(e.g. target.value)}
                 disabled={importStatus === 'pending' || isImporting}
               />
             </div>
@@ -535,7 +535,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
           </CardFooter>
         </Card>
       )}
-    </div>
+      </form>
+    </Form>
   );
 }
 
