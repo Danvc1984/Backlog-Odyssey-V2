@@ -156,6 +156,9 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
     if (user && preferences) {
       let gameData: any = { ...newGame, userId: user.uid };
 
+      if (!gameData.playtimeNormally) delete gameData.playtimeNormally;
+      if (!gameData.playtimeCompletely) delete gameData.playtimeCompletely;
+
       if (gameData.platform === 'PC') {
          try {
             const response = await fetch('/api/steam/get-batch-details', {
@@ -189,7 +192,9 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
         delete gameData.rating;
       }
       
-      // Assume steamAppId and compat are managed. If platform changes from PC, they should be cleared.
+      if (!gameData.playtimeNormally) delete gameData.playtimeNormally;
+      if (!gameData.playtimeCompletely) delete gameData.playtimeCompletely;
+      
       if (gameData.platform !== 'PC') {
         delete gameData.steamAppId;
         delete gameData.steamDeckCompat;
@@ -315,3 +320,4 @@ export const useGameLibrary = () => {
   }
   return context;
 };
+
