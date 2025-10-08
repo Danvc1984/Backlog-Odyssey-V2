@@ -1,8 +1,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, App, ServiceAccount } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import axios from 'axios';
 import type { Game, UserPreferences } from '@/lib/types';
 import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
@@ -10,9 +10,9 @@ import { getSteamDeckCompat, SteamDeckCompat } from '@/app/api/steam/utils';
 const STEAM_API_KEY = process.env.STEAM_API_KEY;
 const RAWG_API_KEY = process.env.NEXT_PUBLIC_RAWG_API_KEY;
 
-export const maxDuration = 400; // 5 minutes
+export const maxDuration = 400; // 5 minutes, keep for the background task
 
-// Helper function to initialize Firebase Admin SDK within this route
+// Helper function to initialize Firebase Admin SDK
 function getAdminApp(): App {
     if (getApps().length) {
         return getApps()[0];
@@ -28,9 +28,187 @@ function getAdminApp(): App {
     );
 
     return initializeApp({
-        credential: cert(serviceAccountJson),
-        projectId: 'studio-8063658966-c0f00',
+        credential: cert(serviceAccountJson as ServiceAccount),
     });
+}
+
+// Main background import function
+async function runSteamImport(uid: string, steamId: string, importMode: 'full' | 'new', origin: string) {
+    const adminApp = getAdminApp();
+    const db = getFirestore(adminApp);
+
+    try {
+        const steamId64 = await resolveVanityURL(steamId);
+
+        const userProfileRef = db.collection('users').doc(uid);
+        const prefDocRef = userProfileRef.collection('preferences').doc('platform');
+
+        const prefDocSnap = await prefDocRef.get();
+        const preferences = (prefDocSnap.data() as UserPreferences) || {};
+        const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
+
+        await userProfileRef.update({ steamId: steamId64 });
+
+        if (playsOnSteamDeck && !preferences.playsOnSteamDeck) {
+            await prefDocRef.set({ playsOnSteamDeck: true }, { merge: true });
+        }
+
+        let steamGames = await getOwnedGames(steamId64);
+        const gamesCollectionRef = userProfileRef.collection('games');
+
+        if (importMode === 'new') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('steamAppId', '!=', null).get();
+            const existingSteamAppIds = new Set(existingGamesSnapshot.docs.map(doc => doc.data().steamAppId));
+            steamGames = steamGames.filter(steamGame => !existingSteamAppIds.has(steamGame.appid));
+        } else if (importMode === 'full') {
+            const existingGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
+            const deleteBatch = db.batch();
+            existingGamesSnapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
+            await deleteBatch.commit();
+        }
+
+        if (steamGames.length === 0) {
+            console.log('[Steam Import] No new games to import.');
+            // Optionally, write a status to Firestore to notify the user.
+            return;
+        }
+
+        const steamGameTitles = steamGames.map(sg => sg.name);
+
+        let rawgDetailsMap: Record<string, any> = {};
+        const rawgResponse = await fetch(`${origin}/api/rawg/get-batch-details`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titles: steamGameTitles }),
+        });
+        if (rawgResponse.ok) {
+            const rawgData = await rawgResponse.json();
+            rawgDetailsMap = rawgData.details;
+        }
+
+        const validSteamGames = steamGames.filter(sg => rawgDetailsMap[sg.name]);
+        const validGameTitles = validSteamGames.map(sg => rawgDetailsMap[sg.name].name);
+
+        let titleToIdMap: Record<string, number> = {};
+        const idResponse = await fetch(`${origin}/api/steam/get-igdb-ids`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ titles: validGameTitles }),
+        });
+        if (idResponse.ok) {
+            titleToIdMap = (await idResponse.json()).titleToIdMap;
+        }
+
+        const processableGameDetails = validSteamGames
+            .map(sg => ({ steamGame: sg, rawgDetails: rawgDetailsMap[sg.name] }))
+            .filter(detail => detail.rawgDetails && titleToIdMap[detail.rawgDetails.name]);
+
+        const uniqueIgdbIds = [...new Set(processableGameDetails.map(detail => titleToIdMap[detail.rawgDetails.name]))];
+        
+        let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
+        if (uniqueIgdbIds.length > 0) {
+            const timeResponse = await fetch(`${origin}/api/steam/get-batch-playtimes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: uniqueIgdbIds }),
+            });
+            if (timeResponse.ok) {
+                igdbIdToPlaytime = (await timeResponse.json()).playtimes;
+            }
+        }
+        
+        const finalGamePromises = processableGameDetails.map(async ({ steamGame, rawgDetails }) => {
+            let steamDeckCompat: SteamDeckCompat = 'unknown';
+            if (playsOnSteamDeck && steamGame.appid) {
+                steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
+            }
+            return { steamGame, rawgDetails, steamDeckCompat };
+        });
+
+        const finalResults = await Promise.all(finalGamePromises);
+
+        const batch = db.batch();
+        let importedCount = 0;
+        finalResults.forEach(({ steamGame, rawgDetails, steamDeckCompat }) => {
+            const gameDocRef = gamesCollectionRef.doc();
+            const title = rawgDetails.name;
+            const igdbId = titleToIdMap[title];
+            const igdbTimes = igdbId ? igdbIdToPlaytime[igdbId] : undefined;
+
+            const newGame: Omit<Game, 'id'> = {
+                userId: uid,
+                title: title,
+                platform: 'PC',
+                genres: rawgDetails.genres?.map((g: any) => g.name) || [],
+                list: 'Backlog',
+                imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
+                releaseDate: rawgDetails.released,
+                playtimeNormally: igdbTimes?.playtimeNormally ?? rawgDetails.playtime,
+                playtimeCompletely: igdbTimes?.playtimeCompletely,
+                steamAppId: steamGame.appid,
+                steamDeckCompat: steamDeckCompat,
+            };
+            if (!newGame.playtimeNormally) delete newGame.playtimeNormally;
+            if (!newGame.playtimeCompletely) delete newGame.playtimeCompletely;
+
+            batch.set(gameDocRef, newGame);
+            importedCount++;
+        });
+
+        await batch.commit();
+
+        const failedCount = steamGameTitles.length - importedCount;
+        const message = `Import complete. Imported ${importedCount} games. Failed to find data for ${failedCount} games.`;
+        console.log('[Steam Import] Success:', message);
+
+        // Optionally, notify the user of completion via Firestore
+        await userProfileRef.collection('notifications').doc('steamImport').set({
+            status: 'completed',
+            message: message,
+            timestamp: Timestamp.now(),
+        });
+
+    } catch (error: any) {
+        console.error('[Steam Import Background Task Error]', error);
+        // Optionally, notify the user of failure
+        const userProfileRef = db.collection('users').doc(uid);
+        await userProfileRef.collection('notifications').doc('steamImport').set({
+            status: 'failed',
+            message: error.message || 'An unknown error occurred during import.',
+            timestamp: Timestamp.now(),
+        });
+    }
+}
+
+
+export async function POST(req: NextRequest) {
+    const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
+    if (!authToken) {
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    let uid: string;
+    try {
+        const adminApp = getAdminApp();
+        const auth = getAuth(adminApp);
+        const decodedToken = await auth.verifyIdToken(authToken);
+        uid = decodedToken.uid;
+    } catch (error) {
+        console.error('Error verifying auth token:', error);
+        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { steamId, importMode } = await req.json();
+
+    if (!STEAM_API_KEY || !RAWG_API_KEY) {
+        return NextResponse.json({ message: 'API Keys are not configured on the server.' }, { status: 500 });
+    }
+    
+    // "Fire and forget" - run the import in the background
+    runSteamImport(uid, steamId, importMode, req.nextUrl.origin).catch(console.error);
+
+    // Immediately return a response to the client
+    return NextResponse.json({ message: 'Steam import process started in the background.' });
 }
 
 
@@ -78,214 +256,5 @@ async function getOwnedGames(steamId64: string): Promise<any[]> {
     } catch (error: any) {
         console.error(`Error fetching owned games: ${error.message}`);
         throw new Error(error.message || 'Could not fetch owned games from Steam.');
-    }
-}
-
-export async function POST(req: NextRequest) {
-    const adminApp = getAdminApp();
-    const auth = getAuth(adminApp);
-    const db = getFirestore(adminApp);
-
-    const authToken = req.headers.get('authorization')?.split('Bearer ')[1];
-    if (!authToken) {
-        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
-    let uid: string;
-    try {
-        const decodedToken = await auth.verifyIdToken(authToken);
-        uid = decodedToken.uid;
-    } catch (error) {
-        console.error('Error verifying auth token:', error);
-        return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { steamId, importMode } = await req.json();
-
-    if (!STEAM_API_KEY) {
-        return NextResponse.json({ message: 'Steam API Key is not configured on the server.' }, { status: 500 });
-    }
-    if (!RAWG_API_KEY) {
-        return NextResponse.json({ message: 'RAWG API Key is not configured on the server.' }, { status: 500 });
-    }
-    
-    try {
-        const steamId64 = await resolveVanityURL(steamId);
-        
-        const userProfileRef = db.collection('users').doc(uid);
-        const prefDocRef = db.collection('users').doc(uid).collection('preferences').doc('platform');
-        
-        const prefDocSnap = await prefDocRef.get();
-        const preferences = (prefDocSnap.data() as UserPreferences) || {};
-        const playsOnSteamDeck = preferences.playsOnSteamDeck || false;
-        
-        await userProfileRef.update({ steamId: steamId64 });
-
-        if (playsOnSteamDeck && !preferences.playsOnSteamDeck) {
-          await prefDocRef.set({ playsOnSteamDeck: true }, { merge: true });
-        }
-        
-        let steamGames = await getOwnedGames(steamId64);
-        const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
-
-        if (importMode === 'new') {
-            const existingGamesSnapshot = await gamesCollectionRef.where('steamAppId', '!=', null).get();
-            const existingSteamAppIds = new Set(existingGamesSnapshot.docs.map(doc => doc.data().steamAppId));
-            steamGames = steamGames.filter(steamGame => !existingSteamAppIds.has(steamGame.appid));
-        } else if (importMode === 'full') {
-            const existingGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
-            const deleteBatch = db.batch();
-            existingGamesSnapshot.docs.forEach(doc => deleteBatch.delete(doc.ref));
-            await deleteBatch.commit();
-        }
-
-        if (steamGames.length === 0) {
-            return NextResponse.json({ 
-                message: 'No new games to import.', 
-                importedCount: 0,
-                failedCount: 0,
-            });
-        }
-        
-        const steamGameTitles = steamGames.map(sg => sg.name);
-        
-        let rawgDetailsMap: Record<string, any> = {};
-        try {
-            const rawgResponse = await fetch(`${req.nextUrl.origin}/api/rawg/get-batch-details`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titles: steamGameTitles })
-            });
-            if (rawgResponse.ok) {
-                const rawgData = await rawgResponse.json();
-                rawgDetailsMap = rawgData.details;
-            } else {
-                 console.error('[Steam Import] Could not fetch batch RAWG details. Status:', rawgResponse.status);
-            }
-        } catch(error) {
-            console.error('[Steam Import] Error fetching batch RAWG details:', error);
-        }
-
-        const validSteamGames = steamGames.filter(sg => rawgDetailsMap[sg.name]);
-        const validGameTitles = validSteamGames.map(sg => rawgDetailsMap[sg.name].name);
-
-        let titleToIdMap: Record<string, number> = {};
-        try {
-            console.log('[Steam Import] Fetching IGDB IDs for titles:', validGameTitles);
-            const idResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-igdb-ids`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titles: validGameTitles })
-            });
-            if (idResponse.ok) {
-                const idData = await idResponse.json();
-                titleToIdMap = idData.titleToIdMap;
-                console.log('[Steam Import] Received IGDB ID map:', titleToIdMap);
-            } else {
-                console.error('[Steam Import] Could not fetch IGDB IDs for Steam import. Status:', idResponse.status);
-            }
-        } catch (error) {
-            console.error('[Steam Import] Error fetching IGDB IDs for Steam import:', error);
-        }
-
-        let igdbIdToPlaytime: Record<number, { playtimeNormally: number | null, playtimeCompletely: number | null }> = {};
-        
-        const processableGameDetails = validSteamGames
-            .map(sg => ({ steamGame: sg, rawgDetails: rawgDetailsMap[sg.name] }))
-            .filter(detail => detail.rawgDetails && titleToIdMap[detail.rawgDetails.name]);
-        
-        const uniqueIgdbIds = [...new Set(
-            processableGameDetails.map(detail => titleToIdMap[detail.rawgDetails.name])
-        )];
-        
-        console.log('[Steam Import] Fetching playtimes for IGDB IDs:', uniqueIgdbIds);
-        if (uniqueIgdbIds.length > 0) {
-            try {
-                const timeResponse = await fetch(`${req.nextUrl.origin}/api/steam/get-batch-playtimes`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: uniqueIgdbIds })
-                });
-                if (timeResponse.ok) {
-                    try {
-                        const timeData = await timeResponse.json();
-                        igdbIdToPlaytime = timeData.playtimes;
-                        console.log('[Steam Import] Received playtimes map:', igdbIdToPlaytime);
-                    } catch (e) {
-                        console.error('[Steam Import] Failed to parse JSON from playtimes response.', e);
-                        const textResponse = await timeResponse.text();
-                        console.error('[Steam Import] Playtimes response text:', textResponse);
-                    }
-                } else {
-                    console.error('[Steam Import] Could not fetch batch playtimes for Steam import. Status:', timeResponse.status);
-                    const errorText = await timeResponse.text();
-                    console.error('[Steam Import] Batch playtimes error response text:', errorText);
-                }
-            } catch (error) {
-                console.error('[Steam Import] Error fetching batch playtimes for Steam import:', error);
-            }
-        }
-        
-        const batch = db.batch();
-        const finalGamePromises = processableGameDetails.map(async ({ steamGame, rawgDetails }) => {
-            let steamDeckCompat: SteamDeckCompat = 'unknown';
-            if (playsOnSteamDeck && steamGame.appid) {
-                steamDeckCompat = await getSteamDeckCompat(steamGame.appid);
-            }
-            return { steamGame, rawgDetails, steamDeckCompat };
-        });
-
-        const finalResults = await Promise.all(finalGamePromises);
-
-        let importedCount = 0;
-        let failedCount = steamGameTitles.length - finalResults.length;
-
-        for (const { steamGame, rawgDetails, steamDeckCompat } of finalResults) {
-            const gameDocRef = gamesCollectionRef.doc();
-            
-            const title = rawgDetails.name;
-            const igdbId = titleToIdMap[title];
-            const igdbTimes = igdbId ? igdbIdToPlaytime[igdbId] : undefined;
-            
-            const newGame: Omit<Game, 'id'> = {
-                userId: uid,
-                title: title,
-                platform: 'PC',
-                genres: rawgDetails.genres?.map((g: any) => g.name) || [],
-                list: 'Backlog',
-                imageUrl: rawgDetails.background_image || `https://media.rawg.io/media/games/${rawgDetails.slug}.jpg`,
-                releaseDate: rawgDetails.released,
-                playtimeNormally: igdbTimes?.playtimeNormally ?? undefined,
-                playtimeCompletely: igdbTimes?.playtimeCompletely ?? undefined,
-                steamAppId: steamGame.appid,
-                steamDeckCompat: steamDeckCompat,
-            };
-
-            // Fallback to RAWG playtime or Steam playtime if IGDB fails
-            if (newGame.playtimeNormally === undefined) {
-                newGame.playtimeNormally = rawgDetails.playtime || Math.round(steamGame.playtime_forever / 60) || undefined;
-            }
-            
-            if (newGame.playtimeNormally === undefined) delete newGame.playtimeNormally;
-            if (newGame.playtimeCompletely === undefined) delete newGame.playtimeCompletely;
-
-            batch.set(gameDocRef, newGame);
-            importedCount++;
-        }
-
-        await batch.commit();
-
-        const message = `Import complete. Successfully imported ${importedCount} games. Failed to find matching data for ${failedCount} games.`;
-        
-        console.log('[Steam Import] Success:', message);
-        return NextResponse.json({ 
-            message,
-            importedCount,
-            failedCount,
-        });
-
-    } catch (error: any) {
-        console.error('Steam import process failed:', error);
-        return NextResponse.json({ message: error.message || 'An unknown error occurred during import.' }, { status: 500 });
     }
 }

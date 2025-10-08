@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
 import {
@@ -32,6 +32,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { SteamIcon } from './icons';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Info } from 'lucide-react';
 
 const platformSettingsSchema = z.object({
   platforms: z.array(z.string()).min(1, 'Please select at least one platform.'),
@@ -55,8 +57,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const { preferences, savePreferences, loading: prefsLoading } = useUserPreferences();
   const { profile, loading: profileLoading } = useUserProfile();
   const { toast } = useToast();
+  
+  const [isUpdating, setIsUpdating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isUpdatingCompat, setIsUpdatingCompat] = useState(false);
+
   const [steamVanityId, setSteamVanityId] = useState('');
   const [showImportDialog, setShowImportDialog] = useState(false);
 
@@ -87,6 +92,33 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     }
   }, [preferences, form]);
 
+  // Listen for import notifications from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
+    const unsubscribe = onSnapshot(notificationDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // We check the status to avoid showing toasts on page load for old notifications
+            if (data.status === 'completed' || data.status === 'failed') {
+                 toast({
+                    title: data.status === 'completed' ? 'Steam Import Complete' : 'Steam Import Failed',
+                    description: data.message,
+                    variant: data.status === 'failed' ? 'destructive' : 'default',
+                    duration: 10000,
+                 });
+                 setIsImporting(false);
+                 // Optionally clear the notification after showing it
+                 // updateDoc(notificationDocRef, { status: 'acknowledged' });
+            } else if (data.status === 'pending') {
+                setIsImporting(true);
+            }
+        }
+    });
+
+    return () => unsubscribe();
+  }, [user, toast]);
+
   const selectedPlatforms = form.watch('platforms');
   const playsOnPC = useMemo(() => selectedPlatforms?.includes('PC') || false, [selectedPlatforms]);
   const playsOnSteamDeck = form.watch('playsOnSteamDeck');
@@ -100,6 +132,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   async function onSubmit(data: PlatformSettingsFormValues) {
     if (!user) return;
     
+    setIsUpdating(true);
     const finalPreferences = {
       ...data,
       platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
@@ -115,12 +148,12 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       const userProfileRef = doc(db, 'users', user.uid);
       await updateDoc(userProfileRef, { onboardingComplete: true });
     }
+    setIsUpdating(false);
   }
   
   const handleSteamImport = async (importMode: 'full' | 'new') => {
     setShowImportDialog(false);
     
-    // Programmatically trigger form validation and submission
     const isValid = await form.trigger();
     if (!isValid) {
       toast({
@@ -131,7 +164,6 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       return;
     }
     
-    // Save settings before importing
     await onSubmit(form.getValues());
     
     const currentSteamId = form.getValues().platforms.includes('PC') ? steamVanityId : '';
@@ -148,9 +180,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     setIsImporting(true);
     try {
       const token = await getAuthToken();
-      if (!token) {
-        throw new Error('You must be logged in to import your library.');
-      }
+      if (!token) throw new Error('You must be logged in to import your library.');
 
       const response = await fetch('/api/import-steam', {
         method: 'POST',
@@ -161,31 +191,25 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         body: JSON.stringify({ steamId: currentSteamId, importMode }),
       });
 
-      const responseText = await response.text();
-      console.log('[Client] Raw /api/import-steam response:', responseText);
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || 'Failed to start import process.');
       
-      const result = JSON.parse(responseText);
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to import Steam library.');
-      }
-      
-       toast({
-        title: 'Steam Library Import Complete!',
-        description: `Successfully imported ${result.importedCount} games. ${result.failedCount > 0 ? `${result.failedCount} games could not be found.` : ''}`,
+      toast({
+        title: 'Steam Import Started',
+        description: 'Your library import is running in the background. We will notify you when it is complete.',
       });
+      
+      if (user) {
+        const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
+        await updateDoc(notificationDocRef, { status: 'pending' });
+      }
 
       if (isOnboarding) {
         router.push('/dashboard');
       }
 
     } catch (error: any) {
-      toast({
-        title: 'Import Failed',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    } finally {
+      toast({ title: 'Import Failed', description: error.message, variant: 'destructive' });
       setIsImporting(false);
     }
   }
@@ -194,14 +218,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     setIsUpdatingCompat(true);
     try {
       const token = await getAuthToken();
-      if (!token) {
-        throw new Error('You must be logged in.');
-      }
+      if (!token) throw new Error('You must be logged in.');
+      
       const response = await fetch('/api/update-deck-compat', {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       const result = await response.json();
@@ -212,11 +233,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         description: 'Steam Deck compatibility status has been updated for your PC games.',
       });
     } catch (error: any) {
-      toast({
-        title: 'Update Failed',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Update Failed', description: error.message, variant: 'destructive' });
     } finally {
       setIsUpdatingCompat(false);
     }
@@ -232,7 +249,6 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       router.push('/dashboard');
     }
   }
-
 
   const sortedFavoritePlatforms = useMemo(() => {
     if (!selectedPlatforms) return [];
@@ -430,6 +446,15 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                 {isImporting && (
+                  <Alert className="mb-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Import in Progress</AlertTitle>
+                    <AlertDescription>
+                      Your Steam library is currently being imported in the background. We'll notify you when it's complete. You can safely navigate away from this page.
+                    </AlertDescription>
+                  </Alert>
+                 )}
                  <div className="space-y-2">
                   <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
                   <Input 
@@ -471,8 +496,8 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
             </Card>
           )}
 
-          <Button type="submit" disabled={prefsLoading}>
-            {prefsLoading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
+          <Button type="submit" disabled={prefsLoading || isUpdating || isImporting}>
+            {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
           </Button>
         </form>
       </Form>
