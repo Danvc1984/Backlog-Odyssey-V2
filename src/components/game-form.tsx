@@ -104,6 +104,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         rating: gameToEdit.rating,
       });
       setSelectedGameImageUrl(gameToEdit.imageUrl);
+      setSearchTerm(gameToEdit.title);
     } else {
       form.reset({
         title: '',
@@ -116,6 +117,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         rating: 0,
       });
       setSelectedGameImageUrl(null);
+      setSearchTerm('');
     }
   }, [gameToEdit, defaultList, form, preferences]);
 
@@ -149,6 +151,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 
   const handleSelectGame = async (game: any) => {
     form.setValue('title', game.name);
+    setSearchTerm(game.name);
     
     const favoritePlatform = preferences?.favoritePlatform;
     const userPlatforms = preferences?.platforms || [];
@@ -158,15 +161,12 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 
     let platformToSet: Platform | undefined;
 
-    // 1. Prefer favorite platform if it's available for the game
     if (favoritePlatform && mappedPlatforms.includes(favoritePlatform)) {
       platformToSet = favoritePlatform;
     } else {
-      // 2. Find the first available platform that the user owns
       platformToSet = mappedPlatforms.find(p => userPlatforms.includes(p));
     }
     
-    // 3. Fallback to 'Others/ROMs'
     if (!platformToSet) {
       platformToSet = 'Others/ROMs';
     }
@@ -181,7 +181,6 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 
     if (game.released) form.setValue('releaseDate', game.released);
     
-    // Set initial playtime from RAWG, then try to update with IGDB
     if (game.playtime) form.setValue('playtimeNormally', game.playtime);
 
     if (game.background_image) {
@@ -189,10 +188,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     } else {
       setSelectedGameImageUrl(null);
     }
-    setSearchTerm('');
     setSearchResults([]);
 
-    // Fetch more accurate playtime from IGDB
     try {
         const response = await fetch(`/api/get-time-to-beat?title=${encodeURIComponent(game.name)}`);
         if (response.ok) {
@@ -292,15 +289,18 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                     type="button"
                     className="flex items-center justify-start gap-2 h-auto p-2"
                     onClick={() => handleSelectGame(game)}
+                    onMouseDown={(e) => e.preventDefault()}
                   >
-                    {game.background_image ? <Image
-                      src={game.background_image}
-                      alt={game.name}
-                      width={40}
-                      height={53}
-                      className="object-cover rounded-sm aspect-[3/4]"
-                    /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
-                    <span className="text-sm font-medium text-left">{game.name}</span>
+                    <span className="flex items-center gap-2 pointer-events-none">
+                      {game.background_image ? <Image
+                        src={game.background_image}
+                        alt={game.name}
+                        width={40}
+                        height={53}
+                        className="object-cover rounded-sm aspect-[3/4]"
+                      /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
+                      <span className="text-sm font-medium text-left">{game.name}</span>
+                    </span>
                   </Button>
                 ))}
               </div>
