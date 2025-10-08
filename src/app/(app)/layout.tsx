@@ -19,6 +19,7 @@ import { GameLibraryProvider, useGameLibrary } from '@/hooks/use-game-library';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -90,16 +91,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   if (!initialLoadComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Loading...
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading user data...</p>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Redirecting to login...
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground">Redirecting to login...</p>
       </div>
     );
   }
@@ -109,8 +112,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
       return <>{children}</>;
     }
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        Redirecting to setup...
+       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-muted-foreground">Redirecting to setup...</p>
       </div>
     );
   }

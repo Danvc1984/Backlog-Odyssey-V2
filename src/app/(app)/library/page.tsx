@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA } from 'lucide-react';
+import { PlusCircle, Search, Layers, ArrowDownUp, ArrowDownAZ, ArrowUpZA, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import type { Game, Platform, GameList } from '@/lib/types';
@@ -187,7 +187,14 @@ export default function LibraryPage() {
   }, [sortBy]);
   
   if (prefsLoading || dataLoading) {
-    return <div className="text-center py-10">Loading library...</div>;
+    return (
+        <div className="flex justify-center items-center h-full min-h-[calc(100vh-200px)]">
+            <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                <p className="text-muted-foreground">Loading library...</p>
+            </div>
+        </div>
+    );
   }
 
   return (
@@ -291,13 +298,14 @@ export default function LibraryPage() {
           {gameLists.map(list => (
             <TabsContent key={list} value={list}>
                 {dataLoading ? (
-                <motion.p 
+                <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-muted-foreground col-span-full text-center py-10"
+                  className="text-muted-foreground col-span-full text-center py-10 flex flex-col items-center gap-4"
                 >
-                  Loading games...
-                </motion.p>
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span>Loading games...</span>
+                </motion.div>
                 ) : (
                 <motion.div
                   key={activeList}

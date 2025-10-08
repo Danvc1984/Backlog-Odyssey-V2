@@ -22,7 +22,7 @@ import ChallengeForm from '@/components/challenge-form';
 import ChallengeCard from '@/components/challenge-card';
 import { useDeals } from '@/hooks/use-deals';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Trophy } from 'lucide-react';
+import { PlusCircle, Trophy, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import UpNextQueue from '@/components/up-next-queue';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -74,7 +74,14 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return <div className="text-center py-10">Loading dashboard...</div>;
+    return (
+      <div className="flex justify-center items-center h-full min-h-[calc(100vh-200px)]">
+          <div className="flex flex-col items-center gap-4">
+              <Loader2 className="h-10 w-10 text-primary animate-spin" />
+              <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+      </div>
+    );
   }
 
   return (

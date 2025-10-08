@@ -1,6 +1,6 @@
 'use client';
 
-import { Swords } from 'lucide-react';
+import { Swords, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,12 @@ export default function LoginPage() {
   }, [user, router]);
 
   if (loading || user) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading...</p>
+        </div>
+    );
   }
   
   return (
