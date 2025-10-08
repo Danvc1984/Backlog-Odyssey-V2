@@ -75,8 +75,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
       genres: gameToEdit?.genres || [],
       list: gameToEdit?.list || defaultList,
       releaseDate: gameToEdit?.releaseDate || '',
-      playtimeNormally: gameToEdit?.playtimeNormally || 0,
-      playtimeCompletely: gameToEdit?.playtimeCompletely || 0,
+      playtimeNormally: gameToEdit?.playtimeNormally,
+      playtimeCompletely: gameToEdit?.playtimeCompletely,
       rating: gameToEdit?.rating || 0,
     },
   });
@@ -101,8 +101,8 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         genres: [],
         list: defaultList,
         releaseDate: '',
-        playtimeNormally: 0,
-        playtimeCompletely: 0,
+        playtimeNormally: undefined,
+        playtimeCompletely: undefined,
         rating: 0,
       });
       setSelectedGameImageUrl(null);
@@ -210,7 +210,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         title: 'Game Added!',
         description: `${data.title} has been added to your library.`,
       });
-      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', playtimeNormally: 0, playtimeCompletely: 0, rating: 0 });
+      form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', playtimeNormally: undefined, playtimeCompletely: undefined, rating: 0 });
       setSelectedGameImageUrl(null);
     }
   }
@@ -386,7 +386,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             name="playtimeNormally"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Est. Playtime (hrs)</FormLabel>
+                <FormLabel>Story Playtime (hrs)</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="e.g. 40" {...field} value={field.value || ''} />
                 </FormControl>
@@ -395,6 +395,19 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             )}
           />
         </div>
+        <FormField
+            control={form.control}
+            name="playtimeCompletely"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Completionist Playtime (hrs)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="e.g. 100" {...field} value={field.value || ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
          <FormField
           control={form.control}
           name="rating"

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
 import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
-import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star, Sparkles } from 'lucide-react';
+import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star, Sparkles, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from './ui/dropdown-menu';
@@ -80,7 +80,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
           )}
         </div>
         <CardContent className="p-4 flex-grow space-y-2">
-          <div className="flex justify-between items-center text-xs text-muted-foreground">
+          <div className="flex justify-between items-start text-xs text-muted-foreground">
             <div className="space-y-1">
               {game.releaseDate && (
                 <div className="flex items-center">
@@ -88,14 +88,18 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                   {format(new Date(game.releaseDate), 'MMM yyyy')}
                 </div>
               )}
-              {game.estimatedPlaytime ? (
+               {game.playtimeNormally && (
                 <div className="flex items-center">
-                  <Clock className="h-3 w-3 mr-1.5" />
-                  {game.estimatedPlaytime}h
+                  <BookOpen className="h-3 w-3 mr-1.5" />
+                   Story: {game.playtimeNormally}h
                 </div>
-              ) : null}
+              )}
+               <div className="flex items-center">
+                  <Clock className="h-3 w-3 mr-1.5" />
+                  Completionist: {game.playtimeCompletely ? `${game.playtimeCompletely}h` : 'Not Listed'}
+                </div>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">
               <Button size="icon" variant="outline" className="h-7 w-7" onClick={handleEdit}>
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -148,7 +152,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
                         <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                     </div>
                 )}
-                {game.platform === 'PC' && SteamDeckCompatIcon && game.steamDeckCompat && (
+                {game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon && (
                     <Tooltip>
                     <TooltipTrigger>
                         <SteamDeckCompatIcon className={cn("h-4 w-4", {

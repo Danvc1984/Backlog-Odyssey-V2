@@ -51,12 +51,12 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
     return Math.round((completedCount / relevantTotal) * 100);
   }, [ownedGames, totalGames]);
 
-  const totalPlaytime = useMemo(() => ownedGames.reduce((acc, game) => acc + (game.estimatedPlaytime || 0), 0), [ownedGames]);
+  const totalPlaytime = useMemo(() => ownedGames.reduce((acc, game) => acc + (game.playtimeNormally || 0), 0), [ownedGames]);
   
   const playtimeByGenreData = useMemo(() => {
     const data = ownedGames.reduce((acc, game) => {
         (game.genres || []).forEach(genre => {
-            acc[genre] = (acc[genre] || 0) + (game.estimatedPlaytime || 0);
+            acc[genre] = (acc[genre] || 0) + (game.playtimeNormally || 0);
         });
         return acc;
     }, {} as Record<string, number>);
