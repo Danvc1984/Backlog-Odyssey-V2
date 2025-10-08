@@ -54,3 +54,11 @@ export const steamDeckCompatTooltips: Record<SteamDeckCompat, string> = {
   borked: 'Borked: The game is unplayable.',
   unknown: "This game's Steam Deck compatibility is unknown.",
 };
+
+export const ratingTooltips: Record<number, string> = {
+  1: '1 - Low Interest',
+  2: '2 - Mild Interest',
+  3: '3 - Moderate Interest',
+  4: '4 - High Interest',
+  5: '5 - Very High Interest',
+};

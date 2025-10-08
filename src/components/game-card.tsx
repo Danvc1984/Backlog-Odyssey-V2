@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Game, GameList } from '@/lib/types';
-import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips } from '@/components/icons';
+import { platformIcons, steamDeckCompatIcons, steamDeckCompatTooltips, ratingTooltips } from '@/components/icons';
 import { Calendar, Clock, ImageOff, FolderKanban, Pencil, Trash2, Star, Sparkles, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from './ui/button';
@@ -147,10 +147,17 @@ const GameCard: React.FC<GameCardProps> = ({ game, deal, onEdit, onMove, onDelet
         <div className="absolute top-2 right-2 flex flex-col items-end gap-2 z-10 transition-transform duration-300 group-hover:-translate-y-1">
             <div className="flex items-center gap-2 bg-background/80 rounded-full px-2 py-1 backdrop-blur-sm">
                 {game.rating && game.rating > 0 && (
-                    <div className="flex items-center gap-1">
-                        <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                    </div>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <div className="flex items-center gap-1">
+                                <span className="text-sm font-bold text-yellow-400">{game.rating}</span>
+                                <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{ratingTooltips[game.rating]}</p>
+                        </TooltipContent>
+                    </Tooltip>
                 )}
                 {game.platform === 'PC' && game.steamDeckCompat && SteamDeckCompatIcon && (
                     <Tooltip>
