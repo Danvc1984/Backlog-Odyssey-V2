@@ -1,0 +1,1367 @@
+2025-10-08T02:37:16Z [web]  ○ Compiling /api/import-steam ...
+2025-10-08T02:37:19Z [web]  ✓ Compiled /api/import-steam in 3.7s
+2025-10-08T02:37:29Z [web] [Steam Import] Fetching IGDB IDs for titles: [
+2025-10-08T02:37:29Z [web]   'Half-Life 2',
+2025-10-08T02:37:29Z [web]   'Half-Life 2: Deathmatch',
+2025-10-08T02:37:29Z [web]   'Half-Life Deathmatch: Source',
+2025-10-08T02:37:29Z [web]   'Portal',
+2025-10-08T02:37:29Z [web]   'Team Fortress 2',
+2025-10-08T02:37:29Z [web]   'Left 4 Dead 2',
+2025-10-08T02:37:29Z [web]   'Portal 2',
+2025-10-08T02:37:29Z [web]   'Killing Floor',
+2025-10-08T02:37:29Z [web]   'Vampire: The Masquerade - Bloodlines',
+2025-10-08T02:37:29Z [web]   "Garry's Mod",
+2025-10-08T02:37:29Z [web]   'Star Wars Jedi Knight: Jedi Academy',
+2025-10-08T02:37:29Z [web]   'BioShock',
+2025-10-08T02:37:29Z [web]   'BioShock 2',
+2025-10-08T02:37:29Z [web]   'BioShock Infinite',
+2025-10-08T02:37:29Z [web]   "Tom Clancy's Splinter Cell Chaos Theory",
+2025-10-08T02:37:29Z [web]   'F.E.A.R. 2: Project Origin',
+2025-10-08T02:37:29Z [web]   'Far Cry 2',
+2025-10-08T02:37:29Z [web]   'F.E.A.R.',
+2025-10-08T02:37:29Z [web]   'F.E.A.R. 3',
+2025-10-08T02:37:29Z [web]   'F.E.A.R. Extraction Point',
+2025-10-08T02:37:29Z [web]   'F.E.A.R. Perseus Mandate',
+2025-10-08T02:37:29Z [web]   'Fallout: New Vegas',
+2025-10-08T02:37:29Z [web]   'Star Wars: Knights of the Old Republic',
+2025-10-08T02:37:29Z [web]   'Killing Floor: Incursion',
+2025-10-08T02:37:29Z [web]   'Trine',
+2025-10-08T02:37:29Z [web]   'Trine 2',
+2025-10-08T02:37:29Z [web]   'Super Meat Boy',
+2025-10-08T02:37:29Z [web]   'Limbo',
+2025-10-08T02:37:29Z [web]   'Amnesia: The Dark Descent',
+2025-10-08T02:37:29Z [web]   "Monaco: What's Yours Is Mine",
+2025-10-08T02:37:29Z [web]   'XCOM: Enemy Unknown',
+2025-10-08T02:37:29Z [web]   'Tomb Raider',
+2025-10-08T02:37:29Z [web]   'Dishonored',
+2025-10-08T02:37:29Z [web]   'SpeedRunners',
+2025-10-08T02:37:29Z [web]   'Star Wars: Knights of the Old Republic II – The Sith Lords',
+2025-10-08T02:37:29Z [web]   'Alien: Isolation',
+2025-10-08T02:37:29Z [web]   'Mark of the Ninja',
+2025-10-08T02:37:29Z [web]   'Far Cry',
+2025-10-08T02:37:29Z [web]   'INSURGENCY: Modern Infantry Combat',
+2025-10-08T02:37:29Z [web]   'Company of Heroes 2',
+2025-10-08T02:37:29Z [web]   'Tom Clancy’s Splinter Cell Blacklist',
+2025-10-08T02:37:29Z [web]   "Deus Ex: Human Revolution - Director's Cut",
+2025-10-08T02:37:29Z [web]   'Outlast',
+2025-10-08T02:37:29Z [web]   'Dying Light: The Following - Enhanced Edition',
+2025-10-08T02:37:29Z [web]   'Amnesia: A Machine for Pigs',
+2025-10-08T02:37:29Z [web]   'Middle-earth: Shadow of Mordor',
+2025-10-08T02:37:29Z [web]   'Styx: Master of Shadows',
+2025-10-08T02:37:29Z [web]   'Injustice: Gods Among Us Ultimate Edition',
+2025-10-08T02:37:29Z [web]   'Shovel Knight: Treasure Trove',
+2025-10-08T02:37:29Z [web]   'TowerFall Ascension',
+2025-10-08T02:37:29Z [web]   'Lovers in a Dangerous Spacetime',
+2025-10-08T02:37:29Z [web]   'Rocket League',
+2025-10-08T02:37:29Z [web]   'Hyper Light Drifter',
+2025-10-08T02:37:29Z [web]   'Ori and the Blind Forest',
+2025-10-08T02:37:29Z [web]   'XCOM 2',
+2025-10-08T02:37:29Z [web]   'Cuphead',
+2025-10-08T02:37:29Z [web]   'Broforce',
+2025-10-08T02:37:29Z [web]   'Depth',
+2025-10-08T02:37:29Z [web]   'Gang Beasts',
+2025-10-08T02:37:29Z [web]   'Metro 2033 Redux',
+2025-10-08T02:37:29Z [web]   'Metro: Last Light Redux',
+2025-10-08T02:37:29Z [web]   'Metal Gear Solid V: The Phantom Pain',
+2025-10-08T02:37:29Z [web]   'Sid Meier’s Civilization VI',
+2025-10-08T02:37:29Z [web]   'Pillars of Eternity',
+2025-10-08T02:37:29Z [web]   'The Witcher 3: Wild Hunt',
+2025-10-08T02:37:29Z [web]   'Titan Souls',
+2025-10-08T02:37:29Z [web]   'Outland',
+2025-10-08T02:37:29Z [web]   'Sleeping Dogs: Definitive Edition',
+2025-10-08T02:37:29Z [web]   'Call of Duty: Black Ops III',
+2025-10-08T02:37:29Z [web]   'Rain World',
+2025-10-08T02:37:29Z [web]   'Duck Game',
+2025-10-08T02:37:29Z [web]   'Trine 3: The Artifacts of Power',
+2025-10-08T02:37:29Z [web]   "Don't Starve Together",
+2025-10-08T02:37:29Z [web]   'SUPERHOT',
+2025-10-08T02:37:29Z [web]   'Jotun: Valhalla Edition',
+2025-10-08T02:37:29Z [web]   'Dark Souls II: Scholar of the First Sin',
+2025-10-08T02:37:29Z [web]   'Deus Ex: Mankind Divided',
+2025-10-08T02:37:29Z [web]   'Middle-earth: Shadow of War',
+2025-10-08T02:37:29Z [web]   "Tom Clancy's Rainbow Six Siege",
+2025-10-08T02:37:29Z [web]   'Black Mesa',
+2025-10-08T02:37:29Z [web]   'Total War: WARHAMMER',
+2025-10-08T02:37:29Z [web]   'Hollow Knight',
+2025-10-08T02:37:29Z [web]   'Dead by Daylight',
+2025-10-08T02:37:29Z [web]   'Rivals of Aether',
+2025-10-08T02:37:29Z [web]   'Ori and the Blind Forest: Definitive Edition',
+2025-10-08T02:37:29Z [web]   'Rise of the Tomb Raider',
+2025-10-08T02:37:29Z [web]   'HELLDIVERS',
+2025-10-08T02:37:29Z [web]   'BioShock Remastered',
+2025-10-08T02:37:29Z [web]   'BioShock 2 Remastered',
+2025-10-08T02:37:29Z [web]   'Metro Exodus',
+2025-10-08T02:37:29Z [web]   "Hellblade: Senua's Sacrifice",
+2025-10-08T02:37:29Z [web]   'Divinity: Original Sin 2',
+2025-10-08T02:37:29Z [web]   'GOD EATER 2: Rage Burst',
+2025-10-08T02:37:29Z [web]   'GOD EATER RESURRECTION',
+2025-10-08T02:37:29Z [web]   'Prey',
+2025-10-08T02:37:29Z [web]   'Guacamelee! 2',
+2025-10-08T02:37:29Z [web]   'Deep Rock Galactic',
+2025-10-08T02:37:29Z [web]   'Warhammer: Vermintide 2',
+2025-10-08T02:37:29Z [web]   'Pillars of Eternity II: Deadfire',
+2025-10-08T02:37:29Z [web]   'Dark Souls: Remastered',
+2025-10-08T02:37:29Z [web]   ... 40 more items
+2025-10-08T02:37:29Z [web] ]
+2025-10-08T02:37:29Z [web]  ○ Compiling /api/steam/get-igdb-ids ...
+2025-10-08T02:37:31Z [web]  ✓ Compiled /api/steam/get-igdb-ids in 2.7s
+2025-10-08T02:38:11Z [web]  POST /api/steam/get-igdb-ids 200 in 42779ms
+2025-10-08T02:38:11Z [web] [Steam Import] Received IGDB ID map: {
+2025-10-08T02:38:11Z [web]   'Half-Life 2': 267639,
+2025-10-08T02:38:11Z [web]   'Half-Life 2: Deathmatch': 9471,
+2025-10-08T02:38:11Z [web]   'Half-Life Deathmatch: Source': 19348,
+2025-10-08T02:38:11Z [web]   Portal: 193776,
+2025-10-08T02:38:11Z [web]   'Team Fortress 2': 256431,
+2025-10-08T02:38:11Z [web]   'Left 4 Dead 2': 124,
+2025-10-08T02:38:11Z [web]   'Portal 2': 193776,
+2025-10-08T02:38:11Z [web]   'Killing Floor': 306881,
+2025-10-08T02:38:11Z [web]   'Vampire: The Masquerade - Bloodlines': 11,
+2025-10-08T02:38:11Z [web]   "Garry's Mod": 3278,
+2025-10-08T02:38:11Z [web]   'Star Wars Jedi Knight: Jedi Academy': 153,
+2025-10-08T02:38:11Z [web]   BioShock: 152660,
+2025-10-08T02:38:11Z [web]   'BioShock 2': 21,
+2025-10-08T02:38:11Z [web]   'BioShock Infinite': 538,
+2025-10-08T02:38:11Z [web]   "Tom Clancy's Splinter Cell Chaos Theory": 243021,
+2025-10-08T02:38:11Z [web]   'F.E.A.R. 2: Project Origin': 520,
+2025-10-08T02:38:11Z [web]   'Far Cry 2': 361,
+2025-10-08T02:38:11Z [web]   'F.E.A.R.': 294292,
+2025-10-08T02:38:11Z [web]   'F.E.A.R. 3': 514,
+2025-10-08T02:38:11Z [web]   'F.E.A.R. Extraction Point': 518,
+2025-10-08T02:38:11Z [web]   'F.E.A.R. Perseus Mandate': 519,
+2025-10-08T02:38:11Z [web]   'Fallout: New Vegas': 16,
+2025-10-08T02:38:11Z [web]   'Star Wars: Knights of the Old Republic': 116,
+2025-10-08T02:38:11Z [web]   'Killing Floor: Incursion': 19544,
+2025-10-08T02:38:11Z [web]   Trine: 6247,
+2025-10-08T02:38:11Z [web]   'Trine 2': 6250,
+2025-10-08T02:38:11Z [web]   'Super Meat Boy': 77317,
+2025-10-08T02:38:11Z [web]   Limbo: 1331,
+2025-10-08T02:38:11Z [web]   'Amnesia: The Dark Descent': 111,
+2025-10-08T02:38:11Z [web]   "Monaco: What's Yours Is Mine": 8739,
+2025-10-08T02:38:11Z [web]   'XCOM: Enemy Unknown': 1318,
+2025-10-08T02:38:11Z [web]   'Tomb Raider': 1159,
+2025-10-08T02:38:11Z [web]   SpeedRunners: 9527,
+2025-10-08T02:38:11Z [web]   'Star Wars: Knights of the Old Republic II – The Sith Lords': 118,
+2025-10-08T02:38:11Z [web]   'Alien: Isolation': 197779,
+2025-10-08T02:38:11Z [web]   'Mark of the Ninja': 94969,
+2025-10-08T02:38:11Z [web]   'Far Cry': 164801,
+2025-10-08T02:38:11Z [web]   'INSURGENCY: Modern Infantry Combat': 27533,
+2025-10-08T02:38:11Z [web]   'Company of Heroes 2': 1369,
+2025-10-08T02:38:11Z [web]   'Tom Clancy’s Splinter Cell Blacklist': 1305,
+2025-10-08T02:38:11Z [web]   "Deus Ex: Human Revolution - Director's Cut": 9740,
+2025-10-08T02:38:11Z [web]   Outlast: 1910,
+2025-10-08T02:38:11Z [web]   'Dying Light: The Following - Enhanced Edition': 21762,
+2025-10-08T02:38:11Z [web]   'Amnesia: A Machine for Pigs': 1882,
+2025-10-08T02:38:11Z [web]   'Middle-earth: Shadow of Mordor': 3025,
+2025-10-08T02:38:11Z [web]   'Styx: Master of Shadows': 6072,
+2025-10-08T02:38:11Z [web]   'Injustice: Gods Among Us Ultimate Edition': 23354,
+2025-10-08T02:38:11Z [web]   'Shovel Knight: Treasure Trove': 26848,
+2025-10-08T02:38:11Z [web]   'TowerFall Ascension': 9567,
+2025-10-08T02:38:11Z [web]   'Lovers in a Dangerous Spacetime': 12520,
+2025-10-08T02:38:11Z [web]   'Rocket League': 11198,
+2025-10-08T02:38:11Z [web]   'Hyper Light Drifter': 107295,
+2025-10-08T02:38:11Z [web]   'Ori and the Blind Forest': 19456,
+2025-10-08T02:38:11Z [web]   'XCOM 2': 86268,
+2025-10-08T02:38:11Z [web]   Cuphead: 237497,
+2025-10-08T02:38:11Z [web]   Broforce: 5973,
+2025-10-08T02:38:11Z [web]   Depth: 343587,
+2025-10-08T02:38:11Z [web]   'Gang Beasts': 11177,
+2025-10-08T02:38:11Z [web]   'Metro 2033 Redux': 80853,
+2025-10-08T02:38:11Z [web]   'Metro: Last Light Redux': 50199,
+2025-10-08T02:38:11Z [web]   'Metal Gear Solid V: The Phantom Pain': 1985,
+2025-10-08T02:38:11Z [web]   'Sid Meier’s Civilization VI': 19130,
+2025-10-08T02:38:11Z [web]   'Pillars of Eternity': 1593,
+2025-10-08T02:38:11Z [web]   'The Witcher 3: Wild Hunt': 141472,
+2025-10-08T02:38:11Z [web]   'Titan Souls': 9559,
+2025-10-08T02:38:11Z [web]   Outland: 8371,
+2025-10-08T02:38:11Z [web]   'Sleeping Dogs: Definitive Edition': 20228,
+2025-10-08T02:38:11Z [web]   'Call of Duty: Black Ops III': 136212,
+2025-10-08T02:38:11Z [web]   'Rain World': 14761,
+2025-10-08T02:38:11Z [web]   'Duck Game': 328300,
+2025-10-08T02:38:11Z [web]   'Trine 3: The Artifacts of Power': 8255,
+2025-10-08T02:38:11Z [web]   "Don't Starve Together": 17832,
+2025-10-08T02:38:11Z [web]   SUPERHOT: 7205,
+2025-10-08T02:38:11Z [web]   'Jotun: Valhalla Edition': 14147,
+2025-10-08T02:38:11Z [web]   'Dark Souls II: Scholar of the First Sin': 8222,
+2025-10-08T02:38:11Z [web]   'Deus Ex: Mankind Divided': 9498,
+2025-10-08T02:38:11Z [web]   'Middle-earth: Shadow of War': 52198,
+2025-10-08T02:38:11Z [web]   "Tom Clancy's Rainbow Six Siege": 7360,
+2025-10-08T02:38:11Z [web]   'Black Mesa': 6739,
+2025-10-08T02:38:11Z [web]   'Total War: WARHAMMER': 143114,
+2025-10-08T02:38:11Z [web]   'Hollow Knight': 14593,
+2025-10-08T02:38:11Z [web]   'Dead by Daylight': 330916,
+2025-10-08T02:38:11Z [web]   'Rivals of Aether': 21646,
+2025-10-08T02:38:11Z [web]   'Ori and the Blind Forest: Definitive Edition': 19456,
+2025-10-08T02:38:11Z [web]   'Rise of the Tomb Raider': 7323,
+2025-10-08T02:38:11Z [web]   HELLDIVERS: 14523,
+2025-10-08T02:38:11Z [web]   'BioShock Remastered': 34293,
+2025-10-08T02:38:11Z [web]   'BioShock 2 Remastered': 34294,
+2025-10-08T02:38:11Z [web]   'Metro Exodus': 37016,
+2025-10-08T02:38:11Z [web]   "Hellblade: Senua's Sacrifice": 7603,
+2025-10-08T02:38:11Z [web]   'Divinity: Original Sin 2': 154209,
+2025-10-08T02:38:11Z [web]   'GOD EATER 2: Rage Burst': 11857,
+2025-10-08T02:38:11Z [web]   'GOD EATER RESURRECTION': 11858,
+2025-10-08T02:38:11Z [web]   Prey: 19531,
+2025-10-08T02:38:11Z [web]   'Guacamelee! 2': 75234,
+2025-10-08T02:38:11Z [web]   'Deep Rock Galactic': 27134,
+2025-10-08T02:38:11Z [web]   'Warhammer: Vermintide 2': 55189,
+2025-10-08T02:38:11Z [web]   'Pillars of Eternity II: Deadfire': 26951,
+2025-10-08T02:38:11Z [web]   'Dark Souls: Remastered': 81085,
+2025-10-08T02:38:11Z [web]   'Total War: WARHAMMER II': 28028,
+2025-10-08T02:38:11Z [web]   'Quake Champions': 19530,
+2025-10-08T02:38:11Z [web]   'Ultimate Epic Battle Simulator': 28171,
+2025-10-08T02:38:11Z [web]   'Stick Fight: The Game': 65832,
+2025-10-08T02:38:11Z [web]   'Superhot: Mind Control Delete': 27448,
+2025-10-08T02:38:11Z [web]   'Trine 4: The Nightmare Prince': 110846,
+2025-10-08T02:38:11Z [web]   'Wasteland 3': 24863,
+2025-10-08T02:38:11Z [web]   'Overcooked! 2': 135963,
+2025-10-08T02:38:11Z [web]   Phasmophobia: 132516,
+2025-10-08T02:38:11Z [web]   'Prey: Typhon Hunter': 117748,
+2025-10-08T02:38:11Z [web]   "Hellblade: Senua's Sacrifice VR Edition": 106107,
+2025-10-08T02:38:11Z [web]   'Shadow of the Tomb Raider': 99123,
+2025-10-08T02:38:11Z [web]   'Outer Wilds': 11737,
+2025-10-08T02:38:11Z [web]   Blasphemous: 274522,
+2025-10-08T02:38:11Z [web]   'Total War: THREE KINGDOMS': 167644,
+2025-10-08T02:38:11Z [web]   'Age of Empires II: Definitive Edition': 55056,
+2025-10-08T02:38:11Z [web]   'Sekiro: Shadows Die Twice': 76882,
+2025-10-08T02:38:11Z [web]   'Mark of the Ninja: Remastered': 94969,
+2025-10-08T02:38:11Z [web]   'XCOM: Chimera Squad': 132139,
+2025-10-08T02:38:11Z [web]   'Lego Star Wars: The Skywalker Saga': 119305,
+2025-10-08T02:38:11Z [web]   'Halo: The Master Chief Collection': 7348,
+2025-10-08T02:38:11Z [web]   'The Ascent': 23595,
+2025-10-08T02:38:11Z [web]   'Ori and the Will of the Wisps': 37001,
+2025-10-08T02:38:11Z [web]   'Total War: WARHAMMER III': 143114,
+2025-10-08T02:38:11Z [web]   Hades: 113112,
+2025-10-08T02:38:11Z [web]   'STAR WARS Battlefront II': 142,
+2025-10-08T02:38:11Z [web]   'Jurassic World Evolution 2': 152064,
+2025-10-08T02:38:11Z [web]   'Elden Ring': 119133,
+2025-10-08T02:38:11Z [web]   'Song of Iron': 132756,
+2025-10-08T02:38:11Z [web]   'Cult of the Lamb': 165351,
+2025-10-08T02:38:11Z [web]   'Mass Effect: Legendary Edition': 140839,
+2025-10-08T02:38:11Z [web]   'Nickelodeon All-Star Brawl': 156151,
+2025-10-08T02:38:11Z [web]   'Nobody Saves the World': 145089,
+2025-10-08T02:38:11Z [web]   'Metro Exodus: Enhanced Edition': 143292,
+2025-10-08T02:38:11Z [web]   selaco: 145828,
+2025-10-08T02:38:11Z [web]   'Dome Keeper': 200611,
+2025-10-08T02:38:11Z [web]   'Total War: PHARAOH': 250531,
+2025-10-08T02:38:11Z [web]   'Football Manager 2024': 266382,
+2025-10-08T02:38:11Z [web]   'Total War: PHARAOH DYNASTIES': 333730
+2025-10-08T02:38:11Z [web] }
+2025-10-08T02:38:11Z [web] [Steam Import] Fetching playtimes for IGDB IDs: [
+2025-10-08T02:38:11Z [web]   267639,   9471,  19348, 193776, 256431,    124, 306881,     11,
+2025-10-08T02:38:11Z [web]     3278,    153, 152660,     21,    538, 243021,    520,    361,
+2025-10-08T02:38:11Z [web]   294292,    514,    518,    519,     16,    116,  19544,   6247,
+2025-10-08T02:38:11Z [web]     6250,  77317,   1331,    111,   8739,   1318,   1159,   9527,
+2025-10-08T02:38:11Z [web]      118, 197779,  94969, 164801,  27533,   1369,   1305,   9740,
+2025-10-08T02:38:11Z [web]     1910,  21762,   1882,   3025,   6072,  23354,  26848,   9567,
+2025-10-08T02:38:11Z [web]    12520,  11198, 107295,  19456,  86268, 237497,   5973, 343587,
+2025-10-08T02:38:11Z [web]    11177,  80853,  50199,   1985,  19130,   1593, 141472,   9559,
+2025-10-08T02:38:11Z [web]     8371,  20228, 136212,  14761, 328300,   8255,  17832,   7205,
+2025-10-08T02:38:11Z [web]    14147,   8222,   9498,  52198,   7360,   6739, 143114,  14593,
+2025-10-08T02:38:11Z [web]   330916,  21646,   7323,  14523,  34293,  34294,  37016,   7603,
+2025-10-08T02:38:11Z [web]   154209,  11857,  11858,  19531,  75234,  27134,  55189,  26951,
+2025-10-08T02:38:11Z [web]    81085,  28028,  19530,  28171,
+2025-10-08T02:38:11Z [web]   ... 34 more items
+2025-10-08T02:38:11Z [web] ]
+2025-10-08T02:38:12Z [web]  ○ Compiling /api/steam/get-batch-playtimes ...
+2025-10-08T02:38:14Z [web]  ✓ Compiled /api/steam/get-batch-playtimes in 2.1s
+2025-10-08T02:38:14Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_267639",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_9471",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_19348",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_193776",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_256431",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_124",
+2025-10-08T02:38:14Z [web]     "result": [
+2025-10-08T02:38:14Z [web]       {
+2025-10-08T02:38:14Z [web]         "id": 553,
+2025-10-08T02:38:14Z [web]         "normally": 90000,
+2025-10-08T02:38:14Z [web]         "completely": 381600
+2025-10-08T02:38:14Z [web]       }
+2025-10-08T02:38:14Z [web]     ]
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_306881",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_11",
+2025-10-08T02:38:14Z [web]     "result": [
+2025-10-08T02:38:14Z [web]       {
+2025-10-08T02:38:14Z [web]         "id": 68,
+2025-10-08T02:38:14Z [web]         "normally": 97200,
+2025-10-08T02:38:14Z [web]         "completely": 216000
+2025-10-08T02:38:14Z [web]       }
+2025-10-08T02:38:14Z [web]     ]
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_3278",
+2025-10-08T02:38:14Z [web]     "result": [
+2025-10-08T02:38:14Z [web]       {
+2025-10-08T02:38:14Z [web]         "id": 4484
+2025-10-08T02:38:14Z [web]       }
+2025-10-08T02:38:14Z [web]     ]
+2025-10-08T02:38:14Z [web]   },
+2025-10-08T02:38:14Z [web]   {
+2025-10-08T02:38:14Z [web]     "name": "ttb_153",
+2025-10-08T02:38:14Z [web]     "result": []
+2025-10-08T02:38:14Z [web]   }
+2025-10-08T02:38:14Z [web] ]
+2025-10-08T02:38:15Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_152660",
+2025-10-08T02:38:15Z [web]     "result": []
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_21",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 381,
+2025-10-08T02:38:15Z [web]         "normally": 37440,
+2025-10-08T02:38:15Z [web]         "completely": 142200
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_538",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 22,
+2025-10-08T02:38:15Z [web]         "normally": 52084,
+2025-10-08T02:38:15Z [web]         "completely": 101751
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_243021",
+2025-10-08T02:38:15Z [web]     "result": []
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_520",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 442,
+2025-10-08T02:38:15Z [web]         "normally": 35400
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_361",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 1134,
+2025-10-08T02:38:15Z [web]         "normally": 71340,
+2025-10-08T02:38:15Z [web]         "completely": 52680
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_294292",
+2025-10-08T02:38:15Z [web]     "result": []
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_514",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 443,
+2025-10-08T02:38:15Z [web]         "normally": 24120,
+2025-10-08T02:38:15Z [web]         "completely": 54000
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_518",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 209,
+2025-10-08T02:38:15Z [web]         "normally": 16200,
+2025-10-08T02:38:15Z [web]         "completely": 18000
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   },
+2025-10-08T02:38:15Z [web]   {
+2025-10-08T02:38:15Z [web]     "name": "ttb_519",
+2025-10-08T02:38:15Z [web]     "result": [
+2025-10-08T02:38:15Z [web]       {
+2025-10-08T02:38:15Z [web]         "id": 208,
+2025-10-08T02:38:15Z [web]         "normally": 18675,
+2025-10-08T02:38:15Z [web]         "completely": 21600
+2025-10-08T02:38:15Z [web]       }
+2025-10-08T02:38:15Z [web]     ]
+2025-10-08T02:38:15Z [web]   }
+2025-10-08T02:38:15Z [web] ]
+2025-10-08T02:38:15Z [web]  POST /api/import-steam 200 in 59998ms
+2025-10-08T02:38:16Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_16",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 51,
+2025-10-08T02:38:16Z [web]         "normally": 195260,
+2025-10-08T02:38:16Z [web]         "completely": 368805
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_116",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 257,
+2025-10-08T02:38:16Z [web]         "normally": 143250,
+2025-10-08T02:38:16Z [web]         "completely": 199800
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_19544",
+2025-10-08T02:38:16Z [web]     "result": []
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_6247",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 58,
+2025-10-08T02:38:16Z [web]         "normally": 28350,
+2025-10-08T02:38:16Z [web]         "completely": 36000
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_6250",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 59,
+2025-10-08T02:38:16Z [web]         "normally": 27270,
+2025-10-08T02:38:16Z [web]         "completely": 62400
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_77317",
+2025-10-08T02:38:16Z [web]     "result": []
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_1331",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 65,
+2025-10-08T02:38:16Z [web]         "normally": 13048,
+2025-10-08T02:38:16Z [web]         "completely": 23340
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_111",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 297,
+2025-10-08T02:38:16Z [web]         "normally": 35640,
+2025-10-08T02:38:16Z [web]         "completely": 40800
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_8739",
+2025-10-08T02:38:16Z [web]     "result": []
+2025-10-08T02:38:16Z [web]   },
+2025-10-08T02:38:16Z [web]   {
+2025-10-08T02:38:16Z [web]     "name": "ttb_1318",
+2025-10-08T02:38:16Z [web]     "result": [
+2025-10-08T02:38:16Z [web]       {
+2025-10-08T02:38:16Z [web]         "id": 69,
+2025-10-08T02:38:16Z [web]         "normally": 102680,
+2025-10-08T02:38:16Z [web]         "completely": 194400
+2025-10-08T02:38:16Z [web]       }
+2025-10-08T02:38:16Z [web]     ]
+2025-10-08T02:38:16Z [web]   }
+2025-10-08T02:38:16Z [web] ]
+2025-10-08T02:38:17Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_1159",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_9527",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_118",
+2025-10-08T02:38:17Z [web]     "result": [
+2025-10-08T02:38:17Z [web]       {
+2025-10-08T02:38:17Z [web]         "id": 229,
+2025-10-08T02:38:17Z [web]         "normally": 128365,
+2025-10-08T02:38:17Z [web]         "completely": 192000
+2025-10-08T02:38:17Z [web]       }
+2025-10-08T02:38:17Z [web]     ]
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_197779",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_94969",
+2025-10-08T02:38:17Z [web]     "result": [
+2025-10-08T02:38:17Z [web]       {
+2025-10-08T02:38:17Z [web]         "id": 1946,
+2025-10-08T02:38:17Z [web]         "completely": 68340
+2025-10-08T02:38:17Z [web]       }
+2025-10-08T02:38:17Z [web]     ]
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_164801",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_27533",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_1369",
+2025-10-08T02:38:17Z [web]     "result": []
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_1305",
+2025-10-08T02:38:17Z [web]     "result": [
+2025-10-08T02:38:17Z [web]       {
+2025-10-08T02:38:17Z [web]         "id": 593,
+2025-10-08T02:38:17Z [web]         "normally": 79200,
+2025-10-08T02:38:17Z [web]         "completely": 532800
+2025-10-08T02:38:17Z [web]       }
+2025-10-08T02:38:17Z [web]     ]
+2025-10-08T02:38:17Z [web]   },
+2025-10-08T02:38:17Z [web]   {
+2025-10-08T02:38:17Z [web]     "name": "ttb_9740",
+2025-10-08T02:38:17Z [web]     "result": [
+2025-10-08T02:38:17Z [web]       {
+2025-10-08T02:38:17Z [web]         "id": 973,
+2025-10-08T02:38:17Z [web]         "normally": 81900,
+2025-10-08T02:38:17Z [web]         "completely": 108000
+2025-10-08T02:38:17Z [web]       }
+2025-10-08T02:38:17Z [web]     ]
+2025-10-08T02:38:17Z [web]   }
+2025-10-08T02:38:17Z [web] ]
+2025-10-08T02:38:18Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_1910",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 446,
+2025-10-08T02:38:18Z [web]         "normally": 21600,
+2025-10-08T02:38:18Z [web]         "completely": 3600
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_21762",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 2018,
+2025-10-08T02:38:18Z [web]         "completely": 77700
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_1882",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 296,
+2025-10-08T02:38:18Z [web]         "normally": 21240,
+2025-10-08T02:38:18Z [web]         "completely": 10800
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_3025",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 386,
+2025-10-08T02:38:18Z [web]         "normally": 64440,
+2025-10-08T02:38:18Z [web]         "completely": 207650
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_6072",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 1233,
+2025-10-08T02:38:18Z [web]         "normally": 68400
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_23354",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 829,
+2025-10-08T02:38:18Z [web]         "normally": 14400
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_26848",
+2025-10-08T02:38:18Z [web]     "result": []
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_9567",
+2025-10-08T02:38:18Z [web]     "result": []
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_12520",
+2025-10-08T02:38:18Z [web]     "result": []
+2025-10-08T02:38:18Z [web]   },
+2025-10-08T02:38:18Z [web]   {
+2025-10-08T02:38:18Z [web]     "name": "ttb_11198",
+2025-10-08T02:38:18Z [web]     "result": [
+2025-10-08T02:38:18Z [web]       {
+2025-10-08T02:38:18Z [web]         "id": 3389,
+2025-10-08T02:38:18Z [web]         "normally": 360000,
+2025-10-08T02:38:18Z [web]         "completely": 540000
+2025-10-08T02:38:18Z [web]       }
+2025-10-08T02:38:18Z [web]     ]
+2025-10-08T02:38:18Z [web]   }
+2025-10-08T02:38:18Z [web] ]
+2025-10-08T02:38:19Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_107295",
+2025-10-08T02:38:19Z [web]     "result": []
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_19456",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 1077,
+2025-10-08T02:38:19Z [web]         "normally": 55200,
+2025-10-08T02:38:19Z [web]         "completely": 38100
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_86268",
+2025-10-08T02:38:19Z [web]     "result": []
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_237497",
+2025-10-08T02:38:19Z [web]     "result": []
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_5973",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 4930,
+2025-10-08T02:38:19Z [web]         "normally": 68400
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_343587",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 4695,
+2025-10-08T02:38:19Z [web]         "normally": 3600,
+2025-10-08T02:38:19Z [web]         "completely": 7200
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_11177",
+2025-10-08T02:38:19Z [web]     "result": []
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_80853",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 1362,
+2025-10-08T02:38:19Z [web]         "normally": 43125
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_50199",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 1785,
+2025-10-08T02:38:19Z [web]         "normally": 48550,
+2025-10-08T02:38:19Z [web]         "completely": 90000
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   },
+2025-10-08T02:38:19Z [web]   {
+2025-10-08T02:38:19Z [web]     "name": "ttb_1985",
+2025-10-08T02:38:19Z [web]     "result": [
+2025-10-08T02:38:19Z [web]       {
+2025-10-08T02:38:19Z [web]         "id": 508,
+2025-10-08T02:38:19Z [web]         "normally": 308400
+2025-10-08T02:38:19Z [web]       }
+2025-10-08T02:38:19Z [web]     ]
+2025-10-08T02:38:19Z [web]   }
+2025-10-08T02:38:19Z [web] ]
+2025-10-08T02:38:20Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_19130",
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 1512,
+2025-10-08T02:38:20Z [web]         "normally": 75600
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_1593",
+2025-10-08T02:38:20Z [web] ]
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 606,
+2025-10-08T02:38:20Z [web]         "normally": 205200
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_141472",
+2025-10-08T02:38:20Z [web]     "result": []
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_9559",
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 492,
+2025-10-08T02:38:20Z [web]         "normally": 11700,
+2025-10-08T02:38:20Z [web]         "completely": 27900
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_8371",
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 552,
+2025-10-08T02:38:20Z [web]         "normally": 32400,
+2025-10-08T02:38:20Z [web]         "completely": 43200
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_20228",
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 1849,
+2025-10-08T02:38:20Z [web]         "normally": 98400,
+2025-10-08T02:38:20Z [web]         "completely": 141000
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_136212",
+2025-10-08T02:38:20Z [web]     "result": []
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_14761",
+2025-10-08T02:38:20Z [web]     "result": [
+2025-10-08T02:38:20Z [web]       {
+2025-10-08T02:38:20Z [web]         "id": 3642,
+2025-10-08T02:38:20Z [web]         "normally": 66000,
+2025-10-08T02:38:20Z [web]         "completely": 210600
+2025-10-08T02:38:20Z [web]       }
+2025-10-08T02:38:20Z [web]     ]
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_328300",
+2025-10-08T02:38:20Z [web]     "result": []
+2025-10-08T02:38:20Z [web]   },
+2025-10-08T02:38:20Z [web]   {
+2025-10-08T02:38:20Z [web]     "name": "ttb_8255",
+2025-10-08T02:38:20Z [web]     "result": []
+2025-10-08T02:38:20Z [web]   }
+2025-10-08T02:38:22Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_17832",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 6139,
+2025-10-08T02:38:22Z [web]         "normally": 360000,
+2025-10-08T02:38:22Z [web]         "completely": 766800
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_7205",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 573,
+2025-10-08T02:38:22Z [web]         "normally": 17160,
+2025-10-08T02:38:22Z [web]         "completely": 4680
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_14147",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 634,
+2025-10-08T02:38:22Z [web]         "normally": 18000
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_8222",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 289,
+2025-10-08T02:38:22Z [web]         "normally": 192000,
+2025-10-08T02:38:22Z [web]         "completely": 260790
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_9498",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 927,
+2025-10-08T02:38:22Z [web]         "normally": 112200,
+2025-10-08T02:38:22Z [web]         "completely": 147000
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_52198",
+2025-10-08T02:38:22Z [web]     "result": []
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_7360",
+2025-10-08T02:38:22Z [web]     "result": []
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_6739",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 1613,
+2025-10-08T02:38:22Z [web]         "normally": 38400,
+2025-10-08T02:38:22Z [web]         "completely": 217350
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_143114",
+2025-10-08T02:38:22Z [web]     "result": []
+2025-10-08T02:38:22Z [web]   },
+2025-10-08T02:38:22Z [web]   {
+2025-10-08T02:38:22Z [web]     "name": "ttb_14593",
+2025-10-08T02:38:22Z [web]     "result": [
+2025-10-08T02:38:22Z [web]       {
+2025-10-08T02:38:22Z [web]         "id": 936,
+2025-10-08T02:38:22Z [web]         "normally": 135956,
+2025-10-08T02:38:22Z [web]         "completely": 268346
+2025-10-08T02:38:22Z [web]       }
+2025-10-08T02:38:22Z [web]     ]
+2025-10-08T02:38:22Z [web]   }
+2025-10-08T02:38:22Z [web] ]
+2025-10-08T02:38:23Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_330916",
+2025-10-08T02:38:23Z [web]     "result": []
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_21646",
+2025-10-08T02:38:23Z [web]     "result": []
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_7323",
+2025-10-08T02:38:23Z [web]     "result": [
+2025-10-08T02:38:23Z [web]       {
+2025-10-08T02:38:23Z [web]         "id": 816,
+2025-10-08T02:38:23Z [web]         "normally": 88277,
+2025-10-08T02:38:23Z [web]         "completely": 192744
+2025-10-08T02:38:23Z [web]       }
+2025-10-08T02:38:23Z [web]     ]
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_14523",
+2025-10-08T02:38:23Z [web]     "result": []
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_34293",
+2025-10-08T02:38:23Z [web]     "result": [
+2025-10-08T02:38:23Z [web]       {
+2025-10-08T02:38:23Z [web]         "id": 1407,
+2025-10-08T02:38:23Z [web]         "normally": 43944
+2025-10-08T02:38:23Z [web]       }
+2025-10-08T02:38:23Z [web]     ]
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_34294",
+2025-10-08T02:38:23Z [web]     "result": [
+2025-10-08T02:38:23Z [web]       {
+2025-10-08T02:38:23Z [web]         "id": 1878,
+2025-10-08T02:38:23Z [web]         "normally": 43080,
+2025-10-08T02:38:23Z [web]         "completely": 142200
+2025-10-08T02:38:23Z [web]       }
+2025-10-08T02:38:23Z [web]     ]
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_37016",
+2025-10-08T02:38:23Z [web]     "result": [
+2025-10-08T02:38:23Z [web]       {
+2025-10-08T02:38:23Z [web]         "id": 1485,
+2025-10-08T02:38:23Z [web]         "normally": 69600,
+2025-10-08T02:38:23Z [web]         "completely": 93600
+2025-10-08T02:38:23Z [web]       }
+2025-10-08T02:38:23Z [web]     ]
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_7603",
+2025-10-08T02:38:23Z [web]     "result": [
+2025-10-08T02:38:23Z [web]       {
+2025-10-08T02:38:23Z [web]         "id": 935,
+2025-10-08T02:38:23Z [web]         "normally": 28302,
+2025-10-08T02:38:23Z [web]         "completely": 34200
+2025-10-08T02:38:23Z [web]       }
+2025-10-08T02:38:23Z [web]     ]
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_154209",
+2025-10-08T02:38:23Z [web]     "result": []
+2025-10-08T02:38:23Z [web]   },
+2025-10-08T02:38:23Z [web]   {
+2025-10-08T02:38:23Z [web]     "name": "ttb_11857",
+2025-10-08T02:38:23Z [web]     "result": []
+2025-10-08T02:38:23Z [web]   }
+2025-10-08T02:38:23Z [web] ]
+2025-10-08T02:38:24Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_11858",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_19531",
+2025-10-08T02:38:24Z [web]     "result": [
+2025-10-08T02:38:24Z [web]       {
+2025-10-08T02:38:24Z [web]         "id": 932,
+2025-10-08T02:38:24Z [web]         "normally": 103656,
+2025-10-08T02:38:24Z [web]         "completely": 134020
+2025-10-08T02:38:24Z [web]       }
+2025-10-08T02:38:24Z [web]     ]
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_75234",
+2025-10-08T02:38:24Z [web]     "result": [
+2025-10-08T02:38:24Z [web]       {
+2025-10-08T02:38:24Z [web]         "id": 1488,
+2025-10-08T02:38:24Z [web]         "normally": 42450
+2025-10-08T02:38:24Z [web]       }
+2025-10-08T02:38:24Z [web]     ]
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_27134",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_55189",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_26951",
+2025-10-08T02:38:24Z [web]     "result": [
+2025-10-08T02:38:24Z [web]       {
+2025-10-08T02:38:24Z [web]         "id": 1380,
+2025-10-08T02:38:24Z [web]         "normally": 205200
+2025-10-08T02:38:24Z [web]       }
+2025-10-08T02:38:24Z [web]     ]
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_81085",
+2025-10-08T02:38:24Z [web]     "result": [
+2025-10-08T02:38:24Z [web]       {
+2025-10-08T02:38:24Z [web]         "id": 1365,
+2025-10-08T02:38:24Z [web]         "normally": 192000,
+2025-10-08T02:38:24Z [web]         "completely": 207600
+2025-10-08T02:38:24Z [web]       }
+2025-10-08T02:38:24Z [web]     ]
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_28028",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_19530",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   },
+2025-10-08T02:38:24Z [web]   {
+2025-10-08T02:38:24Z [web]     "name": "ttb_28171",
+2025-10-08T02:38:24Z [web]     "result": []
+2025-10-08T02:38:24Z [web]   }
+2025-10-08T02:38:24Z [web] ]
+2025-10-08T02:38:25Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_65832",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_27448",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_110846",
+2025-10-08T02:38:25Z [web]     "result": [
+2025-10-08T02:38:25Z [web]       {
+2025-10-08T02:38:25Z [web]         "id": 2382,
+2025-10-08T02:38:25Z [web]         "completely": 75600
+2025-10-08T02:38:25Z [web]       }
+2025-10-08T02:38:25Z [web]     ]
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_24863",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_135963",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_132516",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_117748",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_106107",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_99123",
+2025-10-08T02:38:25Z [web]     "result": []
+2025-10-08T02:38:25Z [web]   },
+2025-10-08T02:38:25Z [web]   {
+2025-10-08T02:38:25Z [web]     "name": "ttb_11737",
+2025-10-08T02:38:25Z [web]     "result": [
+2025-10-08T02:38:25Z [web]       {
+2025-10-08T02:38:25Z [web]         "id": 1758,
+2025-10-08T02:38:25Z [web]         "normally": 75600
+2025-10-08T02:38:25Z [web]       }
+2025-10-08T02:38:25Z [web]     ]
+2025-10-08T02:38:25Z [web]   }
+2025-10-08T02:38:25Z [web] ]
+2025-10-08T02:38:26Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_274522",
+2025-10-08T02:38:26Z [web]     "result": []
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_167644",
+2025-10-08T02:38:26Z [web]     "result": []
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_55056",
+2025-10-08T02:38:26Z [web]     "result": []
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_76882",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 1104,
+2025-10-08T02:38:26Z [web]         "normally": 152100,
+2025-10-08T02:38:26Z [web]         "completely": 189360
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_132139",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 4886,
+2025-10-08T02:38:26Z [web]         "normally": 115200
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_119305",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 4210,
+2025-10-08T02:38:26Z [web]         "normally": 246000,
+2025-10-08T02:38:26Z [web]         "completely": 716400
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_7348",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 6053,
+2025-10-08T02:38:26Z [web]         "normally": 100800
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_23595",
+2025-10-08T02:38:26Z [web]     "result": []
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_37001",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 1462,
+2025-10-08T02:38:26Z [web]         "normally": 61320,
+2025-10-08T02:38:26Z [web]         "completely": 70236
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   },
+2025-10-08T02:38:26Z [web]   {
+2025-10-08T02:38:26Z [web]     "name": "ttb_113112",
+2025-10-08T02:38:26Z [web]     "result": [
+2025-10-08T02:38:26Z [web]       {
+2025-10-08T02:38:26Z [web]         "id": 2005,
+2025-10-08T02:38:26Z [web]         "normally": 255000,
+2025-10-08T02:38:26Z [web]         "completely": 576000
+2025-10-08T02:38:26Z [web]       }
+2025-10-08T02:38:26Z [web]     ]
+2025-10-08T02:38:26Z [web]   }
+2025-10-08T02:38:26Z [web] ]
+2025-10-08T02:38:27Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_142",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 210,
+2025-10-08T02:38:27Z [web]         "normally": 28800
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_152064",
+2025-10-08T02:38:27Z [web]     "result": []
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_119133",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 2585,
+2025-10-08T02:38:27Z [web]         "normally": 384300,
+2025-10-08T02:38:27Z [web]         "completely": 642240
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_132756",
+2025-10-08T02:38:27Z [web]     "result": []
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_165351",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 3374,
+2025-10-08T02:38:27Z [web]         "normally": 57600,
+2025-10-08T02:38:27Z [web]         "completely": 118800
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_140839",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 2063,
+2025-10-08T02:38:27Z [web]         "normally": 423900,
+2025-10-08T02:38:27Z [web]         "completely": 495900
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_156151",
+2025-10-08T02:38:27Z [web]     "result": []
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_145089",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 1797,
+2025-10-08T02:38:27Z [web]         "normally": 81390,
+2025-10-08T02:38:27Z [web]         "completely": 112200
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_143292",
+2025-10-08T02:38:27Z [web]     "result": [
+2025-10-08T02:38:27Z [web]       {
+2025-10-08T02:38:27Z [web]         "id": 2053,
+2025-10-08T02:38:27Z [web]         "normally": 75600
+2025-10-08T02:38:27Z [web]       }
+2025-10-08T02:38:27Z [web]     ]
+2025-10-08T02:38:27Z [web]   },
+2025-10-08T02:38:27Z [web]   {
+2025-10-08T02:38:27Z [web]     "name": "ttb_145828",
+2025-10-08T02:38:27Z [web]     "result": []
+2025-10-08T02:38:27Z [web]   }
+2025-10-08T02:38:27Z [web] ]
+2025-10-08T02:38:28Z [web] [get-batch-playtimes] Raw IGDB ttb response: [
+2025-10-08T02:38:28Z [web]   {
+2025-10-08T02:38:28Z [web]     "name": "ttb_200611",
+2025-10-08T02:38:28Z [web]     "result": []
+2025-10-08T02:38:28Z [web]   },
+2025-10-08T02:38:28Z [web]   {
+2025-10-08T02:38:28Z [web]     "name": "ttb_250531",
+2025-10-08T02:38:28Z [web]     "result": []
+2025-10-08T02:38:28Z [web]   },
+2025-10-08T02:38:28Z [web]   {
+2025-10-08T02:38:28Z [web]     "name": "ttb_266382",
+2025-10-08T02:38:28Z [web]     "result": []
+2025-10-08T02:38:28Z [web]   },
+2025-10-08T02:38:28Z [web]   {
+2025-10-08T02:38:28Z [web]     "name": "ttb_333730",
+2025-10-08T02:38:28Z [web]     "result": []
+2025-10-08T02:38:28Z [web]   }
+2025-10-08T02:38:28Z [web] ]
+2025-10-08T02:38:28Z [web]  POST /api/steam/get-batch-playtimes 200 in 16938ms
+2025-10-08T02:38:28Z [web] [Steam Import] Received playtimes map: {
+2025-10-08T02:38:28Z [web]   '11': { playtimeNormally: 27, playtimeCompletely: 60 },
+2025-10-08T02:38:28Z [web]   '16': { playtimeNormally: 54, playtimeCompletely: 102 },
+2025-10-08T02:38:28Z [web]   '21': { playtimeNormally: 10, playtimeCompletely: 40 },
+2025-10-08T02:38:28Z [web]   '111': { playtimeNormally: 10, playtimeCompletely: 11 },
+2025-10-08T02:38:28Z [web]   '116': { playtimeNormally: 40, playtimeCompletely: 56 },
+2025-10-08T02:38:28Z [web]   '118': { playtimeNormally: 36, playtimeCompletely: 53 },
+2025-10-08T02:38:28Z [web]   '124': { playtimeNormally: 25, playtimeCompletely: 106 },
+2025-10-08T02:38:28Z [web]   '142': { playtimeNormally: 8, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '153': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '361': { playtimeNormally: 20, playtimeCompletely: 15 },
+2025-10-08T02:38:28Z [web]   '514': { playtimeNormally: 7, playtimeCompletely: 15 },
+2025-10-08T02:38:28Z [web]   '518': { playtimeNormally: 5, playtimeCompletely: 5 },
+2025-10-08T02:38:28Z [web]   '519': { playtimeNormally: 5, playtimeCompletely: 6 },
+2025-10-08T02:38:28Z [web]   '520': { playtimeNormally: 10, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '538': { playtimeNormally: 14, playtimeCompletely: 28 },
+2025-10-08T02:38:28Z [web]   '1159': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '1305': { playtimeNormally: 22, playtimeCompletely: 148 },
+2025-10-08T02:38:28Z [web]   '1318': { playtimeNormally: 29, playtimeCompletely: 54 },
+2025-10-08T02:38:28Z [web]   '1331': { playtimeNormally: 4, playtimeCompletely: 6 },
+2025-10-08T02:38:28Z [web]   '1369': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '1593': { playtimeNormally: 57, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '1882': { playtimeNormally: 6, playtimeCompletely: 3 },
+2025-10-08T02:38:28Z [web]   '1910': { playtimeNormally: 6, playtimeCompletely: 1 },
+2025-10-08T02:38:28Z [web]   '1985': { playtimeNormally: 86, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '3025': { playtimeNormally: 18, playtimeCompletely: 58 },
+2025-10-08T02:38:28Z [web]   '3278': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '5973': { playtimeNormally: 19, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '6072': { playtimeNormally: 19, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '6247': { playtimeNormally: 8, playtimeCompletely: 10 },
+2025-10-08T02:38:28Z [web]   '6250': { playtimeNormally: 8, playtimeCompletely: 17 },
+2025-10-08T02:38:28Z [web]   '6739': { playtimeNormally: 11, playtimeCompletely: 60 },
+2025-10-08T02:38:28Z [web]   '7205': { playtimeNormally: 5, playtimeCompletely: 1 },
+2025-10-08T02:38:28Z [web]   '7323': { playtimeNormally: 25, playtimeCompletely: 54 },
+2025-10-08T02:38:28Z [web]   '7348': { playtimeNormally: 28, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '7360': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '7603': { playtimeNormally: 8, playtimeCompletely: 10 },
+2025-10-08T02:38:28Z [web]   '8222': { playtimeNormally: 53, playtimeCompletely: 72 },
+2025-10-08T02:38:28Z [web]   '8255': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '8371': { playtimeNormally: 9, playtimeCompletely: 12 },
+2025-10-08T02:38:28Z [web]   '8739': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '9471': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '9498': { playtimeNormally: 31, playtimeCompletely: 41 },
+2025-10-08T02:38:28Z [web]   '9527': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '9559': { playtimeNormally: 3, playtimeCompletely: 8 },
+2025-10-08T02:38:28Z [web]   '9567': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '9740': { playtimeNormally: 23, playtimeCompletely: 30 },
+2025-10-08T02:38:28Z [web]   '11177': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '11198': { playtimeNormally: 100, playtimeCompletely: 150 },
+2025-10-08T02:38:28Z [web]   '11737': { playtimeNormally: 21, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '11857': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '11858': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '12520': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '14147': { playtimeNormally: 5, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '14523': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '14593': { playtimeNormally: 38, playtimeCompletely: 75 },
+2025-10-08T02:38:28Z [web]   '14761': { playtimeNormally: 18, playtimeCompletely: 59 },
+2025-10-08T02:38:28Z [web]   '17832': { playtimeNormally: 100, playtimeCompletely: 213 },
+2025-10-08T02:38:28Z [web]   '19130': { playtimeNormally: 21, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '19348': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '19456': { playtimeNormally: 15, playtimeCompletely: 11 },
+2025-10-08T02:38:28Z [web]   '19530': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '19531': { playtimeNormally: 29, playtimeCompletely: 37 },
+2025-10-08T02:38:28Z [web]   '19544': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '20228': { playtimeNormally: 27, playtimeCompletely: 39 },
+2025-10-08T02:38:28Z [web]   '21646': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '21762': { playtimeNormally: null, playtimeCompletely: 22 },
+2025-10-08T02:38:28Z [web]   '23354': { playtimeNormally: 4, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '23595': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '24863': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '26848': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '26951': { playtimeNormally: 57, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '27134': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '27448': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '27533': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '28028': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '28171': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '34293': { playtimeNormally: 12, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '34294': { playtimeNormally: 12, playtimeCompletely: 40 },
+2025-10-08T02:38:28Z [web]   '37001': { playtimeNormally: 17, playtimeCompletely: 20 },
+2025-10-08T02:38:28Z [web]   '37016': { playtimeNormally: 19, playtimeCompletely: 26 },
+2025-10-08T02:38:28Z [web]   '50199': { playtimeNormally: 13, playtimeCompletely: 25 },
+2025-10-08T02:38:28Z [web]   '52198': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '55056': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '55189': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '65832': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '75234': { playtimeNormally: 12, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '76882': { playtimeNormally: 42, playtimeCompletely: 53 },
+2025-10-08T02:38:28Z [web]   '77317': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '80853': { playtimeNormally: 12, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '81085': { playtimeNormally: 53, playtimeCompletely: 58 },
+2025-10-08T02:38:28Z [web]   '86268': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '94969': { playtimeNormally: null, playtimeCompletely: 19 },
+2025-10-08T02:38:28Z [web]   '99123': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '106107': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '107295': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '110846': { playtimeNormally: null, playtimeCompletely: 21 },
+2025-10-08T02:38:28Z [web]   '113112': { playtimeNormally: 71, playtimeCompletely: 160 },
+2025-10-08T02:38:28Z [web]   '117748': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '119133': { playtimeNormally: 107, playtimeCompletely: 178 },
+2025-10-08T02:38:28Z [web]   '119305': { playtimeNormally: 68, playtimeCompletely: 199 },
+2025-10-08T02:38:28Z [web]   '132139': { playtimeNormally: 32, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '132516': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '132756': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '135963': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '136212': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '140839': { playtimeNormally: 118, playtimeCompletely: 138 },
+2025-10-08T02:38:28Z [web]   '141472': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '143114': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '143292': { playtimeNormally: 21, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '145089': { playtimeNormally: 23, playtimeCompletely: 31 },
+2025-10-08T02:38:28Z [web]   '145828': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '152064': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '152660': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '154209': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '156151': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '164801': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '165351': { playtimeNormally: 16, playtimeCompletely: 33 },
+2025-10-08T02:38:28Z [web]   '167644': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '193776': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '197779': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '200611': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '237497': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '243021': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '250531': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '256431': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '266382': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '267639': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '274522': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '294292': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '306881': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '328300': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '330916': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '333730': { playtimeNormally: null, playtimeCompletely: null },
+2025-10-08T02:38:28Z [web]   '343587': { playtimeNormally: 1, playtimeCompletely: 2 }
+2025-10-08T02:38:28Z [web] }
+2025-10-08T02:38:31Z [web] [Steam Import] Success: Import complete. Successfully imported 139 games. Failed to find matching data for 1 games.

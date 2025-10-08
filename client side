@@ -1,0 +1,85 @@
+[Client] Raw /api/import-steam response: 
+<html>
+  <head>
+    <meta http-equiv="refresh" content="2" />
+    <link rel="stylesheet" href="/www/vscode-theme.css" />
+    <style>
+      :root {
+        /* Google Dark excerpts */
+        --vscode-progress-bar-background: #5876de;
+        --vscode-editor-background: #1f1f1f;
+        --vscode-foreground: #e1dfdf;
+        --vscode-font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial,
+          sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+      }
+
+      body {
+        color: var(--vscode-foreground);
+        font-family: var(--vscode-font-family);
+        background: var(--vscode-editor-background);
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 18px;
+        margin: 0;
+        overflow-y: auto;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .basic-loading-spinner {
+        --spinner-color: var(--vscode-progress-bar-background);
+        --spinner-thickness: 2px;
+        --spinner-size: 16px;
+        --spinner-inset: 1px;
+        width: var(--spinner-size);
+        height: var(--spinner-size);
+        position: relative;
+      }
+
+      .basic-loading-spinner::after {
+        content: '';
+        position: absolute;
+        box-sizing: border-box;
+        left: var(--spinner-inset, 0px);
+        top: var(--spinner-inset, 0px);
+        right: var(--spinner-inset, 0px);
+        bottom: var(--spinner-inset, 0px);
+        animation: spinner-rotate 1s linear infinite;
+        border-radius: 100%;
+        border: var(--spinner-thickness) solid rgba(0, 0, 0, 0);
+        border-left-color: var(--spinner-color);
+        border-top-color: var(--spinner-color);
+      }
+
+      @keyframes spinner-rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner-container {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .error-message {
+        margin-top: 40px; /* Add space between spinner and message */
+        font-size: 16px;
+      }
+    </style>
+    <script>
+      window.__IS_MONOSPACE_LOADING_FALLBACK = true
+    </script>
+  </head>
+  <body>
+    <section class="spinner-container">
+      <div class="basic-loading-spinner"></div>
+      <div class="error-message">Error reaching server.</div>
+    </section>
+  </body>
+</html>
+ 
