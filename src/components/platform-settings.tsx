@@ -124,7 +124,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   useEffect(() => {
     if (!playsOnPC) {
       form.setValue('playsOnSteamDeck', false);
-      form.setValue('notifyDiscounts', false);
+      // We don't reset notifyDiscounts here to avoid the bug where it gets unchecked on load.
     }
   }, [playsOnPC, form]);
 
@@ -132,9 +132,13 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     if (!user) return;
     
     setIsUpdating(true);
+    
     const finalPreferences: UserPreferences = {
       ...data,
-      platforms: [...new Set([...data.platforms, 'Others/ROMs'])]
+      platforms: [...new Set([...data.platforms, 'Others/ROMs'])],
+      // If PC is not selected, ensure PC-specific options are false
+      notifyDiscounts: data.platforms.includes('PC') ? data.notifyDiscounts : false,
+      playsOnSteamDeck: data.platforms.includes('PC') ? data.playsOnSteamDeck : false,
     };
     await savePreferences(finalPreferences);
     
@@ -464,72 +468,75 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                   )}
               </div>
             </CardContent>
+             <CardFooter>
+              <Button type="submit" disabled={prefsLoading || isUpdating || isImporting || importStatus === 'pending'}>
+                {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
+              </Button>
+            </CardFooter>
           </Card>
-          
-          {playsOnPC && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Steam Integration</CardTitle>
-                <CardDescription>
-                  Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                 {importStatus === 'pending' && (
-                  <Alert className="mb-4">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Import in Progress</AlertTitle>
-                    <AlertDescription>
-                      Your Steam library is currently being imported in the background. We'll notify you when it's complete. You can safely navigate away from this page.
-                    </AlertDescription>
-                  </Alert>
-                 )}
-                 <div className="space-y-2">
-                  <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
-                  <Input 
-                    id='steamId'
-                    placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
-                    value={steamVanityId}
-                    onChange={(e) => setSteamVanityId(e.target.value)}
-                    disabled={importStatus === 'pending' || isImporting}
-                  />
-                </div>
-              </CardContent>
-               <CardFooter className="justify-end">
-                 <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-                  <AlertDialogTrigger asChild>
-                    <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId || importStatus === 'pending'} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
-                      <SteamIcon className="mr-2 h-5 w-5" />
-                      {importStatus === 'pending' ? 'Importing...' : 'Import Steam Library'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
-                      <AlertDialogDescription>
-                       A 'Full Import' will add all games from your Steam library, which may create duplicates if you have imported before. 'Add New Games' will only import games you don't already have.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction disabled={!profile?.steamId} onClick={() => handleSteamImport('new')}>
-                        Add New Games
-                      </AlertDialogAction>
-                      <AlertDialogAction onClick={() => handleSteamImport('full')}>
-                        Full Import
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardFooter>
-            </Card>
-          )}
-
-          <Button type="submit" disabled={prefsLoading || isUpdating || isImporting || importStatus === 'pending'}>
-            {isUpdating ? 'Saving...' : isOnboarding ? 'Continue' : 'Save Preferences'}
-          </Button>
         </form>
       </Form>
+
+      {playsOnPC && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Steam Integration</CardTitle>
+            <CardDescription>
+              Save your Steam vanity URL or 64-bit ID to enable library imports. Your profile must be public.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+              {importStatus === 'pending' && (
+              <Alert className="mb-4">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Import in Progress</AlertTitle>
+                <AlertDescription>
+                  Your Steam library is currently being imported in the background. We'll notify you when it's complete. You can safely navigate away from this page.
+                </AlertDescription>
+              </Alert>
+              )}
+              <div className="space-y-2">
+              <FormLabel htmlFor='steamId'>Steam Profile URL or ID</FormLabel>
+              <Input 
+                id='steamId'
+                placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
+                value={steamVanityId}
+                onChange={(e) => setSteamVanityId(e.target.value)}
+                disabled={importStatus === 'pending' || isImporting}
+              />
+            </div>
+          </CardContent>
+            <CardFooter className="justify-end">
+              <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId || importStatus === 'pending'} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
+                  <SteamIcon className="mr-2 h-5 w-5" />
+                  {importStatus === 'pending' ? 'Importing...' : 'Import Steam Library'}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Import Steam Library</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    A 'Full Import' will add all games from your Steam library, which may create duplicates if you have imported before. 'Add New Games' will only import games you don't already have.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction disabled={!profile?.steamId} onClick={() => handleSteamImport('new')}>
+                    Add New Games
+                  </AlertDialogAction>
+                  <AlertDialogAction onClick={() => handleSteamImport('full')}>
+                    Full Import
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 }
+
+    
