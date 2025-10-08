@@ -62,8 +62,8 @@ const mapRawgPlatform = (rawgPlatform: string): Platform | 'Other' => {
   if (rawgPlatform === 'PC') return 'PC';
   if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
   if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
-  if (/^Nintendo Switch/.test(rawgPlatform)) return 'Nintendo Switch';
-  return 'Other';
+  if (/^Nintendo Switch( 2)?$/.test(rawgPlatform)) return 'Nintendo Switch';
+  return 'Others/ROMs';
 };
 
 const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', allGenres, onAddGenre, gameToEdit }) => {
