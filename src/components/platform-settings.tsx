@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
 import {
