@@ -1,6 +1,6 @@
 
 'use client';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
@@ -11,13 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { ALL_PLATFORMS, USER_SELECTABLE_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
+import { USER_SELECTABLE_PLATFORMS, Platform, UserPreferences } from '@/lib/types';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
 import {
@@ -122,11 +122,15 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   const playsOnSteamDeck = form.watch('playsOnSteamDeck');
 
   useEffect(() => {
-    if (!playsOnPC) {
+    // Only automatically uncheck the boxes if the user has unchecked PC.
+    // This avoids the race condition on initial load where `playsOnPC` is false before preferences are loaded.
+    const pcWasSelected = form.formState.dirtyFields.platforms;
+    if (pcWasSelected && !playsOnPC) {
       form.setValue('playsOnSteamDeck', false);
       form.setValue('notifyDiscounts', false);
     }
   }, [playsOnPC, form]);
+
 
   async function onSubmit(data: PlatformSettingsFormValues) {
     if (!user) return;
@@ -540,3 +544,5 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </Form>
   );
 }
+
+    
