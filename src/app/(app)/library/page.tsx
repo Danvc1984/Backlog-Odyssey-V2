@@ -46,6 +46,7 @@ import { SteamIcon } from '@/components/icons';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const gameLists: GameList[] = ['Now Playing', 'Backlog', 'Wishlist', 'Recently Played'];
 
@@ -269,11 +270,11 @@ export default function LibraryPage() {
             </Select>
              {activeList === 'Wishlist' && playsOnPC && (
                 <div className="flex items-center space-x-2">
-                    <Percent className="h-4 w-4 text-muted-foreground" />
                     <Switch
                         id="deals-only"
                         checked={showDealsOnly}
                         onCheckedChange={setShowDealsOnly}
+                        className={cn(showDealsOnly && 'data-[state=checked]:bg-green-600')}
                     />
                     <Label htmlFor="deals-only">Show Deals Only</Label>
                 </div>
@@ -350,5 +351,3 @@ export default function LibraryPage() {
     </TooltipProvider>
   );
 }
-
-    
