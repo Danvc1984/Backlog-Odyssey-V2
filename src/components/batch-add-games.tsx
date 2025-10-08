@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -56,8 +57,8 @@ const mapRawgPlatform = (rawgPlatform: string): Platform | 'Other' => {
   if (rawgPlatform === 'PC') return 'PC';
   if (/^PlayStation 5/.test(rawgPlatform)) return 'PlayStation';
   if (/^Xbox Series S\/X/.test(rawgPlatform)) return 'Xbox';
-  if (/^Nintendo Switch/.test(rawgPlatform)) return 'Nintendo Switch';
-  return 'Other';
+  if (/^Nintendo Switch( 2)?$/.test(rawgPlatform)) return 'Nintendo Switch';
+  return 'Others/ROMs';
 };
 
 const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }) => {
@@ -241,7 +242,7 @@ const BatchAddGames: React.FC<BatchAddGamesProps> = ({ onAddGenre, defaultList }
         const favoritePlatform = preferences.favoritePlatform;
         
         const rawgPlatformNames: string[] = game.platforms?.map((p: any) => p.platform.name) || [];
-        const mappedPlatforms: Platform[] = rawgPlatformNames.map(mapRawgPlatform).filter(p => p !== 'Other') as Platform[];
+        const mappedPlatforms: Platform[] = rawgPlatformNames.map(mapRawgPlatform).filter(p => p !== 'Others/ROMs') as Platform[];
 
         let platformToSet: Platform | undefined;
 
