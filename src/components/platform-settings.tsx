@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile.tsx';
 import { useAuth } from '@/hooks/use-auth';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Input } from './ui/input';
 import {
@@ -109,7 +109,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                  });
                  setIsImporting(false);
                  // Optionally clear the notification after showing it
-                 // updateDoc(notificationDocRef, { status: 'acknowledged' });
+                 updateDoc(notificationDocRef, { status: 'acknowledged' });
             } else if (data.status === 'pending') {
                 setIsImporting(true);
             }
@@ -182,6 +182,11 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
       const token = await getAuthToken();
       if (!token) throw new Error('You must be logged in to import your library.');
 
+      if (user) {
+        const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
+        await setDoc(notificationDocRef, { status: 'pending' });
+      }
+
       const response = await fetch('/api/import-steam', {
         method: 'POST',
         headers: { 
@@ -198,11 +203,6 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
         title: 'Steam Import Started',
         description: 'Your library import is running in the background. We will notify you when it is complete.',
       });
-      
-      if (user) {
-        const notificationDocRef = doc(db, 'users', user.uid, 'notifications', 'steamImport');
-        await updateDoc(notificationDocRef, { status: 'pending' });
-      }
 
       if (isOnboarding) {
         router.push('/dashboard');
@@ -504,3 +504,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </div>
   );
 }
+
+    
+
+    
