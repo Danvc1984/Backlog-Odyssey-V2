@@ -29,7 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import type { Game, GameList, Platform, Genre } from '@/lib/types';
-import { Popover, PopoverContent, PopoverAnchor } from './ui/popover';
+import { Popover, PopoverContent, PopoverAnchor, PopoverTrigger } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
@@ -367,7 +367,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
               <FormItem className="flex flex-col">
                 <FormLabel>Release Date</FormLabel>
                 <Popover>
-                  <Popover.Trigger asChild>
+                  <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
@@ -384,7 +384,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
-                  </Popover.Trigger>
+                  </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       captionLayout="dropdown-buttons"
@@ -498,5 +498,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
 
     
