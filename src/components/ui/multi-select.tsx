@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -5,7 +6,6 @@ import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 export type MultiSelectOption = {
   value: string
@@ -36,7 +36,7 @@ export function MultiSelect({
 
   return (
     <div className={cn("border rounded-md p-2", className)}>
-        <ScrollArea className="h-40">
+        <div className="h-40 overflow-y-auto">
             <div className="flex flex-col gap-2 p-2">
                 {options.map(option => (
                 <label
@@ -52,7 +52,9 @@ export function MultiSelect({
                 </label>
                 ))}
             </div>
-        </ScrollArea>
+        </div>
     </div>
   )
 }
+
+    

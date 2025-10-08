@@ -34,7 +34,6 @@ import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
 import { Calendar } from './ui/calendar';
-import { ScrollArea } from './ui/scroll-area';
 
 
 const gameSchema = z.object({
@@ -282,7 +281,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             className="w-[var(--radix-popover-trigger-width)] p-0"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
-            <ScrollArea className="h-64">
+            <div className="h-64 overflow-y-auto">
               <div className="flex flex-col gap-1 p-1">
                 {searchResults.map((game) => (
                   <div
@@ -301,7 +300,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </PopoverContent>
         </Popover>
         
@@ -493,5 +492,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
 
     
