@@ -124,6 +124,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
   useEffect(() => {
     if (!playsOnPC) {
       form.setValue('playsOnSteamDeck', false);
+      form.setValue('notifyDiscounts', false);
     }
   }, [playsOnPC, form]);
 
@@ -501,7 +502,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
                 id='steamId'
                 placeholder="e.g., https://steamcommunity.com/id/your-vanity-id/"
                 value={steamVanityId}
-                onChange={(e) => setSteamVanityId(e.g. target.value)}
+                onChange={(e) => setSteamVanityId(e.target.value)}
                 disabled={importStatus === 'pending' || isImporting}
               />
             </div>
@@ -539,5 +540,3 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
     </Form>
   );
 }
-
-    
