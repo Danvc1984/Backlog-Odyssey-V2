@@ -29,7 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import type { Game, GameList, Platform, Genre } from '@/lib/types';
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from './ui/popover';
+import { Popover, PopoverContent, PopoverAnchor } from './ui/popover';
 import Image from 'next/image';
 import { MultiSelect } from './ui/multi-select';
 import { cn } from '@/lib/utils';
@@ -129,7 +129,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
         params: {
           key: API_KEY,
           search: query,
-          page_size: 5,
+          page_size: 10,
         },
       });
       setSearchResults(response.data.results);
@@ -231,7 +231,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   }
 
   const handleAddNewGenre = () => {
-    if (newGenre && !allGenres.includes(newGenre as Genre)) {
+    if (newGenre && !allGenres.map(g => g.toLowerCase()).includes(newGenre.toLowerCase())) {
       onAddGenre(newGenre as Genre);
       form.setValue('genres', [...form.getValues('genres'), newGenre]);
       setNewGenre('');
@@ -279,8 +279,13 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
               <Search className="absolute top-9 right-3 h-4 w-4 text-muted-foreground" />
             </div>
           </PopoverAnchor>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-            <ScrollArea className="h-auto max-h-64">
+          <PopoverContent 
+            className="w-[var(--radix-popover-trigger-width)] p-0"
+            onMouseDown={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <ScrollArea className="h-64">
               <div className="flex flex-col gap-1 p-1">
                 {searchResults.map((game) => (
                   <Button
@@ -362,7 +367,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
               <FormItem className="flex flex-col">
                 <FormLabel>Release Date</FormLabel>
                 <Popover>
-                  <PopoverTrigger asChild>
+                  <Popover.Trigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
@@ -379,7 +384,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
-                  </PopoverTrigger>
+                  </Popover.Trigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       captionLayout="dropdown-buttons"
