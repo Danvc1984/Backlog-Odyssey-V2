@@ -249,7 +249,9 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-        <Popover open={searchTerm.length > 2 && searchResults.length > 0}>
+        <Popover open={searchTerm.length > 2 && searchResults.length > 0} onOpenChange={(isOpen) => {
+            if (!isOpen) setSearchResults([]);
+        }}>
           <PopoverAnchor asChild>
              <div className="relative">
                <FormField
@@ -283,25 +285,20 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
             <ScrollArea className="h-64">
               <div className="flex flex-col gap-1 p-1">
                 {searchResults.map((game) => (
-                  <Button
+                  <div
                     key={game.id}
-                    variant="ghost"
-                    type="button"
-                    className="flex items-center justify-start gap-2 h-auto p-2"
                     onClick={() => handleSelectGame(game)}
-                    onMouseDown={(e) => e.preventDefault()}
+                    className="flex items-center justify-start gap-2 h-auto p-2 rounded-md cursor-pointer hover:bg-muted"
                   >
-                    <span className="flex items-center gap-2 pointer-events-none">
-                      {game.background_image ? <Image
-                        src={game.background_image}
-                        alt={game.name}
-                        width={40}
-                        height={53}
-                        className="object-cover rounded-sm aspect-[3/4]"
-                      /> : <div className="w-10 h-[53px] bg-muted rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
-                      <span className="text-sm font-medium text-left">{game.name}</span>
-                    </span>
-                  </Button>
+                    {game.background_image ? <Image
+                      src={game.background_image}
+                      alt={game.name}
+                      width={40}
+                      height={53}
+                      className="object-cover rounded-sm aspect-[3/4]"
+                    /> : <div className="w-10 h-[53px] bg-card rounded-sm flex items-center justify-center"><ImageIcon className="h-5 w-5 text-muted-foreground"/></div>}
+                    <span className="text-sm font-medium text-left">{game.name}</span>
+                  </div>
                 ))}
               </div>
             </ScrollArea>
@@ -496,3 +493,5 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
 };
 
 export default GameForm;
+
+    
