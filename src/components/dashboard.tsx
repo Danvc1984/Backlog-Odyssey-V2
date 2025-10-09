@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import BacklogFlow from './backlog-flow';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { steamDeckCompatIcons } from './icons';
+import { cn } from '@/lib/utils';
 
 type DashboardProps = {
   games: Game[];
@@ -199,8 +200,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </div>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle>Playtime by Genre</CardTitle>
             <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
@@ -222,7 +223,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="lg:col-span-1">
           <CardHeader>
               <CardTitle>Platform Distribution</CardTitle>
               <CardDescription>Your game library across different platforms.</CardDescription>
@@ -242,30 +243,34 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
               </ChartContainer>
           </CardContent>
         </Card>
+         {preferences?.playsOnSteamDeck && (
+            <Card className="lg:col-span-1">
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
+                        const compatKey = key === 'Verified' ? 'gold' : key === 'Playable' ? 'silver' : key === 'Unsupported' ? 'borked' : 'unknown';
+                        const Icon = steamDeckCompatIcons[compatKey];
+                        const count = deckCompatData[key];
+                        const colorClass = 
+                            key === 'Verified' ? 'text-green-400' :
+                            key === 'Playable' ? 'text-yellow-400' :
+                            key === 'Unsupported' ? 'text-destructive' :
+                            'text-muted-foreground';
+
+                        return (
+                            <div key={key} className="flex items-center gap-2">
+                                <Icon className={cn("h-4 w-4", colorClass)} />
+                                <span className="font-semibold">{key}:</span>
+                                <span>{count}</span>
+                            </div>
+                        );
+                    })}
+                </CardContent>
+            </Card>
+        )}
       </div>
-
-      {preferences?.playsOnSteamDeck && (
-         <Card>
-            <CardHeader>
-                <CardTitle>Steam Deck Compatibility</CardTitle>
-                <CardDescription>Compatibility breakdown for your PC library.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4 text-sm">
-                {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
-                    const Icon = steamDeckCompatIcons[key.toLowerCase() as keyof typeof steamDeckCompatIcons] || steamDeckCompatIcons.unknown;
-                    const count = deckCompatData[key];
-                    return (
-                        <div key={key} className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            <span className="font-semibold">{key}:</span>
-                            <span>{count}</span>
-                        </div>
-                    );
-                })}
-            </CardContent>
-         </Card>
-      )}
-
     </div>
   );
 };
