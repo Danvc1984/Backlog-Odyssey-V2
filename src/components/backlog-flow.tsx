@@ -29,26 +29,27 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   }, [games]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center pt-8">
-      
-      <Image 
-        src="/hourglass.webp" 
-        alt="Hourglass flow" 
-        width={450} 
-        height={550}
-        className="object-contain"
-      />
-      
-      <div className="absolute top-[12%] left-1/2 -translate-x-1/2">
-        <StatCard count={counts.backlog} label="Games to Play" />
-      </div>
+    <div className="relative w-full h-full flex items-center justify-center">
+      <div className="relative -mt-12">
+        <Image 
+          src="/hourglass.webp" 
+          alt="Hourglass flow" 
+          width={450} 
+          height={550}
+          className="object-contain"
+        />
+        
+        <div className="absolute top-[12%] left-1/2 -translate-x-1/2">
+          <StatCard count={counts.backlog} label="Games to Play" />
+        </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        <StatCard count={counts.nowPlaying} label="Now Playing" />
-      </div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <StatCard count={counts.nowPlaying} label="Now Playing" />
+        </div>
 
-      <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
-        <StatCard count={counts.recentlyPlayed} label="Completed" />
+        <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
+          <StatCard count={counts.recentlyPlayed} label="Completed" />
+        </div>
       </div>
     </div>
   );

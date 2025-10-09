@@ -134,20 +134,18 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-[700px_1fr_1fr] gap-6">
-            <div className="col-span-1">
-                <Card className="h-full min-h-[550px]">
-                    <CardHeader>
-                        <CardTitle>Backlog Hourglass</CardTitle>
-                        <CardDescription>An overview of your gaming journey.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[450px] w-full flex items-center justify-center">
-                        <BacklogFlow games={games} />
-                    </CardContent>
-                </Card>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.7fr_0.7fr] gap-6">
+            <Card className="min-h-[550px]">
+                <CardHeader>
+                    <CardTitle>Backlog Hourglass</CardTitle>
+                    <CardDescription>An overview of your gaming journey.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[450px] w-full flex items-center justify-center">
+                    <BacklogFlow games={games} />
+                </CardContent>
+            </Card>
 
-            <div className="col-span-1 space-y-6">
+            <div className="space-y-6">
                 <Card>
                     <div className="flex justify-around items-center h-full">
                         <div className="text-center p-4 w-1/2">
@@ -209,8 +207,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 )}
             </div>
             
-            <div className="col-span-1">
-                <Card className="h-full">
+            <div className="space-y-6">
+                 <Card className="h-full">
                     <CardHeader>
                         <CardTitle>Platform Distribution</CardTitle>
                         <CardDescription>Your library across platforms.</CardDescription>
