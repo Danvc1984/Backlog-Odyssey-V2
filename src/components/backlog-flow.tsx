@@ -3,8 +3,9 @@
 
 import React, { useMemo } from 'react';
 import { Game } from '@/lib/types';
-import { ArrowBigRightDash } from 'lucide-react';
+import { ArrowBigRightDash, ArrowBigDownDash, ArrowBigUpDash } from 'lucide-react';
 import Image from 'next/image';
+import { Card, CardContent } from './ui/card';
 
 type BacklogFlowProps = {
   games: Game[];
@@ -20,41 +21,42 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   }, [games]);
 
   return (
-    <div className="relative flex items-center justify-center gap-8">
+    <div className="relative w-full h-full flex items-center justify-center">
+      
       <Image 
-        src="/hourglass.png" 
+        src="/hourglass.webp" 
         alt="Hourglass flow" 
-        width={96} 
-        height={144}
+        width={300} 
+        height={400}
         className="object-contain"
       />
-      <div className="relative flex flex-col justify-between h-36 text-right">
-        {/* Top: Backlog */}
-        <div className="absolute top-0 right-0 flex items-center">
-            <div className="text-right">
-                <span className="text-2xl font-bold">{counts.backlog}</span>
-                <p className="text-xs text-muted-foreground">Backlog</p>
-            </div>
-            <ArrowBigRightDash className="w-8 h-8 text-primary/70 -mr-2" />
-        </div>
-
-        {/* Middle: Now Playing */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-0 flex items-center">
-             <div className="text-right">
-                <span className="text-2xl font-bold">{counts.nowPlaying}</span>
-                <p className="text-xs text-muted-foreground">Now Playing</p>
-            </div>
-            <ArrowBigRightDash className="w-8 h-8 text-accent/70 -mr-2" />
-        </div>
-        
-        {/* Bottom: Recently Played */}
-         <div className="absolute bottom-0 right-0 flex items-center">
-             <div className="text-right">
-                <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
-                <p className="text-xs text-muted-foreground">Completed</p>
-            </div>
-            <ArrowBigRightDash className="w-8 h-8 text-green-500/70 -mr-2" />
-        </div>
+      
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64">
+        <Card className="bg-card/80 backdrop-blur-sm">
+            <CardContent className="p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                    <div className="text-right">
+                        <span className="text-2xl font-bold">{counts.backlog}</span>
+                        <p className="text-xs text-muted-foreground">Games to Play</p>
+                    </div>
+                    <ArrowBigDownDash className="w-8 h-8 text-primary/70"/>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="text-right">
+                        <span className="text-2xl font-bold">{counts.nowPlaying}</span>
+                        <p className="text-xs text-muted-foreground">Now Playing</p>
+                    </div>
+                    <ArrowBigDownDash className="w-8 h-8 text-accent/70" />
+                </div>
+                <div className="flex items-center justify-between">
+                     <div className="text-right">
+                        <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
+                        <p className="text-xs text-muted-foreground">Completed</p>
+                    </div>
+                    <ArrowBigUpDash className="w-8 h-8 text-green-500/70" />
+                </div>
+            </CardContent>
+        </Card>
       </div>
     </div>
   );

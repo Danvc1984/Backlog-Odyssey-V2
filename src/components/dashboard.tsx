@@ -188,10 +188,10 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       
        <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle>Backlog Flow</CardTitle>
+          <CardTitle>Backlog Hourglass</CardTitle>
           <CardDescription>An overview of your gaming journey.</CardDescription>
         </CardHeader>
-        <CardContent className="h-[250px] w-full flex items-center justify-center">
+        <CardContent className="h-[400px] w-full flex items-center justify-center">
           <BacklogFlow games={games} />
         </CardContent>
       </Card>
