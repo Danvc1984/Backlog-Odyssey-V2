@@ -217,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
                             <div key={key} className="flex items-center gap-2">
                                 <Icon className={cn("h-4 w-4", colorClass)} />
                                 <span className="font-semibold">{key}:</span>
-                                <span>{count}</span>
+                                <span className="text-lg font-bold">{count}</span>
                             </div>
                         );
                     })}
@@ -264,7 +264,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
                                   <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                               ))}
                           </Pie>
-                          <Tooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
+                          <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
                       </PieChart>
                   </ResponsiveContainer>
               </ChartContainer>
