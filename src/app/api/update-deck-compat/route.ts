@@ -9,23 +9,34 @@ import { getSteamDeckCompat } from '@/app/api/steam/utils';
 
 // Helper function to initialize Firebase Admin SDK within this route
 function getAdminApp(): App {
-    if (getApps().length) {
-        return getApps()[0];
-    }
-
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-    if (!serviceAccount) {
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+    if (!serviceAccountKey) {
         throw new Error('Missing FIREBASE_SERVICE_ACCOUNT_KEY environment variable');
     }
 
-    const serviceAccountJson = JSON.parse(
-        Buffer.from(serviceAccount, 'base64').toString('utf-8')
+    if (getApps().length) {
+        return getApps()[0];
+    }
+    
+    const serviceAccount = JSON.parse(
+        Buffer.from(serviceAccountKey, 'base64').toString('utf-8')
     );
 
     return initializeApp({
-        credential: cert(serviceAccountJson as ServiceAccount),
+        credential: cert(serviceAccount as ServiceAccount),
     });
 }
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+  return result;
+}
+
+const BATCH_SIZE = 10; // Process 10 requests concurrently
+const BATCH_DELAY = 1000; // 1-second delay between batches to be safe
 
 export async function POST(req: NextRequest) {
     const adminApp = getAdminApp();
@@ -48,32 +59,50 @@ export async function POST(req: NextRequest) {
 
     try {
         const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
-        const pcGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
+        const pcGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').where('steamAppId', '!=', null).get();
 
-        if (pcGamesSnapshot.empty) {
-            return NextResponse.json({ message: 'No PC games found to update.' });
+        const gamesToUpdate = pcGamesSnapshot.docs.map(doc => ({
+            docId: doc.id,
+            ...doc.data()
+        })).filter(game => game.steamAppId);
+
+        if (gamesToUpdate.length === 0) {
+            return NextResponse.json({ message: 'No PC games with Steam AppIDs found to update.' });
+        }
+        
+        const gameChunks = chunkArray(gamesToUpdate, BATCH_SIZE);
+        const batch = db.batch();
+        let updatedCount = 0;
+
+        for (const chunk of gameChunks) {
+            const promises = chunk.map(game => getSteamDeckCompat(game.steamAppId));
+            
+            const results = await Promise.allSettled(promises);
+
+            results.forEach((result, index) => {
+                const game = chunk[index];
+                if (result.status === 'fulfilled') {
+                    const newCompat = result.value;
+                    if (newCompat !== game.steamDeckCompat) {
+                        const gameRef = gamesCollectionRef.doc(game.docId);
+                        batch.update(gameRef, { steamDeckCompat: newCompat });
+                        updatedCount++;
+                    }
+                } else {
+                    console.error(`Error: Could not fetch Steam Deck compatibility for AppID ${game.steamAppId}:`, result.reason);
+                }
+            });
+
+            if (gameChunks.indexOf(chunk) < gameChunks.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+            }
+        }
+        
+        if (updatedCount > 0) {
+            await batch.commit();
         }
 
-        const batch = db.batch();
-        const updatePromises = pcGamesSnapshot.docs.map(async (doc) => {
-            const game = doc.data();
-            if (game.steamAppId) {
-                try {
-                    const newCompat = await getSteamDeckCompat(game.steamAppId);
-                    if (newCompat !== game.steamDeckCompat) {
-                        batch.update(doc.ref, { steamDeckCompat: newCompat });
-                    }
-                } catch (error: any) {
-                    // Log the error for the specific AppID but don't crash the whole batch
-                    console.error(`Error: Could not fetch Steam Deck compatibility for AppID ${game.steamAppId}: ${error.message}`);
-                }
-            }
-        });
-
-        await Promise.all(updatePromises);
-        await batch.commit();
-
-        return NextResponse.json({ message: 'Steam Deck compatibility status updated for all PC games.' });
+        return NextResponse.json({ message: `Steam Deck compatibility status updated. ${updatedCount} games were changed.` });
 
     } catch (error: any) {
         console.error('Error updating Steam Deck compatibility:', error);
