@@ -3,8 +3,8 @@
 
 import React, { useMemo } from 'react';
 import { Game } from '@/lib/types';
-import { Cog, Layers, Trophy } from 'lucide-react';
-import { Card } from './ui/card';
+import { ArrowBigRightDash } from 'lucide-react';
+import Image from 'next/image';
 
 type BacklogFlowProps = {
   games: Game[];
@@ -20,41 +20,41 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   }, [games]);
 
   return (
-    <div className="relative w-48 h-64 flex flex-col items-center justify-between">
-      {/* Hourglass SVG background */}
-      <svg
-        className="absolute w-full h-full text-border"
-        viewBox="0 0 100 160"
-        preserveAspectRatio="none"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      >
-        <path d="M5 5 L95 5" />
-        <path d="M5 5 L50 80 L5 155" />
-        <path d="M95 5 L50 80 L95 155" />
-        <path d="M5 155 L95 155" />
-      </svg>
-      
-      {/* Top Section: Backlog */}
-      <div className="z-10 flex flex-col items-center text-center pt-4">
-        <Layers className="w-8 h-8 text-primary" />
-        <span className="text-2xl font-bold">{counts.backlog}</span>
-        <span className="text-xs text-muted-foreground">Backlog</span>
-      </div>
+    <div className="relative flex items-center justify-center gap-8">
+      <Image 
+        src="/hourglass.png" 
+        alt="Hourglass flow" 
+        width={96} 
+        height={144}
+        className="object-contain"
+      />
+      <div className="relative flex flex-col justify-between h-36 text-right">
+        {/* Top: Backlog */}
+        <div className="absolute top-0 right-0 flex items-center">
+            <div className="text-right">
+                <span className="text-2xl font-bold">{counts.backlog}</span>
+                <p className="text-xs text-muted-foreground">Backlog</p>
+            </div>
+            <ArrowBigRightDash className="w-8 h-8 text-primary/70 -mr-2" />
+        </div>
 
-      {/* Middle Section: Now Playing */}
-      <div className="z-10 flex flex-col items-center text-center">
-        <Cog className="w-8 h-8 text-accent animate-spin" style={{ animationDuration: '5s' }}/>
-        <span className="text-2xl font-bold">{counts.nowPlaying}</span>
-        <span className="text-xs text-muted-foreground">Now Playing</span>
-      </div>
-
-      {/* Bottom Section: Recently Played */}
-      <div className="z-10 flex flex-col items-center text-center pb-4">
-         <Trophy className="w-8 h-8 text-green-500" />
-        <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
-        <span className="text-xs text-muted-foreground">Completed</span>
+        {/* Middle: Now Playing */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-0 flex items-center">
+             <div className="text-right">
+                <span className="text-2xl font-bold">{counts.nowPlaying}</span>
+                <p className="text-xs text-muted-foreground">Now Playing</p>
+            </div>
+            <ArrowBigRightDash className="w-8 h-8 text-accent/70 -mr-2" />
+        </div>
+        
+        {/* Bottom: Recently Played */}
+         <div className="absolute bottom-0 right-0 flex items-center">
+             <div className="text-right">
+                <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
+                <p className="text-xs text-muted-foreground">Completed</p>
+            </div>
+            <ArrowBigRightDash className="w-8 h-8 text-green-500/70 -mr-2" />
+        </div>
       </div>
     </div>
   );
