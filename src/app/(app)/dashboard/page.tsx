@@ -87,37 +87,15 @@ export default function DashboardPage() {
   return (
     <TooltipProvider>
       <div className="space-y-12">
-        <Dashboard games={games} />
-
-        <UpNextQueue games={games} onMoveGame={handleMoveGame} />
+        <Dashboard 
+          games={games} 
+          activeChallenges={activeChallenges} 
+          isChallengeFormOpen={isChallengeFormOpen} 
+          setChallengeFormOpen={setChallengeFormOpen} 
+          onAddChallenge={onAddChallenge}
+        />
         
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
-              <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
-                  <DialogTrigger asChild>
-                      <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                      <DialogHeader>
-                          <DialogTitle>Create a New Challenge</DialogTitle>
-                      </DialogHeader>
-                      <ChallengeForm onSave={onAddChallenge} allGames={games} />
-                  </DialogContent>
-              </Dialog>
-          </div>
-          {activeChallenges.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {activeChallenges.map(challenge => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} />
-                  ))}
-              </div>
-          ) : (
-              <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
-                  <p>No active challenges. Why not create one?</p>
-              </div>
-          )}
-        </div>
+        <UpNextQueue games={games} onMoveGame={handleMoveGame} />
 
         {completedChallenges.length > 0 && (
             <div className="space-y-6">

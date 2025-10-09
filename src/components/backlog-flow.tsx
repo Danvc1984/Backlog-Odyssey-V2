@@ -11,10 +11,10 @@ type BacklogFlowProps = {
 };
 
 const StatCard = ({ count, label }: { count: number, label: string }) => (
-  <Card className="bg-card/1 backdrop-blur-xs text-center border-none shadow-none py-1 px-1">
+    <Card className="bg-black/20 backdrop-blur-xs text-center border-none shadow-none py-2 px-3">
         <CardContent className="p-0">
             <span className="text-3xl font-bold text-primary">{count}</span>
-            <p className="text-s font-bold text-foreground">{label}</p>
+            <p className="text-sm font-bold text-foreground">{label}</p>
         </CardContent>
     </Card>
 );

@@ -5,15 +5,25 @@ import * as React from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Game, Genre, Platform } from '@/lib/types';
+import { Game, Genre, Platform, Challenge, ChallengeIdea } from '@/lib/types';
 import { useMemo } from 'react';
 import BacklogFlow from './backlog-flow';
 import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { steamDeckCompatIcons } from './icons';
 import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Button } from './ui/button';
+import { PlusCircle } from 'lucide-react';
+import ChallengeForm from './challenge-form';
+import ChallengeCard from './challenge-card';
 
 type DashboardProps = {
   games: Game[];
+  activeChallenges: Challenge[];
+  isChallengeFormOpen: boolean;
+  setChallengeFormOpen: (isOpen: boolean) => void;
+  onAddChallenge: (data: ChallengeIdea) => void;
 };
 
 const CHART_COLORS = [
@@ -24,36 +34,12 @@ const CHART_COLORS = [
   'hsl(var(--chart-5))',
 ];
 
-const Dashboard: React.FC<DashboardProps> = ({ games }) => {
+const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChallengeFormOpen, setChallengeFormOpen, onAddChallenge }) => {
   
   const { preferences } = useUserPreferences();
 
-  const chartConfig = {
-    total: {
-      label: 'Games',
-      color: 'hsl(var(--chart-1))',
-    },
-    playtime: {
-        label: 'Playtime (h)',
-        color: 'hsl(var(--chart-2))',
-    }
-  };
-
   const ownedGames = useMemo(() => games.filter(g => g.list !== 'Wishlist'), [games]);
   const totalGames = ownedGames.length;
-
-  const genreData = useMemo(() => {
-    const counts = ownedGames.reduce((acc, game) => {
-      (game.genres || []).forEach(genre => {
-        acc[genre] = (acc[genre] || 0) + 1;
-      });
-      return acc;
-    }, {} as Record<Genre, number>);
-
-    return Object.entries(counts)
-      .map(([name, total]) => ({ name, total, fill: `var(--color-${name.replace(/ /g, '-')})` }))
-      .sort((a, b) => b.total - a.total);
-  }, [ownedGames]);
 
   const completionRate = useMemo(() => {
     if (totalGames === 0) return 0;
@@ -137,140 +123,194 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   const genreColorConfig = useMemo(() => {
     const config: any = {};
     const chartColors = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
-    genreData.slice(0, 10).forEach((item, index) => {
+    playtimeByGenreData.slice(0, 10).forEach((item, index) => {
       config[item.name.replace(/ /g, '-')] = {
         label: item.name,
         color: `hsl(var(--${chartColors[index % chartColors.length]}))`,
       };
     });
     return config;
-  }, [genreData]);
+  }, [playtimeByGenreData]);
 
   return (
-    <div className="grid gap-6">
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Backlog Hourglass</CardTitle>
-            <CardDescription>An overview of your gaming journey.</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[450px] w-full flex items-center justify-center">
-            <BacklogFlow games={games} />
-          </CardContent>
-        </Card>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Owned Games</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalGames}</div>
-              <p className="text-xs text-muted-foreground">in your active library</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completionRate}%</div>
-              <p className="text-xs text-muted-foreground">Based on owned games</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Playtime</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{averagePlaytime}h</div>
-              <p className="text-xs text-muted-foreground">Estimated story length</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold">{totalPlaytimeNormally}h</div>
-                <p className="text-xs text-muted-foreground">
-                    {totalPlaytimeCompletely > 0 ? `${totalPlaytimeCompletely}h for completionists` : 'Normal story playtime'}
-                </p>
-            </CardContent>
-          </Card>
-          {preferences?.playsOnSteamDeck && (
-            <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Column 1 */}
+        <div className="lg:col-span-1 space-y-6">
+            <Card className="h-full min-h-[550px]">
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
+                    <CardTitle>Backlog Hourglass</CardTitle>
+                    <CardDescription>An overview of your gaming journey.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
-                        const compatKey = key === 'Verified' ? 'gold' : key === 'Playable' ? 'silver' : key === 'Unsupported' ? 'borked' : 'unknown';
-                        const Icon = steamDeckCompatIcons[compatKey];
-                        const count = deckCompatData[key];
-                        const colorClass = 
-                            key === 'Verified' ? 'text-green-400' :
-                            key === 'Playable' ? 'text-yellow-400' :
-                            key === 'Unsupported' ? 'text-destructive' :
-                            'text-muted-foreground';
-
-                        return (
-                            <div key={key} className="flex items-center gap-2">
-                                <Icon className={cn("h-4 w-4", colorClass)} />
-                                <span className="font-semibold">{key}:</span>
-                                <span className="text-lg font-bold">{count}</span>
-                            </div>
-                        );
-                    })}
+                <CardContent className="h-[450px] w-full flex items-center justify-center">
+                    <BacklogFlow games={games} />
                 </CardContent>
             </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Playtime by Genre</CardTitle>
+                    <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
+                    <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
+                        <CartesianGrid horizontal={false} />
+                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                        <XAxis type="number" hide />
+                        <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                        <Bar dataKey="playtime" radius={4}>
+                        {playtimeByGenreData.slice(0, 5).map((entry, index) => (
+                            <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                        </Bar>
+                    </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+        </div>
+
+        {/* Column 2 */}
+        <div className="lg:col-span-1 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Total Owned Games</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{totalGames}</div>
+                    <p className="text-xs text-muted-foreground">in your active library</p>
+                </CardContent>
+                <Separator className="my-4"/>
+                 <CardHeader>
+                    <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{completionRate}%</div>
+                    <p className="text-xs text-muted-foreground">Based on owned games</p>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Average Playtime</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{averagePlaytime}h</div>
+                    <p className="text-xs text-muted-foreground">Estimated story length</p>
+                </CardContent>
+                <Separator className="my-4" />
+                <CardHeader className="pt-0">
+                    <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{totalPlaytimeNormally}h</div>
+                    <p className="text-xs text-muted-foreground">
+                        {totalPlaytimeCompletely > 0 ? `${totalPlaytimeCompletely}h for completionists` : 'Normal story playtime'}
+                    </p>
+                </CardContent>
+            </Card>
+           {preferences?.playsOnSteamDeck && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
+                            const compatKey = key === 'Verified' ? 'gold' : key === 'Playable' ? 'silver' : key === 'Unsupported' ? 'borked' : 'unknown';
+                            const Icon = steamDeckCompatIcons[compatKey];
+                            const count = deckCompatData[key];
+                            const colorClass = 
+                                key === 'Verified' ? 'text-green-400' :
+                                key === 'Playable' ? 'text-yellow-400' :
+                                key === 'Unsupported' ? 'text-destructive' :
+                                'text-muted-foreground';
+
+                            return (
+                                <div key={key} className="flex items-center gap-2">
+                                    <Icon className={cn("h-4 w-4", colorClass)} />
+                                    <span className="font-semibold">{key}:</span>
+                                    <span className="text-lg font-bold">{count}</span>
+                                </div>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
            )}
         </div>
-      </div>
-      
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Playtime by Genre</CardTitle>
-            <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
-              <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
-                <CartesianGrid horizontal={false} />
-                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                <XAxis type="number" hide />
-                <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                <Bar dataKey="playtime" radius={4}>
-                   {playtimeByGenreData.slice(0, 5).map((entry, index) => (
-                      <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-              <CardTitle>Platform Distribution</CardTitle>
-              <CardDescription>Your game library across different platforms.</CardDescription>
-          </CardHeader>
-          <CardContent>
-              <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                          <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                              {platformData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                              ))}
-                          </Pie>
-                          <ChartTooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
-                      </PieChart>
-                  </ResponsiveContainer>
-              </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+
+        {/* Column 3 */}
+        <div className="lg:col-span-1 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Platform Distribution</CardTitle>
+                    <CardDescription>Your game library across different platforms.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                                <Pie 
+                                  data={platformData} 
+                                  dataKey="value" 
+                                  nameKey="name" 
+                                  cx="50%" 
+                                  cy="50%" 
+                                  outerRadius={100}
+                                  labelLine={false}
+                                  label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index }) => {
+                                      const RADIAN = Math.PI / 180;
+                                      const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+                                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                                      return (
+                                        <text
+                                          x={x}
+                                          y={y}
+                                          fill="hsl(var(--foreground))"
+                                          textAnchor={x > cx ? 'start' : 'end'}
+                                          dominantBaseline="central"
+                                          className="text-xs"
+                                        >
+                                          {platformData[index].name} ({value})
+                                        </text>
+                                      );
+                                  }}
+                                >
+                                    {platformData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
+                    <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Create a New Challenge</DialogTitle>
+                            </DialogHeader>
+                            <ChallengeForm onSave={onAddChallenge} allGames={games} />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+                {activeChallenges.length > 0 ? (
+                    <div className="grid gap-6 md:grid-cols-1">
+                        {activeChallenges.slice(0, 2).map(challenge => (
+                            <ChallengeCard key={challenge.id} challenge={challenge} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-10 text-muted-foreground bg-card rounded-lg">
+                        <p>No active challenges. Why not create one?</p>
+                    </div>
+                )}
+            </div>
+        </div>
     </div>
   );
 };
