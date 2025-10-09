@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Trophy } from 'lucide-react';
 import ChallengeForm from './challenge-form';
 import ChallengeCard from './challenge-card';
 
@@ -57,7 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
     const totalPlaytimeNormally = ownedGames.reduce((acc, game) => acc + (game.playtimeNormally || 0), 0);
     const totalPlaytimeCompletely = ownedGames.reduce((acc, game) => acc + (game.playtimeCompletely || 0), 0);
     
-    const averagePlaytime = Math.round(totalPlaytimeNormally / gamesWithPlaytime.length);
+    const averagePlaytime = gamesWithPlaytime.length > 0 ? Math.round(totalPlaytimeNormally / gamesWithPlaytime.length) : 0;
     return { totalPlaytimeNormally, totalPlaytimeCompletely, averagePlaytime };
   }, [ownedGames]);
 
@@ -68,16 +68,17 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
     }, {} as Record<string, number>);
     
     return Object.entries(counts)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a,b) => b.value - a.value);
+        .map(([name, count]) => ({ name, count, fill: `var(--color-${name.replace(/ /g, '-')})` }))
+        .sort((a,b) => b.count - a.count);
   }, [ownedGames]);
   
   const platformColorConfig = useMemo(() => {
     const config: any = {};
+    const chartColors = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
     platformData.forEach((item, index) => {
-        config[item.name] = {
+        config[item.name.replace(/ /g, '-')] = {
             label: item.name,
-            color: `hsl(var(--chart-${(index % 5) + 1}))`
+            color: `hsl(var(--${chartColors[index % chartColors.length]}))`
         };
     });
     return config;
@@ -117,17 +118,16 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
     }, {} as Record<string, number>);
 
     return Object.entries(data)
-        .map(([name, count]) => ({ name, count, fill: `var(--color-${name.replace(/ /g, '-')})` }))
-        .sort((a,b) => b.count - a.count);
+        .map(([name, value]) => ({ name, value }))
+        .sort((a,b) => b.value - a.value);
   }, [ownedGames]);
 
   const genreColorConfig = useMemo(() => {
     const config: any = {};
-    const chartColors = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'];
     gamesByGenreData.slice(0, 5).forEach((item, index) => {
-      config[item.name.replace(/ /g, '-')] = {
+      config[item.name] = {
         label: item.name,
-        color: `hsl(var(--${chartColors[index % chartColors.length]}))`,
+        color: `hsl(var(--chart-${(index % 5) + 1}))`,
       };
     });
     return config;
@@ -135,13 +135,13 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.7fr_0.7fr] gap-6">
-            <Card className="min-h-[700px]">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_1fr] gap-6">
+            <Card className="min-h-[550px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
                     <CardDescription>An overview of your gaming journey.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-full w-full flex items-center justify-center">
+                <CardContent className="h-[450px] w-full flex items-center justify-center">
                     <BacklogFlow games={games} />
                 </CardContent>
             </Card>
@@ -184,7 +184,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
                         </CardHeader>
-                       <CardContent className="flex flex-col gap-2 text-sm">
+                        <CardContent className="space-y-3">
                             {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
                                 const compatKey = key === 'Verified' ? 'gold' : key === 'Playable' ? 'silver' : key === 'Unsupported' ? 'borked' : 'unknown';
                                 const Icon = steamDeckCompatIcons[compatKey];
@@ -197,8 +197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
                                 return (
                                     <div key={key} className="flex items-center gap-3">
-                                        <Icon className={cn("h-6 w-6", colorClass)} />
-                                        <span className="font-semibold text-base">{key}:</span>
+                                        <Icon className={cn("h-8 w-8", colorClass)} />
+                                        <span className="font-semibold text-lg">{key}:</span>
                                         <span className="text-lg font-bold">{count}</span>
                                     </div>
                                 );
@@ -213,36 +213,12 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                     <CardTitle>Games by Genre</CardTitle>
                     <CardDescription>Your top 5 genres by game count.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
-                    <BarChart accessibilityLayer data={gamesByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
-                        <CartesianGrid horizontal={false} />
-                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                        <XAxis type="number" hide />
-                        <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                        <Bar dataKey="count" radius={4}>
-                        {gamesByGenreData.slice(0, 5).map((entry, index) => (
-                            <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                        ))}
-                        </Bar>
-                    </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Platform Distribution</CardTitle>
-                    <CardDescription>Your library across platforms.</CardDescription>
-                </CardHeader>
                 <CardContent className="h-[450px]">
-                    <ChartContainer config={platformColorConfig} className="w-full h-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <ChartContainer config={genreColorConfig} className="w-full h-full">
+                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie 
-                                data={platformData} 
+                                data={gamesByGenreData.slice(0, 5)} 
                                 dataKey="value" 
                                 nameKey="name" 
                                 cx="50%" 
@@ -263,12 +239,12 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                                         dominantBaseline="central"
                                         className="text-xs"
                                         >
-                                        {platformData[index].name} ({value})
+                                        {gamesByGenreData[index].name} ({value})
                                         </text>
                                     );
                                 }}
                                 >
-                                    {platformData.map((entry, index) => (
+                                    {gamesByGenreData.slice(0, 5).map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -278,12 +254,39 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                     </ChartContainer>
                 </CardContent>
             </Card>
-             <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-2xl font-bold tracking-tight text-primary">Personal Challenges</h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Platform Distribution</CardTitle>
+                    <CardDescription>Your library across platforms.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
+                        <BarChart accessibilityLayer data={platformData} layout="vertical" margin={{ right: 20, left: 10 }}>
+                            <CartesianGrid horizontal={false} />
+                            <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                            <XAxis type="number" hide />
+                            <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                            <Bar dataKey="count" radius={4}>
+                            {platformData.map((entry, index) => (
+                                <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                            </Bar>
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                     <div>
+                        <CardTitle>Personal Challenges</CardTitle>
+                        <CardDescription>Give yourself a goal to work towards!</CardDescription>
+                     </div>
                     <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add Challenge</Button>
+                            <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -292,7 +295,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                             <ChallengeForm onSave={onAddChallenge} allGames={games} />
                         </DialogContent>
                     </Dialog>
-                </div>
+                </CardHeader>
+                <CardContent>
                 {activeChallenges.length > 0 ? (
                     <div className="grid gap-6 md:grid-cols-1">
                         {activeChallenges.slice(0, 2).map(challenge => (
@@ -304,11 +308,11 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         <p>No active challenges. Why not create one?</p>
                     </div>
                 )}
-            </div>
+                </CardContent>
+            </Card>
         </div>
     </div>
   );
 };
 
 export default Dashboard;
-
