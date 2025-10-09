@@ -34,10 +34,7 @@ const AppHeader = ({ allGames = []}: AppHeaderProps) => {
   return (
     <header className="flex items-center justify-between gap-3 text-primary">
       <div className="flex items-center gap-3">
-        <Image src="/log.webp" alt="Backlog Odyssey Logo" width={40} height={40} />
-        <h1 className="text-3xl font-bold tracking-tight text-white">
-          Backlog <span className="text-primary">Odyssey V2</span>
-        </h1>
+        <Image src="/logo.webp" alt="Backlog Odyssey" width={280} height={70} />
       </div>
 
       <div className='flex items-center gap-4'>
