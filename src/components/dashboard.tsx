@@ -2,19 +2,31 @@
 'use client';
 
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Game, Genre } from '@/lib/types';
+import { Game, Genre, Platform } from '@/lib/types';
 import { useMemo } from 'react';
 import BacklogFlow from './backlog-flow';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
+import { steamDeckCompatIcons } from './icons';
 
 type DashboardProps = {
   games: Game[];
 };
 
+const CHART_COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
+
 const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   
+  const { preferences } = useUserPreferences();
+
   const chartConfig = {
     total: {
       label: 'Games',
@@ -27,6 +39,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
   };
 
   const ownedGames = useMemo(() => games.filter(g => g.list !== 'Wishlist'), [games]);
+  const totalGames = ownedGames.length;
 
   const genreData = useMemo(() => {
     const counts = ownedGames.reduce((acc, game) => {
@@ -41,8 +54,6 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       .sort((a, b) => b.total - a.total);
   }, [ownedGames]);
 
-  const totalGames = ownedGames.length;
-  
   const completionRate = useMemo(() => {
     if (totalGames === 0) return 0;
     const completedCount = ownedGames.filter(g => g.list === 'Recently Played').length;
@@ -51,7 +62,52 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
     return Math.round((completedCount / relevantTotal) * 100);
   }, [ownedGames, totalGames]);
 
-  const totalPlaytime = useMemo(() => ownedGames.reduce((acc, game) => acc + (game.playtimeNormally || 0), 0), [ownedGames]);
+  const { totalPlaytimeNormally, totalPlaytimeCompletely, averagePlaytime } = useMemo(() => {
+    const gamesWithPlaytime = ownedGames.filter(g => g.playtimeNormally);
+    if (gamesWithPlaytime.length === 0) return { totalPlaytimeNormally: 0, totalPlaytimeCompletely: 0, averagePlaytime: 0 };
+    
+    const totalPlaytimeNormally = ownedGames.reduce((acc, game) => acc + (game.playtimeNormally || 0), 0);
+    const totalPlaytimeCompletely = ownedGames.reduce((acc, game) => acc + (game.playtimeCompletely || 0), 0);
+    
+    const averagePlaytime = Math.round(totalPlaytimeNormally / gamesWithPlaytime.length);
+    return { totalPlaytimeNormally, totalPlaytimeCompletely, averagePlaytime };
+  }, [ownedGames]);
+
+  const platformData = useMemo(() => {
+    const counts = ownedGames.reduce((acc, game) => {
+      acc[game.platform] = (acc[game.platform] || 0) + 1;
+      return acc;
+    }, {} as Record<Platform, number>);
+    
+    return Object.entries(counts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a,b) => b.value - a.value);
+  }, [ownedGames]);
+
+  const deckCompatData = useMemo(() => {
+    const pcGames = ownedGames.filter(g => g.platform === 'PC');
+    const data = { Verified: 0, Playable: 0, Unsupported: 0, Unknown: 0 };
+    pcGames.forEach(game => {
+        switch (game.steamDeckCompat) {
+            case 'native':
+            case 'platinum':
+                data.Verified++;
+                break;
+            case 'gold':
+            case 'silver':
+            case 'bronze':
+                data.Playable++;
+                break;
+            case 'borked':
+                data.Unsupported++;
+                break;
+            default:
+                data.Unknown++;
+                break;
+        }
+    });
+    return data;
+  }, [ownedGames]);
   
   const playtimeByGenreData = useMemo(() => {
     const data = ownedGames.reduce((acc, game) => {
@@ -100,24 +156,26 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Average Playtime</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{averagePlaytime}h</div>
+          <p className="text-xs text-muted-foreground">Estimated story length</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalPlaytime}h</div>
-          <p className="text-xs text-muted-foreground">Estimated for owned games</p>
-        </CardContent>
-      </Card>
-      <Card className="md:col-span-2 lg:col-span-1">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Top Genre</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{genreData[0]?.name || 'N/A'}</div>
-          <p className="text-xs text-muted-foreground">{genreData[0]?.total || 0} games in this genre</p>
+            <div className="text-2xl font-bold">{totalPlaytimeNormally}h</div>
+            <p className="text-xs text-muted-foreground">
+                {totalPlaytimeCompletely > 0 ? `${totalPlaytimeCompletely}h for completionists` : 'Normal story playtime'}
+            </p>
         </CardContent>
       </Card>
       
-       <Card className="md:col-span-2">
+       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Backlog Flow</CardTitle>
           <CardDescription>An overview of your gaming journey.</CardDescription>
@@ -127,7 +185,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         </CardContent>
       </Card>
 
-       <Card className="md:col-span-2">
+      <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>Playtime by Genre</CardTitle>
           <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
@@ -140,14 +198,56 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
               <XAxis type="number" hide />
               <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
               <Bar dataKey="playtime" radius={4}>
-                 {playtimeByGenreData.slice(0, 5).map((entry) => (
-                    <Bar key={`cell-${entry.name}`} fill={entry.fill} />
+                 {playtimeByGenreData.slice(0, 5).map((entry, index) => (
+                    <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
           </ChartContainer>
         </CardContent>
       </Card>
+
+      <Card className="md:col-span-1 lg:col-span-2">
+        <CardHeader>
+            <CardTitle>Platform Distribution</CardTitle>
+            <CardDescription>Your game library across different platforms.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                    <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                        {platformData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip content={<ChartTooltipContent hideLabel />} />
+                </PieChart>
+            </ResponsiveContainer>
+        </CardContent>
+      </Card>
+      
+      {preferences?.playsOnSteamDeck && (
+         <Card className="md:col-span-1 lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Steam Deck Compatibility</CardTitle>
+                <CardDescription>Compatibility breakdown for your PC library.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+                {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
+                    const Icon = steamDeckCompatIcons[key.toLowerCase() as keyof typeof steamDeckCompatIcons] || steamDeckCompatIcons.unknown;
+                    const count = deckCompatData[key];
+                    return (
+                        <div key={key} className="flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            <span className="font-semibold">{key}:</span>
+                            <span>{count}</span>
+                        </div>
+                    );
+                })}
+            </CardContent>
+         </Card>
+      )}
+
     </div>
   );
 };
