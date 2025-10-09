@@ -135,7 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.7fr_0.7fr] gap-6">
-            <Card className="min-h-[550px]">
+            <Card className="min-h-[700px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
                     <CardDescription>An overview of your gaming journey.</CardDescription>

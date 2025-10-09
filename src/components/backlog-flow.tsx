@@ -14,7 +14,7 @@ const StatCard = ({ count, label, className }: { count: number, label: string, c
     <Card className={`bg-black/20 backdrop-blur-xs text-center border-none shadow-none p-2 ${className}`}>
         <CardContent className="p-0">
             <span className="text-3xl font-bold text-primary">{count}</span>
-            <p className="text-sm font-bold text-muted-foreground">{label}</p>
+            <p className="text-sm font-bold ">{label}</p>
         </CardContent>
     </Card>
 );
@@ -29,8 +29,8 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   }, [games]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative -mt-12">
+    <div className="relative w-full h-full flex items-center justify-center mt-[90px]" >
+      <div className="relative mt-12">
         <Image 
           src="/hourglass.webp" 
           alt="Hourglass flow" 
