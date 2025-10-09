@@ -11,10 +11,10 @@ type BacklogFlowProps = {
 };
 
 const StatCard = ({ count, label }: { count: number, label: string }) => (
-    <Card className="bg-card/10 backdrop-blur-none text-center border-none shadow-none py-1 px-2">
+  <Card className="bg-card/1 backdrop-blur-xs text-center border-none shadow-none py-1 px-1">
         <CardContent className="p-0">
             <span className="text-3xl font-bold text-primary">{count}</span>
-            <p className="text-xs text-primary/80">{label}</p>
+            <p className="text-s font-bold text-foreground">{label}</p>
         </CardContent>
     </Card>
 );
@@ -34,8 +34,8 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
       <Image 
         src="/hourglass.webp" 
         alt="Hourglass flow" 
-        width={350} 
-        height={450}
+        width={450} 
+        height={550}
         className="object-contain"
       />
       
