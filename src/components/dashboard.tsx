@@ -43,12 +43,10 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
   const totalGames = ownedGames.length;
 
   const completionRate = useMemo(() => {
-    if (totalGames === 0) return 0;
     const completedCount = ownedGames.filter(g => g.list === 'Recently Played').length;
-    const relevantTotal = ownedGames.filter(g => g.list !== 'Wishlist').length;
-    if (relevantTotal === 0) return 0;
-    return Math.round((completedCount / relevantTotal) * 100);
-  }, [ownedGames, totalGames]);
+    if (ownedGames.length === 0) return 0;
+    return Math.round((completedCount / ownedGames.length) * 100);
+  }, [ownedGames]);
 
   const { totalPlaytimeNormally, totalPlaytimeCompletely, averagePlaytime } = useMemo(() => {
     const gamesWithPlaytime = ownedGames.filter(g => g.playtimeNormally);
@@ -135,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.5fr_1fr] gap-6">
             <Card className="min-h-[550px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
@@ -184,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-4">
                             {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
                                 const compatKey = key === 'Verified' ? 'gold' : key === 'Playable' ? 'silver' : key === 'Unsupported' ? 'borked' : 'unknown';
                                 const Icon = steamDeckCompatIcons[compatKey];
@@ -257,7 +255,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle>Platform Distribution</CardTitle>
                     <CardDescription>Your library across platforms.</CardDescription>
