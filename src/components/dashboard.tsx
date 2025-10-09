@@ -83,6 +83,17 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         .map(([name, value]) => ({ name, value }))
         .sort((a,b) => b.value - a.value);
   }, [ownedGames]);
+  
+  const platformColorConfig = useMemo(() => {
+    const config: any = {};
+    platformData.forEach((item, index) => {
+        config[item.name] = {
+            label: item.name,
+            color: `hsl(var(--chart-${(index % 5) + 1}))`
+        };
+    });
+    return config;
+  }, [platformData]);
 
   const deckCompatData = useMemo(() => {
     const pcGames = ownedGames.filter(g => g.platform === 'PC');
@@ -213,16 +224,18 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
             <CardDescription>Your game library across different platforms.</CardDescription>
         </CardHeader>
         <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                    <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                        {platformData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                        ))}
-                    </Pie>
-                    <Tooltip content={<ChartTooltipContent hideLabel />} />
-                </PieChart>
-            </ResponsiveContainer>
+            <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                        <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                            {platformData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
+                    </PieChart>
+                </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
       
