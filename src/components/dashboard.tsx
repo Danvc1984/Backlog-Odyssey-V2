@@ -103,9 +103,9 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
         switch (game.steamDeckCompat) {
             case 'native':
             case 'platinum':
+            case 'gold':
                 data.Verified++;
                 break;
-            case 'gold':
             case 'silver':
             case 'bronze':
                 data.Playable++;
@@ -154,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
             <CardTitle>Backlog Hourglass</CardTitle>
             <CardDescription>An overview of your gaming journey.</CardDescription>
           </CardHeader>
-          <CardContent className="h-[400px] w-full flex items-center justify-center">
+          <CardContent className="h-[450px] w-full flex items-center justify-center">
             <BacklogFlow games={games} />
           </CardContent>
         </Card>
@@ -197,54 +197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
                 </p>
             </CardContent>
           </Card>
-        </div>
-      </div>
-      
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Playtime by Genre</CardTitle>
-            <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
-              <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
-                <CartesianGrid horizontal={false} />
-                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
-                <XAxis type="number" hide />
-                <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                <Bar dataKey="playtime" radius={4}>
-                   {playtimeByGenreData.slice(0, 5).map((entry, index) => (
-                      <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        
-        <Card className="lg:col-span-1">
-          <CardHeader>
-              <CardTitle>Platform Distribution</CardTitle>
-              <CardDescription>Your game library across different platforms.</CardDescription>
-          </CardHeader>
-          <CardContent>
-              <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                          <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                              {platformData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                              ))}
-                          </Pie>
-                          <Tooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
-                      </PieChart>
-                  </ResponsiveContainer>
-              </ChartContainer>
-          </CardContent>
-        </Card>
-         {preferences?.playsOnSteamDeck && (
-            <Card className="lg:col-span-1">
+          {preferences?.playsOnSteamDeck && (
+            <Card>
                 <CardHeader>
                     <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
                 </CardHeader>
@@ -269,7 +223,53 @@ const Dashboard: React.FC<DashboardProps> = ({ games }) => {
                     })}
                 </CardContent>
             </Card>
-        )}
+           )}
+        </div>
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Playtime by Genre</CardTitle>
+            <CardDescription>Estimated hours for your top 5 genres.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={genreColorConfig} className="h-[250px] w-full">
+              <BarChart accessibilityLayer data={playtimeByGenreData.slice(0,5)} layout="vertical" margin={{ right: 20, left: 10 }}>
+                <CartesianGrid horizontal={false} />
+                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} width={80} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                <XAxis type="number" hide />
+                <Tooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                <Bar dataKey="playtime" radius={4}>
+                   {playtimeByGenreData.slice(0, 5).map((entry, index) => (
+                      <Cell key={`cell-${entry.name}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+              <CardTitle>Platform Distribution</CardTitle>
+              <CardDescription>Your game library across different platforms.</CardDescription>
+          </CardHeader>
+          <CardContent>
+              <ChartContainer config={platformColorConfig} className="h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                          <Pie data={platformData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                              {platformData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                              ))}
+                          </Pie>
+                          <Tooltip content={<ChartTooltipContent hideLabel nameKey="name" />} />
+                      </PieChart>
+                  </ResponsiveContainer>
+              </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
