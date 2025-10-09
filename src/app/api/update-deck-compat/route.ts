@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     try {
         const gamesCollectionRef = db.collection('users').doc(uid).collection('games');
-        const pcGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').where('steamAppId', '!=', null).get();
+        const pcGamesSnapshot = await gamesCollectionRef.where('platform', '==', 'PC').get();
 
         const gamesToUpdate = pcGamesSnapshot.docs.map(doc => ({
             docId: doc.id,
