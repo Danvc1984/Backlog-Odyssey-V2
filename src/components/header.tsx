@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Swords, LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 import Recommendations from './recommendations';
 import type { Game } from '@/lib/types';
+import Image from 'next/image';
 
 type AppHeaderProps = {
   allGames?: Game[];
@@ -33,7 +34,7 @@ const AppHeader = ({ allGames = []}: AppHeaderProps) => {
   return (
     <header className="flex items-center justify-between gap-3 text-primary">
       <div className="flex items-center gap-3">
-        <Swords className="h-8 w-8" />
+        <Image src="/log.webp" alt="Backlog Odyssey Logo" width={40} height={40} />
         <h1 className="text-3xl font-bold tracking-tight text-white">
           Backlog <span className="text-primary">Odyssey V2</span>
         </h1>
