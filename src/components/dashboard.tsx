@@ -134,9 +134,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Column 1 */}
-            <div className="lg:col-span-1">
+        <div className="grid grid-cols-[700px_1fr_1fr] gap-6">
+            <div className="col-span-1">
                 <Card className="h-full min-h-[550px]">
                     <CardHeader>
                         <CardTitle>Backlog Hourglass</CardTitle>
@@ -148,8 +147,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 </Card>
             </div>
 
-            {/* Column 2 */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="col-span-1 space-y-6">
                 <Card>
                     <div className="flex justify-around items-center h-full">
                         <div className="text-center p-4 w-1/2">
@@ -157,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                             <div className="text-2xl font-bold mt-2">{totalGames}</div>
                             <p className="text-xs text-muted-foreground">in your active library</p>
                         </div>
-                        <Separator orientation="vertical" />
+                        <Separator orientation="vertical" className="h-20" />
                         <div className="text-center p-4 w-1/2">
                              <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
                             <div className="text-2xl font-bold mt-2">{completionRate}%</div>
@@ -172,7 +170,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                             <div className="text-2xl font-bold mt-2">{averagePlaytime}h</div>
                             <p className="text-xs text-muted-foreground">Estimated story length</p>
                         </div>
-                        <Separator orientation="vertical" />
+                        <Separator orientation="vertical" className="h-20" />
                         <div className="text-center p-4 w-1/2">
                            <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
                             <div className="text-2xl font-bold mt-2">{totalPlaytimeNormally}h</div>
@@ -182,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         </div>
                     </div>
                 </Card>
-            {preferences?.playsOnSteamDeck && (
+                {preferences?.playsOnSteamDeck && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
@@ -208,11 +206,10 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                             })}
                         </CardContent>
                     </Card>
-            )}
+                )}
             </div>
-
-            {/* Column 3 */}
-            <div className="lg:col-span-1">
+            
+            <div className="col-span-1">
                 <Card className="h-full">
                     <CardHeader>
                         <CardTitle>Platform Distribution</CardTitle>

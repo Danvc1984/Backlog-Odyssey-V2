@@ -11,10 +11,10 @@ type BacklogFlowProps = {
 };
 
 const StatCard = ({ count, label, className }: { count: number, label: string, className?: string }) => (
-    <Card className={`bg-black/20 backdrop-blur-xs text-center border-none shadow-none py-2 px-3 ${className}`}>
+    <Card className={`bg-black/20 backdrop-blur-xs text-center border-none shadow-none p-2 ${className}`}>
         <CardContent className="p-0">
             <span className="text-3xl font-bold text-primary">{count}</span>
-            <p className="text-sm font-bold text-foreground">{label}</p>
+            <p className="text-sm font-bold text-muted-foreground">{label}</p>
         </CardContent>
     </Card>
 );
@@ -39,7 +39,7 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
         className="object-contain"
       />
       
-      <div className="absolute top-[15%] left-1/2 -translate-x-1/2">
+      <div className="absolute top-[12%] left-1/2 -translate-x-1/2">
         <StatCard count={counts.backlog} label="Games to Play" />
       </div>
 
@@ -47,7 +47,7 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
         <StatCard count={counts.nowPlaying} label="Now Playing" />
       </div>
 
-      <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2">
         <StatCard count={counts.recentlyPlayed} label="Completed" />
       </div>
     </div>
