@@ -2,7 +2,7 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, App, ServiceAccount } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getSteamDeckCompat } from '@/app/api/steam/utils';
@@ -23,8 +23,7 @@ function getAdminApp(): App {
     );
 
     return initializeApp({
-        credential: cert(serviceAccountJson),
-        projectId: 'studio-8063658966-c0f00',
+        credential: cert(serviceAccountJson as ServiceAccount),
     });
 }
 
@@ -59,9 +58,14 @@ export async function POST(req: NextRequest) {
         const updatePromises = pcGamesSnapshot.docs.map(async (doc) => {
             const game = doc.data();
             if (game.steamAppId) {
-                const newCompat = await getSteamDeckCompat(game.steamAppId);
-                if (newCompat !== game.steamDeckCompat) {
-                    batch.update(doc.ref, { steamDeckCompat: newCompat });
+                try {
+                    const newCompat = await getSteamDeckCompat(game.steamAppId);
+                    if (newCompat !== game.steamDeckCompat) {
+                        batch.update(doc.ref, { steamDeckCompat: newCompat });
+                    }
+                } catch (error: any) {
+                    // Log the error for the specific AppID but don't crash the whole batch
+                    console.error(`Error: Could not fetch Steam Deck compatibility for AppID ${game.steamAppId}: ${error.message}`);
                 }
             }
         });
