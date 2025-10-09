@@ -3,13 +3,21 @@
 
 import React, { useMemo } from 'react';
 import { Game } from '@/lib/types';
-import { ArrowBigRightDash, ArrowBigDownDash, ArrowBigUpDash } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from './ui/card';
 
 type BacklogFlowProps = {
   games: Game[];
 };
+
+const StatCard = ({ count, label }: { count: number, label: string }) => (
+    <Card className="bg-card/60 backdrop-blur-sm w-48 text-center">
+        <CardContent className="p-3">
+            <span className="text-3xl font-bold">{count}</span>
+            <p className="text-xs text-muted-foreground">{label}</p>
+        </CardContent>
+    </Card>
+);
 
 const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   const counts = useMemo(() => {
@@ -31,32 +39,16 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
         className="object-contain"
       />
       
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64">
-        <Card className="bg-card/80 backdrop-blur-sm">
-            <CardContent className="p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                    <div className="text-right">
-                        <span className="text-2xl font-bold">{counts.backlog}</span>
-                        <p className="text-xs text-muted-foreground">Games to Play</p>
-                    </div>
-                    <ArrowBigDownDash className="w-8 h-8 text-primary/70"/>
-                </div>
-                <div className="flex items-center justify-between">
-                    <div className="text-right">
-                        <span className="text-2xl font-bold">{counts.nowPlaying}</span>
-                        <p className="text-xs text-muted-foreground">Now Playing</p>
-                    </div>
-                    <ArrowBigDownDash className="w-8 h-8 text-accent/70" />
-                </div>
-                <div className="flex items-center justify-between">
-                     <div className="text-right">
-                        <span className="text-2xl font-bold">{counts.recentlyPlayed}</span>
-                        <p className="text-xs text-muted-foreground">Completed</p>
-                    </div>
-                    <ArrowBigUpDash className="w-8 h-8 text-green-500/70" />
-                </div>
-            </CardContent>
-        </Card>
+      <div className="absolute top-[15%] left-1/2 -translate-x-1/2">
+        <StatCard count={counts.backlog} label="Games to Play" />
+      </div>
+
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <StatCard count={counts.nowPlaying} label="Now Playing" />
+      </div>
+
+      <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2">
+        <StatCard count={counts.recentlyPlayed} label="Completed" />
       </div>
     </div>
   );
