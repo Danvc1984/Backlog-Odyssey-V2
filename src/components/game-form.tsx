@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
-import { Search, Image as ImageIcon, Calendar as CalendarIcon, Star } from 'lucide-react';
+import { Search, Image as ImageIcon, Calendar as CalendarIcon, Star, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
@@ -231,7 +231,7 @@ const GameForm: React.FC<GameFormProps> = ({ onSave, defaultList = 'Wishlist', a
     onSave(newGame);
     if(!gameToEdit) {
       toast({
-        title: 'Game Added!',
+        title: <div className="flex items-center gap-2"><CheckCircle /> Game Added!</div>,
         description: `${data.title} has been added to your library.`,
       });
       form.reset({ title: '', platform: preferences?.favoritePlatform, genres: [], list: defaultList, releaseDate: '', playtimeNormally: undefined, playtimeCompletely: undefined, rating: 0 });

@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
@@ -10,6 +11,7 @@ import { useAuth } from './use-auth';
 import { useToast } from './use-toast';
 import { useUserPreferences } from './use-user-preferences';
 import type { Game, GameList, Challenge, ChallengeIdea, Genre } from '@/lib/types';
+import { CheckCircle, Trophy } from 'lucide-react';
 
 interface GameLibraryContextType {
   games: Game[];
@@ -134,7 +136,7 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
             if (newProgress === challenge.goal) {
               batch.update(challengeRef, { status: 'completed', completedAt: serverTimestamp() });
               toast({
-                title: 'Challenge Complete!',
+                title: <div className="flex items-center gap-2"><Trophy /> Challenge Complete!</div>,
                 description: `You've completed the challenge: "${challenge.title}"`,
               });
               progressMadeOn = null;
@@ -237,8 +239,14 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       const gameRef = doc(db, 'users', user.uid, 'games', game.id);
       await updateDoc(gameRef, { list: newList });
+      
+      let toastTitle = <div className="flex items-center gap-2"><CheckCircle /> Game Moved!</div>;
+      if(newList === 'Recently Played'){
+        toastTitle = <div className="flex items-center gap-2"><Trophy /> Game Completed!</div>;
+      }
+
       toast({
-        title: 'Game Moved!',
+        title: toastTitle,
         description: `${game.title} moved to ${newList}.`,
       });
 

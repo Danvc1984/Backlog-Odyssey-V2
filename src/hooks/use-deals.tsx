@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { useToast } from './use-toast';
+import { BadgePercent } from 'lucide-react';
 
 export interface Deal {
   discountPercent: number;
@@ -51,7 +52,7 @@ export const DealsProvider = ({ children }: { children: ReactNode }) => {
       const foundDealsCount = Object.keys(data.deals || {}).length;
       if (foundDealsCount > 0) {
         toast({
-          title: 'Deals Found!',
+          title: <div className="flex items-center gap-2"><BadgePercent /> Deals Found!</div>,
           description: `Found discounts for ${foundDealsCount} game(s) in your wishlist.`,
         });
       } else {
