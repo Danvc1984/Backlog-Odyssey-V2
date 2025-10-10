@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { LayoutDashboard, Library, User, ChevronDown, LogOut, Info } from 'lucide-react';
+import { LayoutDashboard, Library, User, ChevronDown, LogOut, Info, Trophy } from 'lucide-react';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -116,6 +116,15 @@ const AppSidebar = () => {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
+
+            <SidebarMenuItem>
+              <Link href="/challenges">
+                <SidebarMenuButton isActive={pathname === '/challenges'} tooltip="My Challenges">
+                  <Trophy />
+                  <span className="group-data-[collapsible=icon]:hidden">My Challenges</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
             
             <SidebarMenuItem>
               <Link href="/profile">

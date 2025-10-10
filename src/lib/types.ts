@@ -1,4 +1,5 @@
 
+
 import type { SteamDeckCompat } from "@/app/api/steam/utils";
 
 export type GameList = "Wishlist" | "Backlog" | "Now Playing" | "Recently Played";
@@ -61,6 +62,7 @@ export interface Challenge {
   progress: number;
   status: 'active' | 'completed';
   createdAt: any;
+  completedAt?: any;
 }
 
 export interface ChallengeIdea {

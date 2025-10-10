@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
@@ -131,7 +132,7 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
             progressMadeOn = challenge.title;
     
             if (newProgress === challenge.goal) {
-              batch.update(challengeRef, { status: 'completed' });
+              batch.update(challengeRef, { status: 'completed', completedAt: serverTimestamp() });
               toast({
                 title: 'Challenge Complete!',
                 description: `You've completed the challenge: "${challenge.title}"`,
@@ -320,4 +321,3 @@ export const useGameLibrary = () => {
   }
   return context;
 };
-

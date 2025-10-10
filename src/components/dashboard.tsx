@@ -1,9 +1,11 @@
 
 
+
 'use client';
 
 import * as React from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import Link from 'next/link';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Game, Challenge, ChallengeIdea } from '@/lib/types';
@@ -15,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowRight } from 'lucide-react';
 import ChallengeForm from './challenge-form';
 import ChallengeCard from './challenge-card';
 
@@ -108,8 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
   }, [ownedGames]);
   
  const gamesByGenreData = useMemo(() => {
-    const backlogGames = games.filter(g => g.list !== 'Wishlist');
-    const data = backlogGames.reduce((acc, game) => {
+    const data = ownedGames.reduce((acc, game) => {
         (game.genres || []).forEach(genre => {
             acc[genre] = (acc[genre] || 0) + 1;
         });
@@ -119,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
     return Object.entries(data)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
-}, [games]);
+}, [ownedGames]);
 
   const genreColorConfig = useMemo(() => {
     const config: any = {};
@@ -134,7 +135,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_320px_400px] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_320px] xl:grid-cols-[auto_320px_400px] gap-6">
             <Card className="min-h-[700px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
@@ -172,9 +173,9 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         <div className="text-center p-4 w-1/2">
                            <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
                             <div className="text-2xl font-bold mt-2">{totalPlaytimeNormally}h</div>
-                            <p className="text-xs text-muted-foreground">
+                             <p className="text-xs text-muted-foreground">
                                 {preferences?.trackCompletionistPlaytime && totalPlaytimeCompletely > 0
-                                ? `${totalPlaytimeCompletely}h for completionists`
+                                ? `(${totalPlaytimeCompletely}h for 100%)`
                                 : 'Normal story playtime'}
                             </p>
                         </div>
@@ -285,17 +286,22 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         <CardTitle>Personal Challenges</CardTitle>
                         <CardDescription>Give yourself a goal to work towards!</CardDescription>
                      </div>
-                    <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Create a New Challenge</DialogTitle>
-                            </DialogHeader>
-                            <ChallengeForm onSave={onAddChallenge} allGames={games} />
-                        </DialogContent>
-                    </Dialog>
+                     <div className="flex items-center gap-2">
+                        <Button variant="link" asChild>
+                            <Link href="/challenges">View All <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                        </Button>
+                        <Dialog open={isChallengeFormOpen} onOpenChange={setChallengeFormOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Create a New Challenge</DialogTitle>
+                                </DialogHeader>
+                                <ChallengeForm onSave={onAddChallenge} allGames={games} />
+                            </DialogContent>
+                        </Dialog>
+                     </div>
                 </CardHeader>
                 <CardContent>
                 {activeChallenges.length > 0 ? (
@@ -317,5 +323,3 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 };
 
 export default Dashboard;
-
-    

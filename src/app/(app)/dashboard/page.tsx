@@ -97,20 +97,6 @@ export default function DashboardPage() {
         
         <UpNextQueue games={games} onMoveGame={handleMoveGame} />
 
-        {completedChallenges.length > 0 && (
-            <div className="space-y-6">
-              <Separator />
-              <div className="flex justify-between items-center">
-                  <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2"><Trophy className="text-yellow-400"/> Completed Challenges</h2>
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {completedChallenges.slice(0, 3).map(challenge => (
-                      <ChallengeCard key={challenge.id} challenge={challenge} isCompleted />
-                  ))}
-              </div>
-            </div>
-        )}
-
         <GameListPreview title="Now Playing" games={nowPlaying} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
         <GameListPreview title="Backlog" games={backlog} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
         <GameListPreview title="Wishlist" games={wishlist} deals={deals} onEdit={setEditingGame} onMove={handleMoveGame} onDelete={confirmDeleteGame} />
