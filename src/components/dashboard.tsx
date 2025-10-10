@@ -133,13 +133,13 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.5fr_1fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_320px_400px] gap-6">
             <Card className="min-h-[700px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
                     <CardDescription>An overview of your gaming journey.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-full w-full flex items-center justify-center">
+                <CardContent className="h-[550px] w-full flex items-center justify-center">
                     <BacklogFlow games={games} />
                 </CardContent>
             </Card>
@@ -206,7 +206,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 )}
             </div>
             
-            <Card>
+             <Card>
                 <CardHeader>
                     <CardTitle>Games by Genre</CardTitle>
                     <CardDescription>Your top 5 genres by game count.</CardDescription>
