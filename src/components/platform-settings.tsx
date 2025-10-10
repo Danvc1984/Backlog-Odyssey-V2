@@ -529,7 +529,7 @@ export default function PlatformSettings({ isOnboarding = false }: PlatformSetti
               A 'Full Import' will replace all PC games in your library. 'Add New Games' will only import games you don't already have.
             </CardDescription>
           </CardHeader>
-            <CardFooter className="justify-end">
+            <CardFooter>
               <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
               <AlertDialogTrigger asChild>
                 <Button type="button" variant="default" size="lg" disabled={isImporting || profileLoading || !steamVanityId || importStatus === 'pending'} className="h-12 px-10 text-base bg-accent hover:bg-accent/90">
