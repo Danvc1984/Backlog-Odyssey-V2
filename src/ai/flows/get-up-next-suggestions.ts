@@ -95,9 +95,11 @@ You must prioritize games from the 'Backlog' and 'Wishlist' lists.
 "{{gamingHabits}}"
 
 **Game Deals (by Steam App ID):**
+{{#if deals}}
 {{#each deals}}
 - AppID {{ @key }}: {{this.discountPercent}}% off
 {{/each}}
+{{/if}}
 
 **Game Library:**
 {{#each gameLibrary}}
