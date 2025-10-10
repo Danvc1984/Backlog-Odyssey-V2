@@ -63,7 +63,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ allGames }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button>
+        <Button className="animate-subtle-glow">
           Get Recommendations
         </Button>
       </SheetTrigger>
