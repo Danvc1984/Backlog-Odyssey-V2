@@ -29,8 +29,8 @@ const BacklogFlow: React.FC<BacklogFlowProps> = ({ games }) => {
   }, [games]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center mt-[90px]" >
-      <div className="relative mt-12">
+    <div className="relative w-full h-full flex items-center justify-center mt-[40px]" >
+      <div className="relative mt-2">
         <Image 
           src="/hourglass.webp" 
           alt="Hourglass flow" 
