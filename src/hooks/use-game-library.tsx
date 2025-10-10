@@ -2,6 +2,7 @@
 
 
 
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
@@ -240,9 +241,11 @@ export const GameLibraryProvider = ({ children }: { children: ReactNode }) => {
       const gameRef = doc(db, 'users', user.uid, 'games', game.id);
       await updateDoc(gameRef, { list: newList });
       
-      let toastTitle = <div className="flex items-center gap-2"><CheckCircle /> Game Moved!</div>;
-      if(newList === 'Recently Played'){
+      let toastTitle;
+      if (newList === 'Recently Played') {
         toastTitle = <div className="flex items-center gap-2"><Trophy /> Game Completed!</div>;
+      } else {
+        toastTitle = <div className="flex items-center gap-2"><CheckCircle /> Game Moved!</div>;
       }
 
       toast({
