@@ -134,7 +134,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-[auto_320px_400px] gap-6">
-            <Card className="min-h-[700px]">
+            <Card className="min-h-[700px] border-none">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
                     <CardDescription>An overview of your gaming journey.</CardDescription>
@@ -145,7 +145,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
             </Card>
 
             <div className="space-y-6">
-                <Card>
+                <Card className="border-none">
                     <div className="flex justify-around items-center h-full">
                         <div className="text-center p-4 w-1/2">
                             <CardTitle className="text-sm font-medium">Total Owned Games</CardTitle>
@@ -160,7 +160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                         </div>
                     </div>
                 </Card>
-                <Card>
+                <Card className="border-none">
                      <div className="flex justify-around items-center h-full">
                         <div className="text-center p-4 w-1/2">
                             <CardTitle className="text-sm font-medium">Average Playtime</CardTitle>
@@ -180,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                     </div>
                 </Card>
                 {preferences?.playsOnSteamDeck && (
-                    <Card>
+                    <Card className="border-none">
                         <CardHeader>
                             <CardTitle className="text-lg font-medium">Steam Deck Compatibility</CardTitle>
                         </CardHeader>
@@ -208,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 )}
             </div>
             
-             <Card>
+             <Card className="border-none">
                 <CardHeader>
                     <CardTitle>Games by Genre</CardTitle>
                     <CardDescription>Your top 5 genres by game count.</CardDescription>
@@ -258,7 +258,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <Card>
+             <Card className="border-none">
                 <CardHeader>
                     <CardTitle>Platform Distribution</CardTitle>
                     <CardDescription>Your library across platforms.</CardDescription>
@@ -279,7 +279,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                     </ChartContainer>
                 </CardContent>
             </Card>
-            <Card>
+            <Card className="border-none">
                 <CardHeader className="flex flex-row items-center justify-between">
                      <div>
                         <CardTitle>Personal Challenges</CardTitle>
@@ -322,3 +322,5 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 };
 
 export default Dashboard;
+
+    
