@@ -59,8 +59,8 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
       } catch (error) {
         console.error("Failed to get 'Up Next' suggestions:", error);
         toast({
-          title: "Couldn't Load Suggestions",
-          description: "There was an error getting AI-powered suggestions. Please try again later.",
+          title: "Couldn't Load Up Next Suggestions",
+          description: "There was an error getting suggestions. Please try again later.",
           variant: "destructive",
         })
       } finally {
@@ -97,7 +97,7 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
   }
 
   if (upNextGames.length === 0) {
-    return null; // Don't show the section if there are no suggestions
+    return null; 
   }
 
   return (
