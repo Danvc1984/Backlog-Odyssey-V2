@@ -16,14 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import GameForm from '@/components/game-form';
-import ChallengeForm from '@/components/challenge-form';
-import ChallengeCard from '@/components/challenge-card';
 import { useDeals } from '@/hooks/use-deals';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Trophy, Loader2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
 import UpNextQueue from '@/components/up-next-queue';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -31,7 +27,6 @@ export default function DashboardPage() {
   const {
     games,
     activeChallenges,
-    completedChallenges,
     allGenres,
     loading,
     handleUpdateGame,

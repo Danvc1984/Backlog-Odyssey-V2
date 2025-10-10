@@ -1,12 +1,13 @@
-
 'use client';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, PlayCircle } from 'lucide-react';
+import { Sparkles, PlayCircle, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Autoplay from 'embla-carousel-autoplay';
 
+import { getUpNextSuggestions, GetUpNextSuggestionsOutput } from '@/ai/flows/get-up-next-suggestions';
 import type { Game, GameList } from '@/lib/types';
+import { useDeals } from '@/hooks/use-deals';
 import {
   Carousel,
   CarouselContent,
@@ -18,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
 import { platformIcons } from './icons';
+import { useToast } from '@/hooks/use-toast';
 
 interface UpNextQueueProps {
   games: Game[];
@@ -25,36 +27,87 @@ interface UpNextQueueProps {
 }
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
+  const { deals } = useDeals();
+  const { toast } = useToast();
+  const [suggestions, setSuggestions] = useState<GetUpNextSuggestionsOutput['suggestions']>([]);
+  const [loading, setLoading] = useState(true);
+
   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 5000, stopOnInteraction: true })
   );
 
-  // Placeholder logic for selecting games
-  const upNextGames = useMemo(() => {
-    const backlogGames = games.filter(g => g.list === 'Backlog');
-    const wishlistGames = games.filter(g => g.list === 'Wishlist');
-    
-    // Simple placeholder logic: take some from backlog, some from wishlist
-    return [...backlogGames.slice(0, 3), ...wishlistGames.slice(0, 2)];
-  }, [games]);
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      setLoading(true);
+      try {
+        const result = await getUpNextSuggestions({
+          gameLibrary: games.map(g => ({
+            id: g.id,
+            title: g.title,
+            platform: g.platform,
+            genres: g.genres,
+            list: g.list,
+            rating: g.rating,
+            playtimeNormally: g.playtimeNormally,
+          })),
+          deals: deals,
+          gamingHabits: "I'm looking for something fun to play next.", // Placeholder habits
+        });
+        setSuggestions(result.suggestions || []);
+      } catch (error) {
+        console.error("Failed to get 'Up Next' suggestions:", error);
+        toast({
+          title: "Couldn't load suggestions",
+          description: "There was an error getting AI-powered suggestions. Please try again later.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (upNextGames.length === 0) {
-    return null;
+    if (games.length > 0) {
+      fetchSuggestions();
+    }
+  }, [games, deals, toast]);
+
+
+  const upNextGames = useMemo(() => {
+    return suggestions
+      .map(suggestion => {
+        const game = games.find(g => g.id === suggestion.gameId);
+        return game ? { ...game, reason: suggestion.reason } : null;
+      })
+      .filter((g): g is Game & { reason: string } => g !== null);
+  }, [suggestions, games]);
+
+  if (loading) {
+     return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-3">
+                <Sparkles className="w-8 h-8 text-primary" />
+                <h2 className="text-3xl font-bold tracking-tight">Up Next</h2>
+            </div>
+             <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <p>Curating your next adventure...</p>
+             </div>
+        </div>
+     )
   }
 
-  const reasons = [
-    "Because you loved other open-world RPGs.",
-    "A perfect short adventure to play next.",
-    "It's a highly-rated classic in a genre you enjoy.",
-    "Based on your recent activity, this seems like a great fit.",
-    "A great game to tackle from your wishlist."
-  ];
+  if (upNextGames.length === 0) {
+    return null; // Don't show the section if there are no suggestions
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Sparkles className="w-8 h-8 text-primary" />
-        <h2 className="text-3xl font-bold tracking-tight">Up Next</h2>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-8 h-8 text-primary" />
+          <h2 className="text-3xl font-bold tracking-tight">Up Next</h2>
+        </div>
+        <p className="text-muted-foreground ml-11">Based on your library and preferences, here are some games we think you'll love next.</p>
       </div>
       <Carousel
         plugins={[plugin.current]}
@@ -97,7 +150,7 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
                     </div>
                     <CardContent className="p-4 flex-grow flex flex-col justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground italic mb-3">"{reasons[index % reasons.length]}"</p>
+                        <p className="text-sm text-muted-foreground italic mb-3">"{game.reason}"</p>
                         <div className="flex flex-wrap gap-2">
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 {PlatformIcon && <PlatformIcon className="h-3 w-3" />}
