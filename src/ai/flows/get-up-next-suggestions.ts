@@ -2,7 +2,7 @@
 'use server';
 
 /**
- * @fileOverview Provides personalized "Up Next" game suggestions based on a user's library, preferences, and active deals.
+ * @fileOverview Provides personalized "Up Next" game suggestions based on a user's library and preferences.
  * 
  * - getUpNextSuggestions - A function that generates a ranked list of games to play next.
  * - GetUpNextSuggestionsInput - The input type for the function.
@@ -27,15 +27,9 @@ const GameSchema = z.object({
   playtimeNormally: z.number().optional().describe("The estimated time to beat the main story in hours."),
 });
 
-const DealSchema = z.object({
-    discountPercent: z.number(),
-    finalFormatted: z.string(),
-});
-
 const GetUpNextSuggestionsInputSchema = z.object({
   gameLibrary: z.array(GameSchema).describe("The user's entire game library."),
   gamingHabits: z.string().describe("A string describing the user's current gaming mood or preferences."),
-  deals: z.record(z.string(), DealSchema).describe("A map of Steam App IDs to active deals."),
 });
 export type GetUpNextSuggestionsInput = z.infer<
   typeof GetUpNextSuggestionsInputSchema
@@ -66,15 +60,13 @@ const prompt = ai.definePrompt({
   name: 'getUpNextSuggestionsPrompt',
   input: { schema: GetUpNextSuggestionsInputSchema },
   output: { schema: GetUpNextSuggestionsOutputSchema },
-  prompt: `You are an expert gaming curator. Your task is to analyze a user's game library, their stated gaming habits, and any available discounts to create a compelling, ranked "Up Next" queue of 5 games for them to play.
+  prompt: `You are an expert gaming curator. Your task is to analyze a user's game library and their stated gaming habits to create a compelling, ranked "Up Next" queue of 5 games for them to play.
 
 You must prioritize games from the 'Backlog' and 'Wishlist' lists.
 
 **CRITICAL SELECTION CRITERIA:**
 1.  **Backlog Games:** These are top candidates. Prioritize them based on genre match, playtime, and user ratings.
-2.  **Wishlist Games:** Only suggest these if they meet one of the following conditions:
-    *   They have an explicit user rating of 4 or 5.
-    *   They have a discount of 70% or more (you can identify these from the 'deals' input).
+2.  **Wishlist Games:** Only suggest these if they have an explicit user rating of 4 or 5.
 
 **RANKING & REASONING FACTORS:**
 -   **User Ratings:** This is a strong signal. A rating of 5 is a huge indicator of taste. A rating of 1 or 2 means you should probably avoid similar games. **If a game has no rating, assume a neutral interest level of 3/5.**
@@ -93,13 +85,6 @@ You must prioritize games from the 'Backlog' and 'Wishlist' lists.
 
 **Gaming Habits:**
 "{{gamingHabits}}"
-
-**Game Deals (by Steam App ID):**
-{{#if deals}}
-{{#each deals}}
-- AppID {{ @key }}: {{this.discountPercent}}% off
-{{/each}}
-{{/if}}
 
 **Game Library:**
 {{#each gameLibrary}}

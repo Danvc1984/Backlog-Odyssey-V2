@@ -8,7 +8,6 @@ import Autoplay from 'embla-carousel-autoplay';
 
 import { getUpNextSuggestions, GetUpNextSuggestionsOutput } from '@/ai/flows/get-up-next-suggestions';
 import type { Game, GameList } from '@/lib/types';
-import { useDeals } from '@/hooks/use-deals';
 import {
   Carousel,
   CarouselContent,
@@ -28,7 +27,6 @@ interface UpNextQueueProps {
 }
 
 const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
-  const { deals, loading: dealsLoading } = useDeals();
   const { toast } = useToast();
   const [suggestions, setSuggestions] = useState<GetUpNextSuggestionsOutput['suggestions']>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +37,10 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
 
   useEffect(() => {
     const fetchSuggestions = async () => {
+      if (games.length === 0) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const result = await getUpNextSuggestions({
@@ -51,14 +53,13 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
             rating: g.rating,
             playtimeNormally: g.playtimeNormally,
           })),
-          deals: deals,
           gamingHabits: "I'm looking for something fun to play next.", 
         });
         setSuggestions(result.suggestions || []);
       } catch (error) {
         console.error("Failed to get 'Up Next' suggestions:", error);
         toast({
-          title: "Couldn't load Up Next suggestions",
+          title: "Couldn't Load Suggestions",
           description: "There was an error getting AI-powered suggestions. Please try again later.",
           variant: "destructive",
         })
@@ -67,10 +68,8 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
       }
     };
 
-    if (games.length > 0 && !dealsLoading) {
-      fetchSuggestions();
-    }
-  }, [games, deals, dealsLoading, toast]);
+    fetchSuggestions();
+  }, [games, toast]);
 
 
   const upNextGames = useMemo(() => {
