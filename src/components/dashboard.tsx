@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
-import { PlusCircle, Trophy } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import ChallengeForm from './challenge-form';
 import ChallengeCard from './challenge-card';
 
@@ -133,13 +133,13 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.5fr_1fr] gap-6">
-            <Card className="min-h-[550px]">
+        <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.5fr_1fr] gap-6">
+            <Card className="min-h-[700px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
                     <CardDescription>An overview of your gaming journey.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[450px] w-full flex items-center justify-center">
+                <CardContent className="h-full w-full flex items-center justify-center">
                     <BacklogFlow games={games} />
                 </CardContent>
             </Card>
@@ -180,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 {preferences?.playsOnSteamDeck && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">Steam Deck Compatibility</CardTitle>
+                            <CardTitle className="text-base font-medium">Steam Deck Compatibility</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
