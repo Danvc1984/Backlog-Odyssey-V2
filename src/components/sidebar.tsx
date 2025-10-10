@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { LayoutDashboard, Library, User, ChevronDown, LogOut, Info, Trophy } from 'lucide-react';
+import { LayoutDashboard, Library, User, ChevronDown, LogOut, Info, Trophy, HelpCircle } from 'lucide-react';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -137,7 +137,7 @@ const AppSidebar = () => {
              <SidebarMenuItem>
               <Link href="/faq">
                 <SidebarMenuButton isActive={pathname === '/faq'} tooltip="F.A.Q.">
-                  <Info />
+                  <HelpCircle />
                   <span className="group-data-[collapsible=icon]:hidden">F.A.Q.</span>
                 </SidebarMenuButton>
               </Link>
