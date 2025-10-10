@@ -77,7 +77,7 @@ const UpNextQueue: React.FC<UpNextQueueProps> = ({ games, onMoveGame }) => {
                   transition={{ duration: 0.8, delay: index * 0.2, ease: "circOut" }}
                   className="p-1 h-full"
                 >
-                  <Card className="h-full flex flex-col group">
+                  <Card className="h-full flex flex-col group border-transparent">
                     <div className="relative aspect-video overflow-hidden rounded-t-lg">
                       {game.imageUrl ? (
                         <Image

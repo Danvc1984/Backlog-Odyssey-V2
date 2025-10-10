@@ -1,6 +1,4 @@
 
-
-
 'use client';
 
 import * as React from 'react';
@@ -135,7 +133,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
   return (
     <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[auto_320px] xl:grid-cols-[auto_320px_560px] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_320px_400px] gap-6">
             <Card className="min-h-[700px]">
                 <CardHeader>
                     <CardTitle>Backlog Hourglass</CardTitle>
@@ -184,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                 {preferences?.playsOnSteamDeck && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base font-medium">Steam Deck Compatibility</CardTitle>
+                            <CardTitle className="text-lg font-medium">Steam Deck Compatibility</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {(Object.keys(deckCompatData) as Array<keyof typeof deckCompatData>).map(key => {
@@ -227,7 +225,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                                 cy="50%" 
                                 outerRadius="80%"
                                 labelLine={false}
-                                label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index }) => {
+                                label={({ cx, cy, midAngle, innerRadius, outerRadius, value, index, percent }) => {
+                                    if (percent < 0.05) return null; // Hide label if too small
                                     const RADIAN = Math.PI / 180;
                                     const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
                                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
