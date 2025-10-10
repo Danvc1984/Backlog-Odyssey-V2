@@ -107,8 +107,9 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
     return data;
   }, [ownedGames]);
   
-  const gamesByGenreData = useMemo(() => {
-    const data = ownedGames.reduce((acc, game) => {
+ const gamesByGenreData = useMemo(() => {
+    const backlogGames = games.filter(g => g.list !== 'Wishlist');
+    const data = backlogGames.reduce((acc, game) => {
         (game.genres || []).forEach(genre => {
             acc[genre] = (acc[genre] || 0) + 1;
         });
@@ -117,8 +118,8 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 
     return Object.entries(data)
         .map(([name, value]) => ({ name, value }))
-        .sort((a,b) => b.value - a.value);
-  }, [ownedGames]);
+        .sort((a, b) => b.value - a.value);
+}, [games]);
 
   const genreColorConfig = useMemo(() => {
     const config: any = {};
@@ -172,7 +173,9 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
                            <CardTitle className="text-sm font-medium">Total Playtime</CardTitle>
                             <div className="text-2xl font-bold mt-2">{totalPlaytimeNormally}h</div>
                             <p className="text-xs text-muted-foreground">
-                                {totalPlaytimeCompletely > 0 ? `${totalPlaytimeCompletely}h for completionists` : 'Normal story playtime'}
+                                {preferences?.trackCompletionistPlaytime && totalPlaytimeCompletely > 0
+                                ? `${totalPlaytimeCompletely}h for completionists`
+                                : 'Normal story playtime'}
                             </p>
                         </div>
                     </div>
@@ -314,3 +317,5 @@ const Dashboard: React.FC<DashboardProps> = ({ games, activeChallenges, isChalle
 };
 
 export default Dashboard;
+
+    
