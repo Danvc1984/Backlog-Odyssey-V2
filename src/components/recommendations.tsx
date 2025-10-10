@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState } from 'react';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -63,7 +64,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ allGames }) => {
     <Sheet>
       <SheetTrigger asChild>
         <Button>
-          <Wand2 className="mr-2 h-4 w-4" /> Get AI Recommendations
+          Get Recommendations
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg">
